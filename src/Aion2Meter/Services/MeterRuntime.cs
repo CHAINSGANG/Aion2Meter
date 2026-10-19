@@ -96,7 +96,13 @@ public sealed record MeterSnapshot(
 public sealed class MeterRuntime : IDisposable
 {
     private static readonly Regex LocalPlayerLogPattern = new(
-        @"\[PLAYER\] local id=(?<id>\d+) name='(?<name>[^']+)'",
+        @"\[PLAYER\] (?:restored )?local id=(?<id>\d+) name='(?<name>[^']+)'",
+        RegexOptions.Compiled | RegexOptions.CultureInvariant);
+    private static readonly Regex ConfirmedPlayerLogPattern = new(
+        @"\[PLAYER\] name id=(?<id>\d+) nickname='(?<name>[^']+)' confirmed=True\b",
+        RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+    private static readonly Regex ReboundLocalPlayerLogPattern = new(
+        @"\[PLAYER\] local rebound id=(?:\d+|-)->(?<id>\d+) name='(?<name>[^']+)'",
         RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
     private readonly DataRepository _dataRepository;
@@ -249,9 +255,10 @@ public sealed class MeterRuntime : IDisposable
 
         try
         {
+            (int EntityId, string Name)? recovered = null;
             foreach (string file in Directory.EnumerateFiles(logDirectory, "hp-debug-*.log")
                          .Where(file => File.GetLastWriteTimeUtc(file) >= gameStartedUtc.Value.AddSeconds(-5))
-                         .OrderByDescending(File.GetLastWriteTimeUtc))
+                         .OrderBy(File.GetLastWriteTimeUtc))
             {
                 string[] lines;
                 try
@@ -268,21 +275,37 @@ public sealed class MeterRuntime : IDisposable
                 {
                     continue;
                 }
-                for (int index = lines.Length - 1; index >= 0; index--)
+                foreach (string line in lines)
                 {
-                    Match match = LocalPlayerLogPattern.Match(lines[index]);
-                    if (match.Success &&
-                        int.TryParse(match.Groups["id"].Value, out int entityId) &&
-                        entityId > 0)
+                    Match identityMatch = LocalPlayerLogPattern.Match(line);
+                    if (!identityMatch.Success)
                     {
-                        string name = match.Groups["name"].Value.Trim();
-                        if (!string.IsNullOrWhiteSpace(name))
-                        {
-                            return (entityId, name);
-                        }
+                        identityMatch = ReboundLocalPlayerLogPattern.Match(line);
+                    }
+                    if (TryReadLoggedIdentity(identityMatch, out int entityId, out string name))
+                    {
+                        recovered = (entityId, name);
+                        continue;
+                    }
+
+                    if (!recovered.HasValue)
+                    {
+                        continue;
+                    }
+
+                    Match confirmedMatch = ConfirmedPlayerLogPattern.Match(line);
+                    if (TryReadLoggedIdentity(confirmedMatch, out entityId, out name) &&
+                        string.Equals(name, recovered.Value.Name, StringComparison.OrdinalIgnoreCase))
+                    {
+                        // The character name is stable for the game session but
+                        // the entity id changes after relogs and some zone moves.
+                        // Prefer the newest confirmed record for that same name.
+                        recovered = (entityId, recovered.Value.Name);
                     }
                 }
             }
+
+            return recovered;
         }
         catch
         {
@@ -291,6 +314,21 @@ public sealed class MeterRuntime : IDisposable
         }
 
         return null;
+    }
+
+    private static bool TryReadLoggedIdentity(Match match, out int entityId, out string name)
+    {
+        entityId = 0;
+        name = string.Empty;
+        if (!match.Success ||
+            !int.TryParse(match.Groups["id"].Value, out entityId) ||
+            entityId <= 0)
+        {
+            return false;
+        }
+
+        name = match.Groups["name"].Value.Trim();
+        return !string.IsNullOrWhiteSpace(name);
     }
 
     private static DateTime? GetCurrentGameSessionStartUtc()
@@ -402,6 +440,7 @@ public sealed class MeterRuntime : IDisposable
         _parser.NicknameDiscovered += (_, player) =>
         {
             _dataRepository.SetNickname(player.PlayerId, player.Nickname, player.IsConfirmedPlayer);
+            TryRebindRecoveredLocalPlayer(player.PlayerId, player.Nickname, player.ServerId);
             _diagnostics.Write(
                 "PLAYER",
                 $"name id={player.PlayerId} nickname='{player.Nickname}' confirmed={player.IsConfirmedPlayer} server={player.ServerId}");
@@ -956,6 +995,60 @@ public sealed class MeterRuntime : IDisposable
         _diagnostics.Write(
             "PLAYER",
             $"local rebound id={previousId?.ToString() ?? "-"}->{playerId} name='{recoveredName}' from party roster");
+        if (_playerTargets.TryGetValue(playerId, out int targetId))
+        {
+            Volatile.Write(ref _selectedTargetId, targetId);
+            _dataRepository.SetCurrentTarget(targetId);
+            _parser.SetCurrentTarget(targetId);
+        }
+    }
+
+    private void TryRebindRecoveredLocalPlayer(int playerId, string nickname, int serverId)
+    {
+        // Startup recovery deliberately begins with the identity from the last
+        // meter run in the same game session. Entity ids change after a relog or
+        // zone transition, however. A confirmed live player record carrying the
+        // recovered character name is the strongest available signal that the
+        // entity id has changed, so promote it before target/debuff filtering.
+        if (Volatile.Read(ref _hasLiveLocalPlayerIdentity) != 0 ||
+            playerId <= 0 ||
+            string.IsNullOrWhiteSpace(nickname))
+        {
+            return;
+        }
+
+        string? localName = _dataRepository.GetLocalPlayerName();
+        if (string.IsNullOrWhiteSpace(localName) ||
+            !string.Equals(localName, nickname, StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        int? currentServerId = _dataRepository.GetCurrentServerId();
+        if (serverId > 0 && currentServerId is > 0 && serverId != currentServerId.Value)
+        {
+            return;
+        }
+
+        int? previousId = _dataRepository.GetLocalPlayerEntityId()
+            ?? _dataRepository.GetLastBoundLocalPlayerEntityId()
+            ?? PositiveOrNull(Volatile.Read(ref _inferredLocalPlayerId));
+        _dataRepository.SetNickname(
+            playerId,
+            nickname,
+            isConfirmedPlayer: true,
+            isAuthoritativeSource: true);
+        Volatile.Write(ref _inferredLocalPlayerId, playerId);
+        Volatile.Write(ref _hasLiveLocalPlayerIdentity, 1);
+
+        if (previousId == playerId)
+        {
+            return;
+        }
+
+        _diagnostics.Write(
+            "PLAYER",
+            $"local rebound id={previousId?.ToString() ?? "-"}->{playerId} name='{nickname}' from confirmed live name");
         if (_playerTargets.TryGetValue(playerId, out int targetId))
         {
             Volatile.Write(ref _selectedTargetId, targetId);
