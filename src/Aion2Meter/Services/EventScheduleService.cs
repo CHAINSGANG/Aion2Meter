@@ -73,9 +73,9 @@ public sealed class EventScheduleService
         {
             return new MeterEventScheduleSnapshot(
                 false,
-                "Регион не определён",
-                "Часы сервера ожидаются",
-                "Войдите на персонажа — календарь синхронизируется по игровому пакету",
+                T("Region not detected", "Регион не определён"),
+                T("Waiting for server clock", "Часы сервера ожидаются"),
+                T("Log in to a character — the calendar synchronizes from a game packet", "Войдите на персонажа — календарь синхронизируется по игровому пакету"),
                 [],
                 null);
         }
@@ -87,7 +87,7 @@ public sealed class EventScheduleService
                 false,
                 region.DisplayName(),
                 clock.Label,
-                "Для этого региона нет локального календаря",
+                T("No local calendar is available for this region", "Для этого региона нет локального календаря"),
                 [],
                 null);
         }
@@ -106,15 +106,15 @@ public sealed class EventScheduleService
             .FirstOrDefault();
         MeterEventAlertSnapshot? alert = alertTimer is null ? null : CreateAlert(alertTimer);
         string status = timers.Count == 0
-            ? "На ближайшие сутки событий нет"
+            ? T("No events in the next 24 hours", "На ближайшие сутки событий нет")
             : timers[0].IsActive
-                ? $"Сейчас: {timers[0].Title}"
-                : $"Ближайшее: {timers[0].Title} · {Countdown(timers[0].TimeUntil)}";
+                ? T($"Now: {timers[0].Title}", $"Сейчас: {timers[0].Title}")
+                : T($"Next: {timers[0].Title} · {Countdown(timers[0].TimeUntil)}", $"Ближайшее: {timers[0].Title} · {Countdown(timers[0].TimeUntil)}");
 
         return new MeterEventScheduleSnapshot(
             true,
             region.DisplayName(),
-            $"{clock.Label} · игровое время",
+            T($"{clock.Label} · game time", $"{clock.Label} · игровое время"),
             status,
             timers,
             alert);
@@ -166,7 +166,7 @@ public sealed class EventScheduleService
                  minute += Math.Max(1, schedule.RiftEveryMinutes))
             {
                 DateTimeOffset start = ServerInstant(serverZone, day, new TimeOnly(minute / 60, minute % 60));
-                AddTimer(timers, "rift", "rift", "Разлом", "Пространственный разлом", start, RiftDuration, utcNow);
+                AddTimer(timers, "rift", "rift", T("Rift", "Разлом"), T("Dimensional Rift", "Пространственный разлом"), start, RiftDuration, utcNow);
             }
 
             foreach (EventDefinition definition in schedule.Events)
@@ -226,16 +226,18 @@ public sealed class EventScheduleService
     {
         (string background, string border) = timer.Kind switch
         {
-            "РИФТ" => ("#E63D68C9", "#FF6F9EFF"),
-            "ОСАДА" => ("#E69F1D35", "#FFFF6676"),
-            "БОСС БЕЗДНЫ" => ("#E65B21B6", "#FFB28AFF"),
-            "ФЕСТИВАЛЬ" => ("#E60F766E", "#FF4EDACB"),
-            "ВТОРЖЕНИЕ" => ("#E69A4A12", "#FFFFA04D"),
+            "RIFT" or "РИФТ" => ("#E63D68C9", "#FF6F9EFF"),
+            "SIEGE" or "ОСАДА" => ("#E69F1D35", "#FFFF6676"),
+            "ABYSS BOSS" or "БОСС БЕЗДНЫ" => ("#E65B21B6", "#FFB28AFF"),
+            "FESTIVAL" or "ФЕСТИВАЛЬ" => ("#E60F766E", "#FF4EDACB"),
+            "INVASION" or "ВТОРЖЕНИЕ" => ("#E69A4A12", "#FFFFA04D"),
             _ => ("#E63A4256", "#FF738399")
         };
         return new MeterEventAlertSnapshot(
-            timer.IsActive ? $"{timer.Title} открыт" : $"{timer.Title} через",
-            timer.IsActive ? "СЕЙЧАС" : Countdown(timer.TimeUntil),
+            timer.IsActive
+                ? T($"{timer.Title} is open", $"{timer.Title} открыт")
+                : T($"{timer.Title} in", $"{timer.Title} через"),
+            timer.IsActive ? T("NOW", "СЕЙЧАС") : Countdown(timer.TimeUntil),
             timer.Detail,
             background,
             border);
@@ -261,26 +263,28 @@ public sealed class EventScheduleService
         return new DateTimeOffset(wallClock, zone.GetUtcOffset(wallClock));
     }
 
-    private static string TranslateName(string name, string kind) => name switch
-    {
-        "Artifact Siege" => "Осада артефакта",
-        "Dimensional Invasion" => "Пространственное вторжение",
-        "Shugo Festival" => "Фестиваль шуго",
-        _ when kind == "siege" => "Осада артефакта",
-        _ when kind == "invasion" => "Пространственное вторжение",
-        _ when kind == "shugoFesta" => "Фестиваль шуго",
-        _ => name
-    };
+    private static string TranslateName(string name, string kind) => UiLanguageService.IsRussian
+        ? name switch
+        {
+            "Artifact Siege" => "Осада артефакта",
+            "Dimensional Invasion" => "Пространственное вторжение",
+            "Shugo Festival" => "Фестиваль шуго",
+            _ when kind == "siege" => "Осада артефакта",
+            _ when kind == "invasion" => "Пространственное вторжение",
+            _ when kind == "shugoFesta" => "Фестиваль шуго",
+            _ => name
+        }
+        : name;
 
     private static string KindLabel(string kind) => kind switch
     {
-        "rift" => "РИФТ",
-        "siege" => "ОСАДА",
-        "abyssBoss" => "БОСС БЕЗДНЫ",
-        "shugoFesta" => "ФЕСТИВАЛЬ",
-        "invasion" => "ВТОРЖЕНИЕ",
-        "fieldBoss" => "ПОЛЕВОЙ БОСС",
-        _ => "СОБЫТИЕ"
+        "rift" => T("RIFT", "РИФТ"),
+        "siege" => T("SIEGE", "ОСАДА"),
+        "abyssBoss" => T("ABYSS BOSS", "БОСС БЕЗДНЫ"),
+        "shugoFesta" => T("FESTIVAL", "ФЕСТИВАЛЬ"),
+        "invasion" => T("INVASION", "ВТОРЖЕНИЕ"),
+        "fieldBoss" => T("FIELD BOSS", "ПОЛЕВОЙ БОСС"),
+        _ => T("EVENT", "СОБЫТИЕ")
     };
 
     private static string Accent(string kind) => kind switch
@@ -377,4 +381,6 @@ public sealed class EventScheduleService
         "Sat" => DayOfWeek.Saturday,
         _ => null
     };
+
+    private static string T(string english, string russian) => UiLanguageService.Pick(english, russian);
 }

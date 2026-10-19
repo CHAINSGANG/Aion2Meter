@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -20,7 +21,7 @@ public partial class MainWindow : Window
     private const double MinimumCompactWidth = 340;
     private const int DebuffSlotHeight = 34;
     private static readonly double[] OpacityLevels = [1.0, 0.72, 0.46];
-    private readonly MeterViewModel _viewModel = new();
+    private readonly MeterViewModel _viewModel;
     private readonly MeterSettingsStore _settingsStore = new();
     private readonly DispatcherTimer _settingsSaveTimer;
     private readonly bool _openToolsOnLoad;
@@ -29,6 +30,7 @@ public partial class MainWindow : Window
     private readonly bool _openPartyOnLoad;
     private readonly bool _openTimersOnLoad;
     private int _opacityLevelIndex;
+    private double _textOpacity = 1;
     private bool _isCompact;
     private bool _settingsReady;
     private bool _isApplyingSize;
@@ -44,14 +46,22 @@ public partial class MainWindow : Window
     private PartyCheckWindow? _partyCheckWindow;
     private TimersWindow? _timersWindow;
     private readonly Dictionary<int, PlayerBreakdownWindow> _breakdownWindows = new();
+    private GameWindowAttachment? _gameWindowAttachment;
+    private TrayIconService? _trayIcon;
 
     public MainWindow()
     {
         MeterSettings settings = _settingsStore.Load();
+        UiLanguageService.Apply(settings.Language);
+        _viewModel = new MeterViewModel();
         InitializeComponent();
         DataContext = _viewModel;
         _viewModel.PropertyChanged += ViewModel_PropertyChanged;
         _viewModel.Players.CollectionChanged += Players_CollectionChanged;
+        _viewModel.TargetDebuffs.CollectionChanged += DynamicItems_CollectionChanged;
+        _viewModel.EventTimers.CollectionChanged += DynamicItems_CollectionChanged;
+        _viewModel.Pets.CollectionChanged += DynamicItems_CollectionChanged;
+        _viewModel.PartyMembers.CollectionChanged += DynamicItems_CollectionChanged;
         _viewModel.RestorePreferences(
             settings.BossOnly,
             settings.ShowPartyMembers,
@@ -69,7 +79,8 @@ public partial class MainWindow : Window
         };
 
         _opacityLevelIndex = Math.Clamp(settings.OpacityLevel, 0, OpacityLevels.Length - 1);
-        Opacity = OpacityLevels[_opacityLevelIndex];
+        Opacity = Math.Clamp(settings.WindowOpacity, 0.25, 1);
+        _textOpacity = Math.Clamp(settings.TextOpacity, 0.25, 1);
         UpdateOpacityIcons();
         _compactWidth = Clamp(settings.CompactWidth, MinimumCompactWidth, 1800, DefaultCompactWidth);
         _compactHeight = Clamp(settings.CompactHeight, 210, MaxHeight, 248);
@@ -106,6 +117,14 @@ public partial class MainWindow : Window
 
     private async void Window_Loaded(object sender, RoutedEventArgs e)
     {
+        _trayIcon = new TrayIconService(
+            () => Dispatcher.Invoke(ShowFromTray),
+            () => Dispatcher.Invoke(HideToTray),
+            () => Dispatcher.InvokeAsync(async () => await CheckForUpdatesAsync(showCurrentStatus: true)),
+            () => Dispatcher.Invoke(ExitApplication));
+        _gameWindowAttachment = new GameWindowAttachment(this);
+        _gameWindowAttachment.Start();
+        ApplyTextOpacityToOpenWindows();
         await _viewModel.InitializeAsync();
         RefreshNotificationPopupPlacement();
         QueueCompactTargetMarquee();
@@ -133,6 +152,7 @@ public partial class MainWindow : Window
         {
             OpenTimers();
         }
+        await CheckForUpdatesAsync(showCurrentStatus: false);
     }
 
     private void Window_LocationChanged(object? sender, EventArgs e)
@@ -198,8 +218,14 @@ public partial class MainWindow : Window
             window.Close();
         }
         _breakdownWindows.Clear();
+        _gameWindowAttachment?.Dispose();
+        _trayIcon?.Dispose();
         _viewModel.PropertyChanged -= ViewModel_PropertyChanged;
         _viewModel.Players.CollectionChanged -= Players_CollectionChanged;
+        _viewModel.TargetDebuffs.CollectionChanged -= DynamicItems_CollectionChanged;
+        _viewModel.EventTimers.CollectionChanged -= DynamicItems_CollectionChanged;
+        _viewModel.Pets.CollectionChanged -= DynamicItems_CollectionChanged;
+        _viewModel.PartyMembers.CollectionChanged -= DynamicItems_CollectionChanged;
         _viewModel.Dispose();
     }
 
@@ -222,8 +248,14 @@ public partial class MainWindow : Window
         }
     }
 
-    private void Players_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e) =>
+    private void Players_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
         UpdateMeterHeight();
+        Dispatcher.BeginInvoke(DispatcherPriority.Loaded, ApplyTextOpacityToOpenWindows);
+    }
+
+    private void DynamicItems_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e) =>
+        Dispatcher.BeginInvoke(DispatcherPriority.Loaded, ApplyTextOpacityToOpenWindows);
 
     private void CompactTargetMarquee_SizeChanged(object sender, SizeChangedEventArgs e) =>
         QueueCompactTargetMarquee();
@@ -295,6 +327,7 @@ public partial class MainWindow : Window
         _breakdownWindows[player.PlayerId] = window;
         window.Closed += (_, _) => _breakdownWindows.Remove(player.PlayerId);
         window.Show();
+        ApplyTextOpacity(window);
         e.Handled = true;
     }
 
@@ -319,6 +352,7 @@ public partial class MainWindow : Window
         };
         _toolsWindow.Closed += (_, _) => _toolsWindow = null;
         _toolsWindow.Show();
+        ApplyTextOpacity(_toolsWindow);
     }
 
     internal void OpenPets()
@@ -337,6 +371,7 @@ public partial class MainWindow : Window
         };
         _petsWindow.Closed += (_, _) => _petsWindow = null;
         _petsWindow.Show();
+        ApplyTextOpacity(_petsWindow);
     }
 
     internal void OpenPartyCheck()
@@ -355,6 +390,7 @@ public partial class MainWindow : Window
         };
         _partyCheckWindow.Closed += (_, _) => _partyCheckWindow = null;
         _partyCheckWindow.Show();
+        ApplyTextOpacity(_partyCheckWindow);
     }
 
     internal void OpenTimers()
@@ -373,6 +409,53 @@ public partial class MainWindow : Window
         };
         _timersWindow.Closed += (_, _) => _timersWindow = null;
         _timersWindow.Show();
+        ApplyTextOpacity(_timersWindow);
+    }
+
+    internal void SetLanguage(string language)
+    {
+        UiLanguageService.Apply(language);
+        _viewModel.RefreshLanguage();
+        UpdateOpacityIcons();
+        QueueSettingsSave();
+    }
+
+    internal async Task<string> CheckForUpdatesAsync(bool showCurrentStatus)
+    {
+        UpdateCheckResult result = await UpdateCheckService.CheckAsync();
+        if (!result.Succeeded)
+        {
+            return UiLanguageService.Text("UpdateFailed", result.Error ?? "Unknown error");
+        }
+
+        if (result.IsUpdateAvailable && result.LatestVersion is not null)
+        {
+            _trayIcon?.ShowUpdate(result.LatestVersion, result.ReleaseUrl);
+            return UiLanguageService.Text("UpdateAvailable", result.LatestVersion);
+        }
+
+        return showCurrentStatus
+            ? UiLanguageService.Text("UpdateCurrent", result.CurrentVersion)
+            : string.Empty;
+    }
+
+    private void HideToTray() => _gameWindowAttachment?.HideToTray();
+
+    private void ShowFromTray()
+    {
+        if (_gameWindowAttachment is not null)
+        {
+            _gameWindowAttachment.ShowFromTray();
+            return;
+        }
+
+        Show();
+        Activate();
+    }
+
+    private void ExitApplication()
+    {
+        Close();
     }
 
     private void CycleOpacityButton_Click(object sender, RoutedEventArgs e)
@@ -381,7 +464,9 @@ public partial class MainWindow : Window
 
         if (sender is FrameworkElement element)
         {
-            element.ToolTip = $"Прозрачность: уровень {_opacityLevelIndex + 1} из 3";
+            element.ToolTip = UiLanguageService.Pick(
+                $"Opacity: level {_opacityLevelIndex + 1} of 3",
+                $"Прозрачность: уровень {_opacityLevelIndex + 1} из 3");
         }
     }
 
@@ -390,7 +475,47 @@ public partial class MainWindow : Window
         _opacityLevelIndex = (_opacityLevelIndex + 1) % OpacityLevels.Length;
         Opacity = OpacityLevels[_opacityLevelIndex];
         UpdateOpacityIcons();
+        _toolsWindow?.SyncOpacitySliders();
         QueueSettingsSave();
+    }
+
+    internal double WindowOpacityPercent => Opacity * 100;
+    internal double TextOpacityPercent => _textOpacity * 100;
+
+    internal void SetCustomOpacity(double windowPercent, double textPercent)
+    {
+        Opacity = Math.Clamp(windowPercent / 100d, 0.25, 1);
+        _textOpacity = Math.Clamp(textPercent / 100d, 0.25, 1);
+        _opacityLevelIndex = Enumerable.Range(0, OpacityLevels.Length)
+            .OrderBy(index => Math.Abs(OpacityLevels[index] - Opacity))
+            .First();
+        UpdateOpacityIcons();
+        ApplyTextOpacityToOpenWindows();
+        QueueSettingsSave();
+    }
+
+    private void ApplyTextOpacityToOpenWindows()
+    {
+        ApplyTextOpacity(this);
+        if (_toolsWindow is not null) ApplyTextOpacity(_toolsWindow);
+        if (_petsWindow is not null) ApplyTextOpacity(_petsWindow);
+        if (_partyCheckWindow is not null) ApplyTextOpacity(_partyCheckWindow);
+        if (_timersWindow is not null) ApplyTextOpacity(_timersWindow);
+        foreach (PlayerBreakdownWindow window in _breakdownWindows.Values) ApplyTextOpacity(window);
+    }
+
+    private void ApplyTextOpacity(DependencyObject root)
+    {
+        if (root is System.Windows.Controls.TextBlock text)
+        {
+            text.Opacity = _textOpacity;
+        }
+
+        int count = VisualTreeHelper.GetChildrenCount(root);
+        for (int index = 0; index < count; index++)
+        {
+            ApplyTextOpacity(VisualTreeHelper.GetChild(root, index));
+        }
     }
 
     private void ToggleCompactButton_Click(object sender, RoutedEventArgs e)
@@ -569,6 +694,7 @@ public partial class MainWindow : Window
 
         _settingsStore.Save(new MeterSettings
         {
+            Language = UiLanguageService.CurrentLanguage,
             Left = RestoreBounds.Left,
             Top = RestoreBounds.Top,
             Width = ActualWidth,
@@ -581,6 +707,8 @@ public partial class MainWindow : Window
             HasCustomCompactSize = _hasCustomCompactSize,
             HasCustomExpandedSize = _hasCustomExpandedSize,
             OpacityLevel = _opacityLevelIndex,
+            WindowOpacity = Opacity,
+            TextOpacity = _textOpacity,
             BossOnly = _viewModel.BossOnly,
             ShowPartyMembers = _viewModel.ShowPartyMembers,
             ShowTargetDebuffs = _viewModel.ShowTargetDebuffs,
@@ -592,4 +720,6 @@ public partial class MainWindow : Window
         double.IsFinite(value) ? Math.Clamp(value, minimum, maximum) : fallback;
 
     private void CloseButton_Click(object sender, RoutedEventArgs e) => Close();
+
+    private void MinimizeToTrayButton_Click(object sender, RoutedEventArgs e) => HideToTray();
 }

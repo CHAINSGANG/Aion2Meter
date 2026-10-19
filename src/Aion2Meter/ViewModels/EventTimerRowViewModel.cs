@@ -29,7 +29,7 @@ public sealed class EventTimerRowViewModel : BindableBase
         Title = snapshot.Title;
         Detail = snapshot.Detail;
         TimeText = snapshot.LocalStart.ToString("dd.MM · HH:mm");
-        CountdownText = snapshot.IsActive ? "СЕЙЧАС" : EventScheduleService.Countdown(snapshot.TimeUntil);
+        CountdownText = snapshot.IsActive ? UiLanguageService.Pick("NOW", "СЕЙЧАС") : EventScheduleService.Countdown(snapshot.TimeUntil);
         IsActive = snapshot.IsActive;
         AccentBrush = MakeBrush(snapshot.AccentColor);
     }

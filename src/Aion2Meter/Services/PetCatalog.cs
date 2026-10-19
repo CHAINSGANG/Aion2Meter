@@ -17,7 +17,9 @@ public sealed record MeterPetSnapshot(
     string BonusText,
     string? PortraitPath)
 {
-    public string LevelText => MaxLevel > 0 ? $"УР. {Level} / {MaxLevel}" : $"УР. {Level}";
+    public string LevelText => MaxLevel > 0
+        ? UiLanguageService.Pick($"LV. {Level} / {MaxLevel}", $"УР. {Level} / {MaxLevel}")
+        : UiLanguageService.Pick($"LV. {Level}", $"УР. {Level}");
     public double LevelPercent => MaxLevel > 0 ? Math.Clamp((double)Level / MaxLevel * 100d, 0d, 100d) : 0d;
     public bool HasPortrait => !string.IsNullOrWhiteSpace(PortraitPath);
 }
@@ -115,12 +117,12 @@ internal sealed class PetCatalog
         {
             return new MeterPetSnapshot(
                 petId,
-                $"Питомец #{petId}",
-                "Неизвестный тип",
+                UiLanguageService.Pick($"Pet #{petId}", $"Питомец #{petId}"),
+                UiLanguageService.Pick("Unknown type", "Неизвестный тип"),
                 string.Empty,
                 level,
                 0,
-                "Бонус неизвестен",
+                UiLanguageService.Pick("Unknown bonus", "Бонус неизвестен"),
                 null);
         }
 
@@ -154,33 +156,47 @@ internal sealed class PetCatalog
     {
         if (level <= 0)
         {
-            return "Бонус ещё не открыт";
+            return UiLanguageService.Pick("Bonus not unlocked yet", "Бонус ещё не открыт");
         }
 
         if (!_stats.TryGetValue(group, out Dictionary<int, Dictionary<string, int>>? levels))
         {
-            return "Особый эффект";
+            return UiLanguageService.Pick("Special effect", "Особый эффект");
         }
 
         int resolvedLevel = levels.Keys.Where(candidate => candidate <= level).DefaultIfEmpty(0).Max();
         if (resolvedLevel == 0 || !levels.TryGetValue(resolvedLevel, out Dictionary<string, int>? bonuses) || bonuses.Count == 0)
         {
-            return "Особый эффект";
+            return UiLanguageService.Pick("Special effect", "Особый эффект");
         }
 
         return string.Join(" · ", bonuses.Select(pair =>
-            $"{(StatNames.TryGetValue(pair.Key, out string? name) ? name : pair.Key)} +{pair.Value}"));
+            $"{LocalizeStat(pair.Key)} +{pair.Value}"));
     }
 
-    private static string LocalizeFamily(string type) => type switch
-    {
-        "Feral" => "Фера",
-        "Intellect" => "Когни",
-        "Nature" => "Натура",
-        "Trans" => "Вариан",
-        "Special" => "Особый",
-        _ => string.IsNullOrWhiteSpace(type) ? "Неизвестный тип" : type
-    };
+    private static string LocalizeFamily(string type) => UiLanguageService.IsRussian
+        ? type switch
+        {
+            "Feral" => "Фера",
+            "Intellect" => "Когни",
+            "Nature" => "Натура",
+            "Trans" => "Вариан",
+            "Special" => "Особый",
+            _ => string.IsNullOrWhiteSpace(type) ? "Неизвестный тип" : type
+        }
+        : string.IsNullOrWhiteSpace(type) ? "Unknown type" : type;
+
+    private static string LocalizeStat(string key) => UiLanguageService.IsRussian && StatNames.TryGetValue(key, out string? name)
+        ? name
+        : key switch
+        {
+            "GroundVehicleSpeed" => "Movement speed",
+            "HPMax" => "Max HP",
+            "SPMax" => "Max energy",
+            "CriticalResist" => "Critical resistance",
+            "VehicleSprintCost" => "Sprint efficiency",
+            _ => key
+        };
 
     private static string? ReadString(JsonElement element, string name) =>
         element.TryGetProperty(name, out JsonElement value) && value.ValueKind == JsonValueKind.String

@@ -38,6 +38,6 @@ public sealed class DebuffTimerViewModel : BindableBase
             return $"{totalSeconds / 60}:{totalSeconds % 60:00}";
         }
 
-        return $"{seconds:0.0}с";
+        return $"{seconds:0.0}{Services.UiLanguageService.Pick("s", "с")}";
     }
 }

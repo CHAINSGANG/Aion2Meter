@@ -11,7 +11,7 @@ public sealed record PetSpawnPoint(int NpcId, double X, double Y, double Z);
 
 public sealed record PetSpawnSource(int NpcId, string Name, int Level, int SpawnCount)
 {
-    public string LevelText => Level > 0 ? $"УР. {Level}" : string.Empty;
+    public string LevelText => Level > 0 ? UiLanguageService.Pick($"LV. {Level}", $"УР. {Level}") : string.Empty;
     public string SpawnText => $"{SpawnCount} {PetLocationCatalog.SpawnWord(SpawnCount)}";
 }
 
@@ -63,7 +63,7 @@ public sealed record PetLocationSnapshot(
     public int TotalSpawnCount => Maps.Sum(map => map.SpawnCount);
     public string Summary => HasLocations
         ? $"{Maps.Count} {PetLocationCatalog.PlaceWord(Maps.Count)} · {TotalSpawnCount} {PetLocationCatalog.SpawnWord(TotalSpawnCount)}"
-        : "Для этого питомца точки спавна в игровых таблицах не найдены";
+        : UiLanguageService.Pick("No spawn points for this pet were found in the game data", "Для этого питомца точки спавна в игровых таблицах не найдены");
 }
 
 internal sealed class PetLocationCatalog
@@ -199,7 +199,7 @@ internal sealed class PetLocationCatalog
             .GroupBy(point => point.NpcId)
             .Select(group =>
             {
-                NpcInfo info = _npcInfo.GetValueOrDefault(group.Key) ?? new NpcInfo($"Моб #{group.Key}", 0);
+                NpcInfo info = _npcInfo.GetValueOrDefault(group.Key) ?? new NpcInfo(UiLanguageService.Pick($"Mob #{group.Key}", $"Моб #{group.Key}"), 0);
                 return new PetSpawnSource(group.Key, info.Name, info.Level, group.Count());
             })
             .OrderByDescending(source => source.SpawnCount)
@@ -403,6 +403,10 @@ internal sealed class PetLocationCatalog
 
     public static string SpawnWord(int count)
     {
+        if (!UiLanguageService.IsRussian)
+        {
+            return count == 1 ? "point" : "points";
+        }
         int lastTwo = count % 100;
         int last = count % 10;
         return lastTwo is >= 11 and <= 14 ? "точек" : last switch
@@ -415,6 +419,10 @@ internal sealed class PetLocationCatalog
 
     public static string PlaceWord(int count)
     {
+        if (!UiLanguageService.IsRussian)
+        {
+            return count == 1 ? "location" : "locations";
+        }
         int lastTwo = count % 100;
         int last = count % 10;
         return lastTwo is >= 11 and <= 14 ? "локаций" : last switch
@@ -427,6 +435,10 @@ internal sealed class PetLocationCatalog
 
     public static string SourceWord(int count)
     {
+        if (!UiLanguageService.IsRussian)
+        {
+            return count == 1 ? "source mob" : "source mobs";
+        }
         int lastTwo = count % 100;
         int last = count % 10;
         return lastTwo is >= 11 and <= 14 ? "мобов-источников" : last switch

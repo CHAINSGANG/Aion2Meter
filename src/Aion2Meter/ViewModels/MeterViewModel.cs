@@ -19,7 +19,7 @@ namespace Aion2Meter.ViewModels;
 public sealed class MeterViewModel : BindableBase, IDisposable
 {
     private const int MaximumVisiblePartyRows = 10;
-    private static readonly CultureInfo UiCulture = CultureInfo.GetCultureInfo("ru-RU");
+    private static CultureInfo UiCulture => CultureInfo.CurrentCulture;
     private static readonly Brush ReadyBrush = MakeBrush("#22D3EE");
     private static readonly Brush CombatBrush = MakeBrush("#34D399");
     private static readonly Brush DemoBrush = MakeBrush("#FBBF24");
@@ -40,24 +40,24 @@ public sealed class MeterViewModel : BindableBase, IDisposable
     private bool _showParty;
     private MeterDisplayMode _displayMode = MeterDisplayMode.Damage;
     private bool _needsRelog = true;
-    private string _statusText = "ЗАПУСК";
-    private string _statusTooltip = "Инициализация";
+    private string _statusText = T("STARTING", "ЗАПУСК");
+    private string _statusTooltip = T("Initializing", "Инициализация");
     private Brush _statusBrush = ReadyBrush;
-    private string _targetName = "Ожидание данных";
+    private string _targetName = T("Waiting for data", "Ожидание данных");
     private TargetFrameKind _targetFrame;
     private double _targetHpPercent;
     private string _targetHpText = "HP";
     private string _battleTime = "00:00";
     private string _totalDpsText = "0";
-    private string _totalDamageText = "0 урона";
-    private string _captureText = "Подготовка захвата";
-    private string _petStatusText = "Откройте коллекцию питомцев в игре — список появится автоматически";
-    private string _partyTitle = "Комната группы";
+    private string _totalDamageText = T("0 damage", "0 урона");
+    private string _captureText = T("Preparing capture", "Подготовка захвата");
+    private string _petStatusText = T("Open the pet collection in game — the list will appear automatically", "Откройте коллекцию питомцев в игре — список появится автоматически");
+    private string _partyTitle = T("Party room", "Комната группы");
     private string _partyCapacityText = "0/0";
-    private string _partyStatusText = "Откройте подбор или комнату подземелья — состав появится автоматически";
-    private string _eventRegionText = "Регион не определён";
-    private string _eventClockText = "Часы сервера ожидаются";
-    private string _eventScheduleStatus = "Войдите на персонажа для синхронизации календаря";
+    private string _partyStatusText = T("Open matchmaking or a dungeon room — the roster will appear automatically", "Откройте подбор или комнату подземелья — состав появится автоматически");
+    private string _eventRegionText = T("Region not detected", "Регион не определён");
+    private string _eventClockText = T("Waiting for server clock", "Часы сервера ожидаются");
+    private string _eventScheduleStatus = T("Log in to a character to synchronize the calendar", "Войдите на персонажа для синхронизации календаря");
     private bool _hasPlayers;
     private bool _hasPets;
     private bool _hasParty;
@@ -93,6 +93,7 @@ public sealed class MeterViewModel : BindableBase, IDisposable
         ShowDamageCommand = new RelayCommand(() => SetDisplayMode(MeterDisplayMode.Damage));
         ShowHealingCommand = new RelayCommand(() => SetDisplayMode(MeterDisplayMode.Healing));
         ShowDamageTakenCommand = new RelayCommand(() => SetDisplayMode(MeterDisplayMode.DamageTaken));
+        EventTimers.CollectionChanged += (_, _) => OnPropertyChanged(nameof(EventTimerCountText));
     }
 
     public ObservableCollection<PlayerRowViewModel> Players { get; } = new();
@@ -143,9 +144,11 @@ public sealed class MeterViewModel : BindableBase, IDisposable
     public string TotalDamageText { get => _totalDamageText; private set => SetProperty(ref _totalDamageText, value); }
     public string CompactTotalText => $"{CompactDamageText} ({TotalDpsText})";
     public string CompactDamageText => TotalDamageText
+        .Replace(" damage", string.Empty, StringComparison.Ordinal)
+        .Replace(" healing", string.Empty, StringComparison.Ordinal)
         .Replace(" урона", string.Empty, StringComparison.Ordinal)
         .Replace(" лечения", string.Empty, StringComparison.Ordinal);
-    public string CompactDpsText => $"{TotalDpsText}/с";
+    public string CompactDpsText => $"{TotalDpsText}/{T("s", "с")}";
     public string CaptureText { get => _captureText; private set => SetProperty(ref _captureText, value); }
     public string PetStatusText { get => _petStatusText; private set => SetProperty(ref _petStatusText, value); }
     public string PartyTitle { get => _partyTitle; private set => SetProperty(ref _partyTitle, value); }
@@ -154,6 +157,7 @@ public sealed class MeterViewModel : BindableBase, IDisposable
     public string EventRegionText { get => _eventRegionText; private set => SetProperty(ref _eventRegionText, value); }
     public string EventClockText { get => _eventClockText; private set => SetProperty(ref _eventClockText, value); }
     public string EventScheduleStatus { get => _eventScheduleStatus; private set => SetProperty(ref _eventScheduleStatus, value); }
+    public string EventTimerCountText => T($"{EventTimers.Count} upcoming", $"{EventTimers.Count} ближайших");
     public bool HasPlayers { get => _hasPlayers; private set => SetProperty(ref _hasPlayers, value); }
     public bool HasPets { get => _hasPets; private set => SetProperty(ref _hasPets, value); }
     public bool HasParty { get => _hasParty; private set => SetProperty(ref _hasParty, value); }
@@ -222,41 +226,41 @@ public sealed class MeterViewModel : BindableBase, IDisposable
     public bool CanFilterParticipants => DisplayMode != MeterDisplayMode.DamageTaken;
     public string DisplayModeText => DisplayMode switch
     {
-        MeterDisplayMode.Healing => "ЛЕЧЕНИЕ",
-        MeterDisplayMode.DamageTaken => "ПОЛУЧЕННЫЙ УРОН",
-        _ => "УРОН"
+        MeterDisplayMode.Healing => T("HEALING", "ЛЕЧЕНИЕ"),
+        MeterDisplayMode.DamageTaken => T("DAMAGE TAKEN", "ПОЛУЧЕННЫЙ УРОН"),
+        _ => T("DAMAGE", "УРОН")
     };
-    public string TargetSectionLabel => DisplayMode == MeterDisplayMode.Damage ? "ТЕКУЩАЯ ЦЕЛЬ" : "РЕЖИМ";
+    public string TargetSectionLabel => DisplayMode == MeterDisplayMode.Damage ? T("CURRENT TARGET", "ТЕКУЩАЯ ЦЕЛЬ") : T("MODE", "РЕЖИМ");
     public string ParticipantsHeader => DisplayMode == MeterDisplayMode.DamageTaken
-        ? "ИСТОЧНИК"
-        : ShowPartyMembers ? "ГРУППА" : "ПЕРСОНАЖ";
+        ? T("SOURCE", "ИСТОЧНИК")
+        : ShowPartyMembers ? T("PARTY", "ГРУППА") : T("PLAYER", "ПЕРСОНАЖ");
     public string SummaryDpsLabel => DisplayMode switch
     {
-        MeterDisplayMode.Healing => ShowPartyMembers ? "HPS ГРУППЫ" : "МОЙ HPS",
-        MeterDisplayMode.DamageTaken => "ВХОДЯЩИЙ /С",
-        _ => ShowPartyMembers ? "DPS ГРУППЫ" : "МОЙ DPS"
+        MeterDisplayMode.Healing => ShowPartyMembers ? T("PARTY HPS", "HPS ГРУППЫ") : T("MY HPS", "МОЙ HPS"),
+        MeterDisplayMode.DamageTaken => T("INCOMING /S", "ВХОДЯЩИЙ /С"),
+        _ => ShowPartyMembers ? T("PARTY DPS", "DPS ГРУППЫ") : T("MY DPS", "МОЙ DPS")
     };
     public string SummaryDamageLabel => DisplayMode switch
     {
-        MeterDisplayMode.Healing => ShowPartyMembers ? "Лечение группы" : "Моё лечение",
-        MeterDisplayMode.DamageTaken => "Полученный урон",
-        _ => ShowPartyMembers ? "Урон группы" : "Мой урон"
+        MeterDisplayMode.Healing => ShowPartyMembers ? T("Party healing", "Лечение группы") : T("My healing", "Моё лечение"),
+        MeterDisplayMode.DamageTaken => T("Damage taken", "Полученный урон"),
+        _ => ShowPartyMembers ? T("Party damage", "Урон группы") : T("My damage", "Мой урон")
     };
-    public string TotalAmountLabel => DisplayMode == MeterDisplayMode.Healing ? "ОБЩЕЕ ЛЕЧЕНИЕ" : "ОБЩИЙ УРОН";
+    public string TotalAmountLabel => DisplayMode == MeterDisplayMode.Healing ? T("TOTAL HEALING", "ОБЩЕЕ ЛЕЧЕНИЕ") : T("TOTAL DAMAGE", "ОБЩИЙ УРОН");
     public string PerSecondColumnLabel => DisplayMode switch
     {
-        MeterDisplayMode.Healing => "HPS/С",
-        MeterDisplayMode.DamageTaken => "УРОН/С",
-        _ => "DPS/С"
+        MeterDisplayMode.Healing => T("HPS/S", "HPS/С"),
+        MeterDisplayMode.DamageTaken => T("DAMAGE/S", "УРОН/С"),
+        _ => T("DPS/S", "DPS/С")
     };
-    public string AmountColumnLabel => DisplayMode == MeterDisplayMode.Healing ? "ЛЕЧЕНИЕ" : "УРОН";
+    public string AmountColumnLabel => DisplayMode == MeterDisplayMode.Healing ? T("HEALING", "ЛЕЧЕНИЕ") : T("DAMAGE", "УРОН");
     public string EmptyStateText => NeedsRelog
-        ? "ПЕРЕЗАЙДИТЕ НА ПЕРСОНАЖА\nМЕТР УЖЕ ГОТОВ К ЗАХВАТУ"
+        ? T("RELOG TO THE CHARACTER\nTHE METER IS READY TO CAPTURE", "ПЕРЕЗАЙДИТЕ НА ПЕРСОНАЖА\nМЕТР УЖЕ ГОТОВ К ЗАХВАТУ")
         : DisplayMode switch
         {
-            MeterDisplayMode.Healing => "НЕТ ДАННЫХ ЛЕЧЕНИЯ",
-            MeterDisplayMode.DamageTaken => "НЕТ ПОЛУЧЕННОГО УРОНА",
-            _ => "ОЖИДАНИЕ БОЯ"
+            MeterDisplayMode.Healing => T("NO HEALING DATA", "НЕТ ДАННЫХ ЛЕЧЕНИЯ"),
+            MeterDisplayMode.DamageTaken => T("NO DAMAGE TAKEN", "НЕТ ПОЛУЧЕННОГО УРОНА"),
+            _ => T("WAITING FOR COMBAT", "ОЖИДАНИЕ БОЯ")
         };
 
     public MeterDisplayMode DisplayMode
@@ -339,16 +343,16 @@ public sealed class MeterViewModel : BindableBase, IDisposable
         }
     }
 
-    public string ModeText => BossOnly ? "БОСС" : "ВСЕ ЦЕЛИ";
-    public string ModeShortText => BossOnly ? "БОСС" : "ВСЕ";
-    public string ModeTooltip => BossOnly ? "Только боссы" : "Все цели";
+    public string ModeText => BossOnly ? T("BOSS", "БОСС") : T("ALL TARGETS", "ВСЕ ЦЕЛИ");
+    public string ModeShortText => BossOnly ? T("BOSS", "БОСС") : T("ALL", "ВСЕ");
+    public string ModeTooltip => BossOnly ? T("Bosses only", "Только боссы") : T("All targets", "Все цели");
     public string ParticipantsModeTooltip => ShowPartyMembers
-        ? "Сейчас: вся группа · нажмите, чтобы оставить только себя"
-        : "Сейчас: только я · нажмите, чтобы показать всю группу";
+        ? T("Now: whole party · click to show only yourself", "Сейчас: вся группа · нажмите, чтобы оставить только себя")
+        : T("Now: only me · click to show the whole party", "Сейчас: только я · нажмите, чтобы показать всю группу");
     public string DebuffToggleTooltip => ShowTargetDebuffs
-        ? "Дебафы активного персонажа: показываются · нажмите, чтобы скрыть"
-        : "Дебафы активного персонажа: скрыты · нажмите, чтобы показать";
-    public string PauseText => IsPaused ? "ПРОДОЛЖИТЬ" : "ПАУЗА";
+        ? T("Active character debuffs: shown · click to hide", "Дебафы активного персонажа: показываются · нажмите, чтобы скрыть")
+        : T("Active character debuffs: hidden · click to show", "Дебафы активного персонажа: скрыты · нажмите, чтобы показать");
+    public string PauseText => IsPaused ? T("RESUME", "ПРОДОЛЖИТЬ") : T("PAUSE", "ПАУЗА");
     public string PauseGlyph => IsPaused ? "▶" : "Ⅱ";
 
     public void RestorePreferences(
@@ -361,6 +365,33 @@ public sealed class MeterViewModel : BindableBase, IDisposable
         DisplayMode = displayMode;
         ShowPartyMembers = displayMode == MeterDisplayMode.DamageTaken || showPartyMembers;
         ShowTargetDebuffs = showTargetDebuffs;
+    }
+
+    public void RefreshLanguage()
+    {
+        OnPropertyChanged(nameof(DisplayModeText));
+        OnPropertyChanged(nameof(TargetSectionLabel));
+        OnPropertyChanged(nameof(ModeText));
+        OnPropertyChanged(nameof(ModeShortText));
+        OnPropertyChanged(nameof(ModeTooltip));
+        OnPropertyChanged(nameof(ParticipantsModeTooltip));
+        OnPropertyChanged(nameof(DebuffToggleTooltip));
+        OnPropertyChanged(nameof(PauseText));
+        OnPropertyChanged(nameof(EmptyStateText));
+        OnPropertyChanged(nameof(EventTimerCountText));
+        NotifyMetricLabelsChanged();
+
+        if (_latestSnapshot is not null)
+        {
+            ApplySnapshot(_latestSnapshot);
+            RefreshFeatureData();
+        }
+        else
+        {
+            TargetName = BossOnly ? T("Target not detected", "Цель не определена") : T("All targets", "Все цели");
+            RefreshSummary();
+            RefreshRows();
+        }
     }
 
     public async Task InitializeAsync()
@@ -377,22 +408,22 @@ public sealed class MeterViewModel : BindableBase, IDisposable
 
         if (forceDemo)
         {
-            EnableDemo("Запущено с параметром --demo");
+            EnableDemo(T("Started with --demo", "Запущено с параметром --demo"));
             _timer.Start();
             Refresh();
             return;
         }
 
-        StatusText = "ПОДКЛЮЧЕНИЕ";
-        StatusTooltip = "Загрузка справочников и запуск Npcap";
+        StatusText = T("CONNECTING", "ПОДКЛЮЧЕНИЕ");
+        StatusTooltip = T("Loading game data and starting Npcap", "Загрузка справочников и запуск Npcap");
         try
         {
             _runtime = await MeterRuntime.StartAsync();
             _runtime.SetBossOnlyMode(BossOnly);
-            StatusText = "ГОТОВ";
+            StatusText = T("READY", "ГОТОВ");
             StatusBrush = ReadyBrush;
-            StatusTooltip = "Захват сетевых пакетов активен";
-            CaptureText = "Npcap · ожидание боя";
+            StatusTooltip = T("Network packet capture is active", "Захват сетевых пакетов активен");
+            CaptureText = T("Npcap · waiting for combat", "Npcap · ожидание боя");
         }
         catch (Exception exception)
         {
@@ -407,10 +438,10 @@ public sealed class MeterViewModel : BindableBase, IDisposable
     {
         IsDemo = true;
         _demoStarted = DateTime.UtcNow - TimeSpan.FromSeconds(86);
-        StatusText = "ДЕМО";
+        StatusText = T("DEMO", "ДЕМО");
         StatusBrush = DemoBrush;
         StatusTooltip = reason;
-        CaptureText = "Демонстрационные данные";
+        CaptureText = T("Demo data", "Демонстрационные данные");
     }
 
     private void Refresh()
@@ -433,7 +464,7 @@ public sealed class MeterViewModel : BindableBase, IDisposable
         }
         catch (Exception exception)
         {
-            StatusText = "ОШИБКА";
+            StatusText = T("ERROR", "ОШИБКА");
             StatusBrush = ErrorBrush;
             StatusTooltip = exception.Message;
         }
@@ -445,7 +476,7 @@ public sealed class MeterViewModel : BindableBase, IDisposable
         NeedsRelog = !IsDemo &&
             (!snapshot.LocalPlayerId.HasValue || string.IsNullOrWhiteSpace(snapshot.LocalPlayerName));
         TargetName = string.IsNullOrWhiteSpace(snapshot.TargetName)
-            ? (BossOnly ? "Цель не определена" : "Все цели")
+            ? (BossOnly ? T("Target not detected", "Цель не определена") : T("All targets", "Все цели"))
             : snapshot.TargetName;
         TargetFrame = snapshot.TargetFrame;
         if (DisplayMode == MeterDisplayMode.Damage)
@@ -467,7 +498,7 @@ public sealed class MeterViewModel : BindableBase, IDisposable
             TargetHpPercent = snapshot.Players.Count > 0 ? 100 : 0;
             TargetHpText = DisplayMode == MeterDisplayMode.Healing
                 ? $"HPS {FormatCompact(snapshot.TotalDps)}"
-                : $"ВХОДЯЩИЙ {FormatCompact(snapshot.TotalDps)}/с";
+                : $"{T("INCOMING", "ВХОДЯЩИЙ")} {FormatCompact(snapshot.TotalDps)}/{T("s", "с")}";
             TargetBarBrush = DisplayMode == MeterDisplayMode.Healing
                 ? MakeGradient("#55B889", 0.12, 0.30)
                 : MakeGradient("#D28B5E", 0.12, 0.30);
@@ -480,17 +511,17 @@ public sealed class MeterViewModel : BindableBase, IDisposable
         {
             if (NeedsRelog)
             {
-                StatusText = "НУЖЕН РЕЛОГ";
+                StatusText = T("RELOG REQUIRED", "НУЖЕН РЕЛОГ");
                 StatusBrush = DemoBrush;
-                StatusTooltip = "Выйдите к выбору персонажа и войдите снова — метр должен увидеть пакет входа";
-                CaptureText = $"Npcap · {snapshot.ReceivedPackets:N0} пакетов · перезайдите на персонажа";
+                StatusTooltip = T("Return to character selection and log in again so the meter can detect the login packet", "Выйдите к выбору персонажа и войдите снова — метр должен увидеть пакет входа");
+                CaptureText = T($"Npcap · {snapshot.ReceivedPackets:N0} packets · relog to the character", $"Npcap · {snapshot.ReceivedPackets:N0} пакетов · перезайдите на персонажа");
             }
             else
             {
-                StatusText = snapshot.IsInCombat ? "В БОЮ" : "ГОТОВ";
+                StatusText = snapshot.IsInCombat ? T("IN COMBAT", "В БОЮ") : T("READY", "ГОТОВ");
                 StatusBrush = snapshot.IsInCombat ? CombatBrush : ReadyBrush;
-                StatusTooltip = $"Персонаж: {snapshot.LocalPlayerName}";
-                CaptureText = $"{snapshot.LocalPlayerName} · Npcap {snapshot.ReceivedPackets:N0} пакетов · {snapshot.DroppedPackets:N0} потерь";
+                StatusTooltip = T($"Character: {snapshot.LocalPlayerName}", $"Персонаж: {snapshot.LocalPlayerName}");
+                CaptureText = T($"{snapshot.LocalPlayerName} · Npcap {snapshot.ReceivedPackets:N0} packets · {snapshot.DroppedPackets:N0} dropped", $"{snapshot.LocalPlayerName} · Npcap {snapshot.ReceivedPackets:N0} пакетов · {snapshot.DroppedPackets:N0} потерь");
             }
         }
 
@@ -517,8 +548,8 @@ public sealed class MeterViewModel : BindableBase, IDisposable
         SyncCollection(Pets, pets);
         HasPets = Pets.Count > 0;
         PetStatusText = HasPets
-            ? $"Найдено питомцев: {Pets.Count}"
-            : "Откройте коллекцию питомцев в игре — список появится автоматически";
+            ? T($"Pets found: {Pets.Count}", $"Найдено питомцев: {Pets.Count}")
+            : T("Open the pet collection in game — the list will appear automatically", "Откройте коллекцию питомцев в игре — список появится автоматически");
 
         PartyRoomRoster? roster = IsDemo ? BuildDemoPartyRoster() : _runtime?.GetPartyRoster();
         IReadOnlyList<PartyMemberRowViewModel> members = roster?.Members
@@ -531,15 +562,15 @@ public sealed class MeterViewModel : BindableBase, IDisposable
                 member.GearScore,
                 member.CombatPower,
                 roster.IsLeader(member) ? "◆" : string.Empty,
-                member.IsInInstance ? "В подземелье" : "Вне подземелья"))
+                member.IsInInstance ? T("In dungeon", "В подземелье") : T("Outside dungeon", "Вне подземелья")))
             .ToArray() ?? [];
         SyncCollection(PartyMembers, members);
         HasParty = PartyMembers.Count > 0;
-        PartyTitle = string.IsNullOrWhiteSpace(roster?.Title) ? "Комната группы" : roster.Title;
+        PartyTitle = string.IsNullOrWhiteSpace(roster?.Title) ? T("Party room", "Комната группы") : roster.Title;
         PartyCapacityText = roster is null ? "0/0" : $"{PartyMembers.Count}/{roster.MaxMembers}";
         PartyStatusText = HasParty
-            ? $"Состав комнаты обновлён · {PartyCapacityText}"
-            : "Откройте подбор или комнату подземелья — состав появится автоматически";
+            ? T($"Room roster updated · {PartyCapacityText}", $"Состав комнаты обновлён · {PartyCapacityText}")
+            : T("Open matchmaking or a dungeon room — the roster will appear automatically", "Откройте подбор или комнату подземелья — состав появится автоматически");
 
         if (DateTime.UtcNow >= _nextEventRefreshUtc)
         {
@@ -782,12 +813,12 @@ public sealed class MeterViewModel : BindableBase, IDisposable
             row.Rank = trueRank;
             row.Nickname = player.Nickname;
             row.ClassName = player.Job == JobClass.Unknown && DisplayMode == MeterDisplayMode.DamageTaken
-                ? "Противник"
+                ? T("Enemy", "Противник")
                 : ClassLabel(player.Job);
             row.IconPath = ClassIcon(player.Job);
             row.AccentBrush = ClassBrush(player.Job);
             row.BarPercent = Math.Clamp(player.Dps / maximum * 100.0, 0, 100);
-            row.DpsText = FormatCompact(player.Dps) + "/с";
+            row.DpsText = FormatCompact(player.Dps) + "/" + T("s", "с");
             row.DamageText = FormatCompact(player.Damage);
             row.ShareText = player.Share.ToString("0.0", UiCulture) + "%";
             row.Dps = player.Dps;
@@ -808,9 +839,9 @@ public sealed class MeterViewModel : BindableBase, IDisposable
             row.AmountLabel = AmountColumnLabel;
             row.EmptySkillsText = DisplayMode switch
             {
-                MeterDisplayMode.Healing => "Навыки появятся после первого лечения.",
-                MeterDisplayMode.DamageTaken => "Атаки появятся после первого полученного урона.",
-                _ => "Навыки появятся после первого нанесённого урона."
+                MeterDisplayMode.Healing => T("Skills will appear after the first heal.", "Навыки появятся после первого лечения."),
+                MeterDisplayMode.DamageTaken => T("Attacks will appear after the first damage taken.", "Атаки появятся после первого полученного урона."),
+                _ => T("Skills will appear after the first damage dealt.", "Навыки появятся после первого нанесённого урона.")
             };
         }
 
@@ -849,8 +880,8 @@ public sealed class MeterViewModel : BindableBase, IDisposable
 
         TotalDpsText = FormatCompact(dps);
         TotalDamageText = DisplayMode == MeterDisplayMode.Healing
-            ? $"{FormatCompact(damage)} лечения"
-            : $"{FormatCompact(damage)} урона";
+            ? T($"{FormatCompact(damage)} healing", $"{FormatCompact(damage)} лечения")
+            : T($"{FormatCompact(damage)} damage", $"{FormatCompact(damage)} урона");
         OnPropertyChanged(nameof(CompactTotalText));
         OnPropertyChanged(nameof(CompactDamageText));
         OnPropertyChanged(nameof(CompactDpsText));
@@ -858,7 +889,7 @@ public sealed class MeterViewModel : BindableBase, IDisposable
 
     private static MeterPlayerSnapshot CreateLocalPlaceholder(MeterSnapshot snapshot) => new(
         snapshot.LocalPlayerId ?? LocalPlayerRowPolicy.PlaceholderPlayerId,
-        snapshot.LocalPlayerName ?? "Персонаж",
+        snapshot.LocalPlayerName ?? T("Player", "Персонаж"),
         snapshot.LocalPlayerJob,
         0,
         0,
@@ -905,9 +936,9 @@ public sealed class MeterViewModel : BindableBase, IDisposable
         EnrageVisible = false;
         TargetName = mode switch
         {
-            MeterDisplayMode.Healing => "Лечение группы",
-            MeterDisplayMode.DamageTaken => "Полученный урон",
-            _ => BossOnly ? "Цель не определена" : "Все цели"
+            MeterDisplayMode.Healing => T("Party healing", "Лечение группы"),
+            MeterDisplayMode.DamageTaken => T("Damage taken", "Полученный урон"),
+            _ => BossOnly ? T("Target not detected", "Цель не определена") : T("All targets", "Все цели")
         };
         Refresh();
     }
@@ -922,7 +953,7 @@ public sealed class MeterViewModel : BindableBase, IDisposable
     private void TogglePause()
     {
         IsPaused = !IsPaused;
-        StatusTooltip = IsPaused ? "Обновление панели приостановлено; захват продолжается" : StatusTooltip;
+        StatusTooltip = IsPaused ? T("Panel updates are paused; capture continues", "Обновление панели приостановлено; захват продолжается") : StatusTooltip;
         if (!IsPaused)
         {
             Refresh();
@@ -939,9 +970,9 @@ public sealed class MeterViewModel : BindableBase, IDisposable
         HasPlayers = false;
         TargetName = DisplayMode switch
         {
-            MeterDisplayMode.Healing => "Лечение группы",
-            MeterDisplayMode.DamageTaken => "Полученный урон",
-            _ => BossOnly ? "Цель не определена" : "Все цели"
+            MeterDisplayMode.Healing => T("Party healing", "Лечение группы"),
+            MeterDisplayMode.DamageTaken => T("Damage taken", "Полученный урон"),
+            _ => BossOnly ? T("Target not detected", "Цель не определена") : T("All targets", "Все цели")
         };
         TargetHpPercent = 0;
         TargetHpText = "HP";
@@ -949,7 +980,7 @@ public sealed class MeterViewModel : BindableBase, IDisposable
         EnrageText = string.Empty;
         BattleTime = "00:00";
         TotalDpsText = "0";
-        TotalDamageText = DisplayMode == MeterDisplayMode.Healing ? "0 лечения" : "0 урона";
+        TotalDamageText = DisplayMode == MeterDisplayMode.Healing ? T("0 healing", "0 лечения") : T("0 damage", "0 урона");
         OnPropertyChanged(nameof(CompactTotalText));
         OnPropertyChanged(nameof(CompactDamageText));
         OnPropertyChanged(nameof(CompactDpsText));
@@ -1039,11 +1070,13 @@ public sealed class MeterViewModel : BindableBase, IDisposable
     private void ApplyEnrageTimer(EnrageTimerView view)
     {
         EnrageVisible = view.Visible;
-        EnrageText = view.Text
-            .Replace("ENRAGED", "БОСС В ЯРОСТИ", StringComparison.Ordinal)
-            .Replace("Enrage ", "Ярость через ", StringComparison.Ordinal)
-            .Replace(" · kill ~", " · убийство ~", StringComparison.Ordinal)
-            .Replace(" · kill ", " · убийство ", StringComparison.Ordinal);
+        EnrageText = UiLanguageService.IsRussian
+            ? view.Text
+                .Replace("ENRAGED", "БОСС В ЯРОСТИ", StringComparison.Ordinal)
+                .Replace("Enrage ", "Ярость через ", StringComparison.Ordinal)
+                .Replace(" · kill ~", " · убийство ~", StringComparison.Ordinal)
+                .Replace(" · kill ", " · убийство ", StringComparison.Ordinal)
+            : view.Text;
 
         (EnrageBackground, EnrageBorder) = view.Tone switch
         {
@@ -1101,17 +1134,19 @@ public sealed class MeterViewModel : BindableBase, IDisposable
 
     private static string ClassLabel(JobClass job) => job switch
     {
-        JobClass.Gladiator => "Гладиатор",
-        JobClass.Templar => "Страж",
-        JobClass.Ranger => "Стрелок",
-        JobClass.Assassin => "Убийца",
-        JobClass.Sorcerer => "Волшебник",
-        JobClass.Cleric => "Целитель",
-        JobClass.Elementalist => "Заклинатель",
-        JobClass.Chanter => "Чародей",
-        JobClass.Fighter => "Кулачник",
-        _ => "Неизвестно"
+        JobClass.Gladiator => T("Gladiator", "Гладиатор"),
+        JobClass.Templar => T("Templar", "Страж"),
+        JobClass.Ranger => T("Ranger", "Стрелок"),
+        JobClass.Assassin => T("Assassin", "Убийца"),
+        JobClass.Sorcerer => T("Sorcerer", "Волшебник"),
+        JobClass.Cleric => T("Cleric", "Целитель"),
+        JobClass.Elementalist => T("Spiritmaster", "Заклинатель"),
+        JobClass.Chanter => T("Chanter", "Чародей"),
+        JobClass.Fighter => T("Fighter", "Кулачник"),
+        _ => T("Unknown", "Неизвестно")
     };
+
+    private static string T(string english, string russian) => UiLanguageService.Pick(english, russian);
 
     private static string? ClassIcon(JobClass job)
     {

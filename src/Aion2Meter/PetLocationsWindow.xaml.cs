@@ -68,8 +68,8 @@ internal sealed class PetLocationWindowModel : INotifyPropertyChanged
     private PetMapLocation? _selectedMap;
     private BitmapSource? _mapPreview;
     private MeterNavigationPosition? _navigationPosition;
-    private string _navigationText = "Ожидаем позицию персонажа";
-    private string _navigationDetail = "Примените навык или сделайте телепорт";
+    private string _navigationText = T("Waiting for character position", "Ожидаем позицию персонажа");
+    private string _navigationDetail = T("Use a skill or teleport", "Примените навык или сделайте телепорт");
 
     public PetLocationWindowModel(MeterPetSnapshot pet, PetLocationSnapshot snapshot, string mapTileRoot)
     {
@@ -145,8 +145,8 @@ internal sealed class PetLocationWindowModel : INotifyPropertyChanged
         _navigationPosition = position;
         if (position is null)
         {
-            NavigationText = "ОЖИДАЕМ ПОЗИЦИЮ ПЕРСОНАЖА";
-            NavigationDetail = "Примените навык или сделайте телепорт";
+            NavigationText = T("WAITING FOR CHARACTER POSITION", "ОЖИДАЕМ ПОЗИЦИЮ ПЕРСОНАЖА");
+            NavigationDetail = T("Use a skill or teleport", "Примените навык или сделайте телепорт");
             if (positionChanged)
             {
                 RefreshMapPreview();
@@ -162,8 +162,8 @@ internal sealed class PetLocationWindowModel : INotifyPropertyChanged
 
         if (SelectedMap?.Definition?.MatchesZone(position.ZoneId) != true)
         {
-            NavigationText = "ВЫ СЕЙЧАС В ДРУГОЙ ЛОКАЦИИ";
-            NavigationDetail = "Выберите точку в текущей зоне или перейдите в указанную";
+            NavigationText = T("YOU ARE IN ANOTHER LOCATION", "ВЫ СЕЙЧАС В ДРУГОЙ ЛОКАЦИИ");
+            NavigationDetail = T("Select a point in the current zone or travel to the listed one", "Выберите точку в текущей зоне или перейдите в указанную");
             if (positionChanged)
             {
                 RefreshMapPreview();
@@ -179,7 +179,7 @@ internal sealed class PetLocationWindowModel : INotifyPropertyChanged
         });
         if (nearest is null)
         {
-            NavigationText = "ТОЧКИ НЕ НАЙДЕНЫ";
+            NavigationText = T("NO POINTS FOUND", "ТОЧКИ НЕ НАЙДЕНЫ");
             NavigationDetail = string.Empty;
             return;
         }
@@ -187,8 +187,8 @@ internal sealed class PetLocationWindowModel : INotifyPropertyChanged
         double distance = Math.Sqrt(
             (nearest.X - position.X) * (nearest.X - position.X) +
             (nearest.Y - position.Y) * (nearest.Y - position.Y)) / 100d;
-        NavigationText = $"ДО БЛИЖАЙШЕЙ ТОЧКИ  {distance:0} м";
-        NavigationDetail = "Голубая точка — вы · золотая — нужный моб";
+        NavigationText = T($"NEAREST POINT  {distance:0} m", $"ДО БЛИЖАЙШЕЙ ТОЧКИ  {distance:0} м");
+        NavigationDetail = T("Blue point — you · gold point — target mob", "Голубая точка — вы · золотая — нужный моб");
         if (positionChanged)
         {
             RefreshMapPreview();
@@ -207,4 +207,6 @@ internal sealed class PetLocationWindowModel : INotifyPropertyChanged
 
     private void OnPropertyChanged([CallerMemberName] string? propertyName = null) =>
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+
+    private static string T(string english, string russian) => UiLanguageService.Pick(english, russian);
 }

@@ -6,7 +6,7 @@ namespace Aion2Meter.ViewModels;
 
 public sealed class SkillRowViewModel
 {
-    private static readonly CultureInfo UiCulture = CultureInfo.GetCultureInfo("ru-RU");
+    private static CultureInfo UiCulture => CultureInfo.CurrentCulture;
 
     public SkillRowViewModel(MeterSkillSnapshot skill)
     {
@@ -16,7 +16,7 @@ public sealed class SkillRowViewModel
         BackText = skill.BackRate.ToString("0.#", UiCulture) + "%";
         DoubleText = skill.DoubleRate.ToString("0.#", UiCulture) + "%";
         PerfectText = skill.PerfectRate.ToString("0.#", UiCulture) + "%";
-        DpsText = FormatCompact(skill.Dps) + "/с";
+        DpsText = FormatCompact(skill.Dps) + "/" + UiLanguageService.Pick("s", "с");
         AverageText = FormatCompact(skill.AverageDamage);
         MaximumText = FormatCompact(skill.MaximumDamage);
         DamageText = FormatCompact(skill.Damage);

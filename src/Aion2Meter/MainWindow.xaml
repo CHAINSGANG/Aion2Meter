@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
         xmlns:controls="clr-namespace:Aion2Meter.Controls"
+        xmlns:services="clr-namespace:Aion2Meter.Services"
         xmlns:primitives="clr-namespace:System.Windows.Controls.Primitives;assembly=PresentationFramework"
         mc:Ignorable="d"
         Title="Aion II Meter"
@@ -306,22 +307,25 @@
                     <Grid Margin="13,0,8,0" Background="Transparent" MouseLeftButtonDown="DragRegion_MouseLeftButtonDown">
                         <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <Button Style="{StaticResource HeaderLogoButton}" ToolTip="Инструменты" Click="OpenTools_Click">
+                            <Button Style="{StaticResource HeaderLogoButton}" ToolTip="{services:LocalizedText Tools}" Click="OpenTools_Click">
                                 <Control Width="28" Height="28" Template="{StaticResource MeterLogoTemplate}" IsHitTestVisible="False" />
                             </Button>
-                            <TextBlock Margin="8,0,0,0" Text="Анализ боя" FontFamily="{StaticResource AionFont}" FontSize="15" FontWeight="Bold" VerticalAlignment="Center" />
+                            <TextBlock Margin="8,0,0,0" Text="{services:LocalizedText CombatAnalysis}" FontFamily="{StaticResource AionFont}" FontSize="15" FontWeight="Bold" VerticalAlignment="Center" />
                         </StackPanel>
                         <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                            <Button Style="{StaticResource HeaderIconButton}" ToolTip="Настройки и инструменты" Click="OpenTools_Click">
+                            <Button Style="{StaticResource HeaderIconButton}" ToolTip="{services:LocalizedText Settings}" Click="OpenTools_Click">
                                 <Border Width="26" Height="26" Background="{StaticResource AionSettings}" />
                             </Button>
-                            <Button Style="{StaticResource HeaderIconButton}" ToolTip="Три уровня прозрачности" Click="CycleOpacityButton_Click">
+                            <Button Style="{StaticResource HeaderIconButton}" ToolTip="{services:LocalizedText Opacity}" Click="CycleOpacityButton_Click">
                                 <Border x:Name="OpacityIcon" Width="27" Height="27" Background="{StaticResource DmOpacity1}" />
                             </Button>
-                            <Button Style="{StaticResource HeaderIconButton}" ToolTip="Компактный режим" Click="ToggleCompactButton_Click">
+                            <Button Style="{StaticResource HeaderIconButton}" ToolTip="{services:LocalizedText Compact}" Click="ToggleCompactButton_Click">
                                 <Border Width="27" Height="27" Background="{StaticResource DmViewMin}" />
                             </Button>
-                            <Button Style="{StaticResource HeaderIconButton}" ToolTip="Закрыть" Click="CloseButton_Click">
+                            <Button Style="{StaticResource HeaderIconButton}" ToolTip="{services:LocalizedText MinimizeTray}" Click="MinimizeToTrayButton_Click">
+                                <Grid Width="24" Height="24"><Border Height="2" Width="15" Background="#FFE8E3D6" VerticalAlignment="Bottom" Margin="0,0,0,4" /></Grid>
+                            </Button>
+                            <Button Style="{StaticResource HeaderIconButton}" ToolTip="{services:LocalizedText Close}" Click="CloseButton_Click">
                                 <Border Width="24" Height="24" Background="{StaticResource AionClose}" />
                             </Button>
                         </StackPanel>
@@ -386,7 +390,7 @@
                         </Button.Style>
                         <Border Width="29" Height="29" Background="{StaticResource AionDebuffToggle}" />
                     </Button>
-                    <Button Grid.Column="3" Margin="3,0,0,0" Style="{StaticResource ModeIconButtonStyle}" ToolTip="Сбросить урон и текущий бой" Command="{Binding ResetCommand}">
+                    <Button Grid.Column="3" Margin="3,0,0,0" Style="{StaticResource ModeIconButtonStyle}" ToolTip="{services:LocalizedText ResetCombatTooltip}" Command="{Binding ResetCommand}">
                         <Border Width="29" Height="29" Background="{StaticResource AionRefresh}" />
                     </Button>
                     <StackPanel Grid.Column="4" Margin="14,0,0,0" VerticalAlignment="Center">
@@ -484,7 +488,7 @@
                     <TextBlock Grid.Column="2" Style="{StaticResource ColumnLabel}" Text="{Binding ParticipantsHeader}" />
                     <TextBlock Grid.Column="4" Style="{StaticResource ColumnLabel}" Text="{Binding PerSecondColumnLabel}" HorizontalAlignment="Right" />
                     <TextBlock Grid.Column="5" Style="{StaticResource ColumnLabel}" Text="{Binding AmountColumnLabel}" HorizontalAlignment="Right" />
-                    <TextBlock Grid.Column="6" Style="{StaticResource ColumnLabel}" Text="ДОЛЯ" HorizontalAlignment="Right" />
+                    <TextBlock Grid.Column="6" Style="{StaticResource ColumnLabel}" Text="{services:LocalizedText Share}" HorizontalAlignment="Right" />
                 </Grid>
 
                 <Grid Grid.Row="4" Margin="9,0,9,0">
@@ -548,7 +552,7 @@
                                                             HorizontalAlignment="Left"
                                                             VerticalAlignment="Center"
                                                             Visibility="{Binding ShowMitigation, Converter={StaticResource BoolToVisibility}}"
-                                                            ToolTip="Доля входящих атак, на которых сработала защита">
+                                                            ToolTip="{services:LocalizedText MitigationHint}">
                                                     <Border Width="15" Height="15" Margin="0,0,3,0" Background="{StaticResource AionMitigationShield}" />
                                                     <TextBlock Text="{Binding MitigationText}"
                                                                FontFamily="{StaticResource AionBodyFont}"
@@ -569,8 +573,8 @@
                     </ScrollViewer>
 
                     <StackPanel Visibility="{Binding HasPlayers, Converter={StaticResource InverseBoolToVisibility}}" HorizontalAlignment="Center" VerticalAlignment="Center">
-                        <TextBlock Text="НЕТ ДАННЫХ БОЯ" HorizontalAlignment="Center" FontSize="13" FontWeight="Bold" Foreground="#FF9AA2A7" />
-                        <TextBlock Text="Атакуйте цель — группа появится автоматически" Margin="0,6,0,0" HorizontalAlignment="Center" FontSize="10" Foreground="#FF717B81" />
+                        <TextBlock Text="{services:LocalizedText NoCombatData}" HorizontalAlignment="Center" FontSize="13" FontWeight="Bold" Foreground="#FF9AA2A7" />
+                        <TextBlock Text="{services:LocalizedText NoCombatHint}" Margin="0,6,0,0" HorizontalAlignment="Center" FontSize="10" Foreground="#FF717B81" />
                     </StackPanel>
                 </Grid>
 
@@ -598,22 +602,25 @@
                     <Grid Margin="13,0,7,0" Background="Transparent" MouseLeftButtonDown="DragRegion_MouseLeftButtonDown">
                         <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <Button Style="{StaticResource HeaderLogoButton}" ToolTip="Инструменты" Click="OpenTools_Click">
+                            <Button Style="{StaticResource HeaderLogoButton}" ToolTip="{services:LocalizedText Tools}" Click="OpenTools_Click">
                                 <Control Width="30" Height="30" Template="{StaticResource MeterLogoTemplate}" IsHitTestVisible="False" />
                             </Button>
-                            <TextBlock Margin="8,0,0,0" Text="Анализ боя" FontFamily="{StaticResource AionFont}" FontSize="16" FontWeight="Bold" VerticalAlignment="Center" />
+                            <TextBlock Margin="8,0,0,0" Text="{services:LocalizedText CombatAnalysis}" FontFamily="{StaticResource AionFont}" FontSize="16" FontWeight="Bold" VerticalAlignment="Center" />
                         </StackPanel>
                         <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                            <Button Style="{StaticResource HeaderIconButton}" ToolTip="Настройки и инструменты" Click="OpenTools_Click">
+                            <Button Style="{StaticResource HeaderIconButton}" ToolTip="{services:LocalizedText Settings}" Click="OpenTools_Click">
                                 <Border Width="26" Height="26" Background="{StaticResource AionSettings}" />
                             </Button>
-                            <Button Style="{StaticResource HeaderIconButton}" ToolTip="Три уровня прозрачности" Click="CycleOpacityButton_Click">
+                            <Button Style="{StaticResource HeaderIconButton}" ToolTip="{services:LocalizedText Opacity}" Click="CycleOpacityButton_Click">
                                 <Border x:Name="CompactOpacityIcon" Width="27" Height="27" Background="{StaticResource DmOpacity1}" />
                             </Button>
-                            <Button Style="{StaticResource HeaderIconButton}" ToolTip="Развернуть" Click="ToggleCompactButton_Click">
+                            <Button Style="{StaticResource HeaderIconButton}" ToolTip="{services:LocalizedText Expand}" Click="ToggleCompactButton_Click">
                                 <Border Width="27" Height="27" Background="{StaticResource DmViewMax}" />
                             </Button>
-                            <Button Style="{StaticResource HeaderIconButton}" ToolTip="Закрыть" Click="CloseButton_Click">
+                            <Button Style="{StaticResource HeaderIconButton}" ToolTip="{services:LocalizedText MinimizeTray}" Click="MinimizeToTrayButton_Click">
+                                <Grid Width="24" Height="24"><Border Height="2" Width="15" Background="#FFE8E3D6" VerticalAlignment="Bottom" Margin="0,0,0,4" /></Grid>
+                            </Button>
+                            <Button Style="{StaticResource HeaderIconButton}" ToolTip="{services:LocalizedText Close}" Click="CloseButton_Click">
                                 <Border Width="24" Height="24" Background="{StaticResource AionClose}" />
                             </Button>
                         </StackPanel>
@@ -672,7 +679,7 @@
                         </Button.Style>
                         <Border Width="29" Height="29" Background="{StaticResource AionDebuffToggle}" />
                     </Button>
-                    <Button Grid.Column="4" Margin="2,0,0,0" Style="{StaticResource ModeIconButtonStyle}" ToolTip="Сбросить урон и текущий бой" Command="{Binding ResetCommand}">
+                    <Button Grid.Column="4" Margin="2,0,0,0" Style="{StaticResource ModeIconButtonStyle}" ToolTip="{services:LocalizedText ResetCombatTooltip}" Command="{Binding ResetCommand}">
                         <Border Width="29" Height="29" Background="{StaticResource AionRefresh}" />
                     </Button>
                 </Grid>
@@ -707,7 +714,7 @@
                         </Grid>
 
                         <!-- Рамка режется на три части: декоративные края не деформируются. -->
-                        <Grid Grid.Row="1" Height="30" MaxWidth="570" HorizontalAlignment="Stretch" VerticalAlignment="Center" ToolTip="Здоровье текущей цели">
+                        <Grid Grid.Row="1" Height="30" MaxWidth="570" HorizontalAlignment="Stretch" VerticalAlignment="Center" ToolTip="{services:LocalizedText TargetHealth}">
                             <Grid Visibility="{Binding TargetUsesNormalFrame, Converter={StaticResource BoolToVisibility}}">
                                 <Grid.ColumnDefinitions><ColumnDefinition Width="30" /><ColumnDefinition Width="*" /><ColumnDefinition Width="30" /></Grid.ColumnDefinitions>
                                 <Image Grid.Column="0" Stretch="Fill"><Image.Source><CroppedBitmap Source="{StaticResource TargetHpFrameBitmap}" SourceRect="0,0,64,64" /></Image.Source></Image>
@@ -834,7 +841,7 @@
                                                             HorizontalAlignment="Left"
                                                             VerticalAlignment="Center"
                                                             Visibility="{Binding ShowMitigation, Converter={StaticResource BoolToVisibility}}"
-                                                            ToolTip="Доля входящих атак, на которых сработала защита">
+                                                            ToolTip="{services:LocalizedText MitigationHint}">
                                                     <Border Width="13" Height="13" Margin="0,0,2,0" Background="{StaticResource AionMitigationShield}" />
                                                     <TextBlock Text="{Binding MitigationText}"
                                                                FontFamily="{StaticResource AionBodyFont}"

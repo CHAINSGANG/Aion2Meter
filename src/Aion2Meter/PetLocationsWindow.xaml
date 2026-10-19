@@ -1,8 +1,9 @@
 <Window x:Class="Aion2Meter.PetLocationsWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:services="clr-namespace:Aion2Meter.Services"
         xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
-        Title="Aion II Meter · Где найти питомца"
+        Title="{services:BilingualText English='Aion II Meter · Pet Locations', Russian='Aion II Meter · Где найти питомца'}"
         Width="880" Height="620" MinWidth="720" MinHeight="500"
         WindowStyle="None" ResizeMode="CanResizeWithGrip" AllowsTransparency="True"
         Background="Transparent" ShowInTaskbar="False" UseLayoutRounding="True" SnapsToDevicePixels="True">
@@ -49,12 +50,12 @@
                     <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
                     <Image Width="29" Height="29" Source="/Aion2Meter;component/Assets/Brand/Aion2MeterEmblem.png" Stretch="Uniform" />
                     <StackPanel Grid.Column="1" Margin="9,0,0,0" Orientation="Horizontal" VerticalAlignment="Center">
-                        <TextBlock Text="ГДЕ НАЙТИ" FontFamily="{StaticResource AionFont}" FontSize="16" FontWeight="Bold" VerticalAlignment="Center" />
+                        <TextBlock Text="{services:BilingualText English='WHERE TO FIND', Russian='ГДЕ НАЙТИ'}" FontFamily="{StaticResource AionFont}" FontSize="16" FontWeight="Bold" VerticalAlignment="Center" />
                         <Border Margin="10,0,0,0" Padding="8,3" Background="#4AD1A741" CornerRadius="8" VerticalAlignment="Center">
-                            <TextBlock Text="ТОЧКИ ИЗ КЛИЕНТА" FontSize="8" FontWeight="Bold" Foreground="#FFF1D987" />
+                            <TextBlock Text="{services:BilingualText English='POINTS FROM GAME DATA', Russian='ТОЧКИ ИЗ КЛИЕНТА'}" FontSize="8" FontWeight="Bold" Foreground="#FFF1D987" />
                         </Border>
                     </StackPanel>
-                    <Button Grid.Column="2" Style="{StaticResource IconButtonStyle}" ToolTip="Закрыть" Click="CloseButton_Click">
+                    <Button Grid.Column="2" Style="{StaticResource IconButtonStyle}" ToolTip="{services:LocalizedText Close}" Click="CloseButton_Click">
                         <Border Width="25" Height="25" Background="{StaticResource AionClose}" />
                     </Button>
                 </Grid>
@@ -76,7 +77,7 @@
                     <Border Grid.Column="2" Padding="11,7" Background="#442CA279" CornerRadius="2" VerticalAlignment="Center">
                         <StackPanel>
                             <TextBlock Text="{Binding Pet.LevelText}" FontFamily="{StaticResource AionFont}" FontSize="12" FontWeight="Bold" Foreground="#FFF0E4C8" HorizontalAlignment="Right" />
-                            <TextBlock Text="КОЛЛЕКЦИЯ" Margin="0,3,0,0" FontSize="8" FontWeight="Bold" Foreground="#FFA8E4CB" HorizontalAlignment="Right" />
+                            <TextBlock Text="{services:BilingualText English='COLLECTION', Russian='КОЛЛЕКЦИЯ'}" Margin="0,3,0,0" FontSize="8" FontWeight="Bold" Foreground="#FFA8E4CB" HorizontalAlignment="Right" />
                         </StackPanel>
                     </Border>
                 </Grid>
@@ -91,7 +92,7 @@
 
                 <Grid>
                     <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="*" /><RowDefinition Height="Auto" /><RowDefinition Height="160" /></Grid.RowDefinitions>
-                    <TextBlock Text="ЗОНЫ" Margin="3,0,0,7" FontSize="9" FontWeight="Bold" Foreground="#FF9CA6AB" />
+                    <TextBlock Text="{services:BilingualText English='ZONES', Russian='ЗОНЫ'}" Margin="3,0,0,7" FontSize="9" FontWeight="Bold" Foreground="#FF9CA6AB" />
                     <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                         <ItemsControl ItemsSource="{Binding Snapshot.Regions}">
                             <ItemsControl.ItemTemplate>
@@ -104,7 +105,7 @@
                         </ItemsControl>
                     </ScrollViewer>
 
-                    <TextBlock Grid.Row="2" Text="МОБЫ-ИСТОЧНИКИ" Margin="3,12,0,7" FontSize="9" FontWeight="Bold" Foreground="#FF9CA6AB" />
+                    <TextBlock Grid.Row="2" Text="{services:BilingualText English='SOURCE MOBS', Russian='МОБЫ-ИСТОЧНИКИ'}" Margin="3,12,0,7" FontSize="9" FontWeight="Bold" Foreground="#FF9CA6AB" />
                     <ScrollViewer Grid.Row="3" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                         <ItemsControl ItemsSource="{Binding SelectedMap.Sources}">
                             <ItemsControl.ItemTemplate>
@@ -144,17 +145,17 @@
                             <Image Source="{Binding MapPreview}" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality" Visibility="{Binding HasMapPreview, Converter={StaticResource BoolToVisibility}}" />
                             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="{Binding HasMapPreview, Converter={StaticResource InverseBoolToVisibility}}">
                                 <TextBlock Text="⌖" FontSize="31" Foreground="#99D6B650" HorizontalAlignment="Center" />
-                                <TextBlock Text="ДЛЯ ЭТОЙ ЛОКАЦИИ НЕТ ФОНОВОЙ КАРТЫ" Margin="0,8,0,0" FontSize="10" FontWeight="Bold" Foreground="#FF9EA8AD" />
-                                <TextBlock Text="Список мобов и число точек всё равно доступны" Margin="0,4,0,0" FontSize="9" Foreground="#FF78848A" />
+                                <TextBlock Text="{services:BilingualText English='NO BACKGROUND MAP FOR THIS LOCATION', Russian='ДЛЯ ЭТОЙ ЛОКАЦИИ НЕТ ФОНОВОЙ КАРТЫ'}" Margin="0,8,0,0" FontSize="10" FontWeight="Bold" Foreground="#FF9EA8AD" />
+                                <TextBlock Text="{services:BilingualText English='The mob list and point count are still available', Russian='Список мобов и число точек всё равно доступны'}" Margin="0,4,0,0" FontSize="9" Foreground="#FF78848A" />
                             </StackPanel>
                             <Border HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10" Padding="8,5"
                                     Background="#D9121A1F" BorderBrush="#4DFFFFFF" BorderThickness="1" CornerRadius="2"
                                     Visibility="{Binding HasMapPreview, Converter={StaticResource BoolToVisibility}}">
                                 <StackPanel Orientation="Horizontal">
                                     <Ellipse Width="7" Height="7" Fill="#FF65E6EE" VerticalAlignment="Center" />
-                                    <TextBlock Text="ВЫ" Margin="5,0,12,0" FontSize="8" FontWeight="Bold" VerticalAlignment="Center" />
+                                    <TextBlock Text="{services:BilingualText English='YOU', Russian='ВЫ'}" Margin="5,0,12,0" FontSize="8" FontWeight="Bold" VerticalAlignment="Center" />
                                     <Ellipse Width="7" Height="7" Fill="#FFE1BE58" VerticalAlignment="Center" />
-                                    <TextBlock Text="МОБЫ" Margin="5,0,0,0" FontSize="8" FontWeight="Bold" VerticalAlignment="Center" />
+                                    <TextBlock Text="{services:BilingualText English='MOBS', Russian='МОБЫ'}" Margin="5,0,0,0" FontSize="8" FontWeight="Bold" VerticalAlignment="Center" />
                                 </StackPanel>
                             </Border>
                         </Grid>
@@ -176,8 +177,8 @@
             <Border Grid.Row="3" BorderBrush="{StaticResource SoftLine}" BorderThickness="0,1,0,0" Background="#3510161B">
                 <Grid Margin="14,0">
                     <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
-                    <TextBlock Text="Точки прочитаны из игровых MapData" FontSize="9" Foreground="#FF9DA6AB" VerticalAlignment="Center" />
-                    <TextBlock Grid.Column="1" Text="Маршрут строится по пакетам игры" FontSize="9" Foreground="#FF6F9F8B" VerticalAlignment="Center" />
+                    <TextBlock Text="{services:BilingualText English='Points loaded from game MapData', Russian='Точки прочитаны из игровых MapData'}" FontSize="9" Foreground="#FF9DA6AB" VerticalAlignment="Center" />
+                    <TextBlock Grid.Column="1" Text="{services:BilingualText English='Navigation follows live game packets', Russian='Маршрут строится по пакетам игры'}" FontSize="9" Foreground="#FF6F9F8B" VerticalAlignment="Center" />
                 </Grid>
             </Border>
         </Grid>

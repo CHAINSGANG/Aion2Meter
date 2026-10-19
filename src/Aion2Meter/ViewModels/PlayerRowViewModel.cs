@@ -24,9 +24,9 @@ public sealed class PlayerRowViewModel : BindableBase
     private string _mitigationText = "Mit 0%";
     private bool _showMitigation = true;
     private bool _isLocalPlayer;
-    private string _rateLabel = "DPS/С";
-    private string _amountLabel = "УРОН";
-    private string _emptySkillsText = "Навыки появятся после первого нанесённого урона.";
+    private string _rateLabel = "DPS/S";
+    private string _amountLabel = "DAMAGE";
+    private string _emptySkillsText = "Skills will appear after the first damage dealt.";
     private IReadOnlyList<MeterSkillSnapshot> _skills = [];
 
     public int PlayerId { get; init; }

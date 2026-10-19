@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Windows;
+using Aion2Meter.Services;
 
 namespace Aion2Meter;
 
@@ -20,7 +21,9 @@ public partial class App : Application
             string logPath = Path.Combine(Path.GetTempPath(), "Aion2Meter-startup-error.txt");
             File.WriteAllText(logPath, exception.ToString());
             MessageBox.Show(
-                $"Не удалось открыть DPS Meter.\n\n{exception.Message}\n\nЛог: {logPath}",
+                UiLanguageService.Pick(
+                    $"Could not open DPS Meter.\n\n{exception.Message}\n\nLog: {logPath}",
+                    $"Не удалось открыть DPS Meter.\n\n{exception.Message}\n\nЛог: {logPath}"),
                 "Aion II Meter",
                 MessageBoxButton.OK,
                 MessageBoxImage.Error);

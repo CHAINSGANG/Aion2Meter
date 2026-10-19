@@ -7,7 +7,8 @@ namespace Aion2Meter.Services;
 
 internal sealed class MeterSettings
 {
-    public int Version { get; set; } = 2;
+    public int Version { get; set; } = 4;
+    public string Language { get; set; } = "en";
     public double Left { get; set; } = double.NaN;
     public double Top { get; set; } = double.NaN;
     public double Width { get; set; } = 560;
@@ -20,6 +21,8 @@ internal sealed class MeterSettings
     public bool HasCustomCompactSize { get; set; }
     public bool HasCustomExpandedSize { get; set; }
     public int OpacityLevel { get; set; }
+    public double WindowOpacity { get; set; } = 1;
+    public double TextOpacity { get; set; } = 1;
     public bool BossOnly { get; set; } = true;
     public bool ShowPartyMembers { get; set; }
     public bool ShowTargetDebuffs { get; set; } = true;
@@ -68,6 +71,26 @@ internal sealed class MeterSettingsStore
                 settings.HasCustomCompactSize = true;
                 settings.Version = 2;
             }
+
+            if (settings.Version < 3)
+            {
+                settings.Language = "en";
+                settings.Version = 3;
+            }
+
+            if (settings.Version < 4)
+            {
+                double[] oldLevels = [1.0, 0.72, 0.46];
+                settings.WindowOpacity = oldLevels[Math.Clamp(settings.OpacityLevel, 0, oldLevels.Length - 1)];
+                settings.TextOpacity = 1;
+                settings.Version = 4;
+            }
+
+            settings.Language = string.Equals(settings.Language, "ru", StringComparison.OrdinalIgnoreCase)
+                ? "ru"
+                : "en";
+            settings.WindowOpacity = Math.Clamp(settings.WindowOpacity, 0.25, 1);
+            settings.TextOpacity = Math.Clamp(settings.TextOpacity, 0.25, 1);
 
             if (!Enum.IsDefined(settings.DisplayMode))
             {

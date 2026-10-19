@@ -2,7 +2,8 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
-        Title="Aion II Meter · Таймеры"
+        xmlns:services="clr-namespace:Aion2Meter.Services"
+        Title="{services:BilingualText English='Aion II Meter · Event Timers', Russian='Aion II Meter · Таймеры'}"
         Width="760" Height="560" MinWidth="650" MinHeight="430"
         WindowStyle="None" ResizeMode="CanResizeWithGrip" AllowsTransparency="True"
         Background="Transparent" ShowInTaskbar="False" UseLayoutRounding="True" SnapsToDevicePixels="True">
@@ -36,12 +37,12 @@
                 <Grid Margin="15,0,8,0" Background="Transparent" MouseLeftButtonDown="DragRegion_MouseLeftButtonDown">
                     <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                        <TextBlock Text="ТАЙМЕРЫ СОБЫТИЙ" FontFamily="{StaticResource AionFont}" FontSize="16" FontWeight="Bold" />
+                        <TextBlock Text="{services:BilingualText English='EVENT TIMERS', Russian='ТАЙМЕРЫ СОБЫТИЙ'}" FontFamily="{StaticResource AionFont}" FontSize="16" FontWeight="Bold" />
                         <Border Margin="10,0,0,0" Padding="8,3" Background="#FF263C49" BorderBrush="#665C8FB0" BorderThickness="1">
-                            <TextBlock Text="ИГРОВОЙ КАЛЕНДАРЬ" FontSize="8" FontWeight="Bold" Foreground="#FF79C7E8" />
+                            <TextBlock Text="{services:BilingualText English='GAME CALENDAR', Russian='ИГРОВОЙ КАЛЕНДАРЬ'}" FontSize="8" FontWeight="Bold" Foreground="#FF79C7E8" />
                         </Border>
                     </StackPanel>
-                    <Button Grid.Column="1" Style="{StaticResource IconButtonStyle}" ToolTip="Закрыть" Click="CloseButton_Click">
+                    <Button Grid.Column="1" Style="{StaticResource IconButtonStyle}" ToolTip="{services:LocalizedText Close}" Click="CloseButton_Click">
                         <Border Width="25" Height="25" Background="{StaticResource AionClose}" />
                     </Button>
                 </Grid>
@@ -55,18 +56,18 @@
                         <TextBlock Text="{Binding EventClockText}" Margin="0,3,0,0" FontSize="10" Foreground="#FF9FA9AE" />
                     </StackPanel>
                     <StackPanel Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Right">
-                        <TextBlock Text="{Binding EventTimers.Count, StringFormat={}{0} ближайших}" FontFamily="{StaticResource AionFont}" FontSize="15" FontWeight="Bold" Foreground="{StaticResource CyanBrush}" HorizontalAlignment="Right" />
-                        <TextBlock Text="ЛОКАЛЬНО · БЕЗ ВНЕШНЕГО СЕРВЕРА" Margin="0,3,0,0" FontSize="8" FontWeight="Bold" Foreground="#FF7F8A90" HorizontalAlignment="Right" />
+                        <TextBlock Text="{Binding EventTimerCountText}" FontFamily="{StaticResource AionFont}" FontSize="15" FontWeight="Bold" Foreground="{StaticResource CyanBrush}" HorizontalAlignment="Right" />
+                        <TextBlock Text="{services:BilingualText English='LOCAL · NO EXTERNAL SERVER', Russian='ЛОКАЛЬНО · БЕЗ ВНЕШНЕГО СЕРВЕРА'}" Margin="0,3,0,0" FontSize="8" FontWeight="Bold" Foreground="#FF7F8A90" HorizontalAlignment="Right" />
                     </StackPanel>
                 </Grid>
             </Border>
 
             <Grid Grid.Row="2" Margin="14,0">
                 <Grid.ColumnDefinitions><ColumnDefinition Width="112" /><ColumnDefinition Width="*" /><ColumnDefinition Width="112" /><ColumnDefinition Width="92" /></Grid.ColumnDefinitions>
-                <TextBlock Style="{StaticResource ColumnLabel}" Text="ТИП" />
-                <TextBlock Grid.Column="1" Style="{StaticResource ColumnLabel}" Text="СОБЫТИЕ" />
-                <TextBlock Grid.Column="2" Style="{StaticResource ColumnLabel}" Text="НАЧАЛО" />
-                <TextBlock Grid.Column="3" Style="{StaticResource ColumnLabel}" Text="ОСТАЛОСЬ" HorizontalAlignment="Right" />
+                <TextBlock Style="{StaticResource ColumnLabel}" Text="{services:BilingualText English='TYPE', Russian='ТИП'}" />
+                <TextBlock Grid.Column="1" Style="{StaticResource ColumnLabel}" Text="{services:BilingualText English='EVENT', Russian='СОБЫТИЕ'}" />
+                <TextBlock Grid.Column="2" Style="{StaticResource ColumnLabel}" Text="{services:BilingualText English='START', Russian='НАЧАЛО'}" />
+                <TextBlock Grid.Column="3" Style="{StaticResource ColumnLabel}" Text="{services:BilingualText English='REMAINING', Russian='ОСТАЛОСЬ'}" HorizontalAlignment="Right" />
             </Grid>
 
             <Grid Grid.Row="3" Margin="10,0,10,7">
@@ -102,8 +103,8 @@
                     </ItemsControl>
                 </ScrollViewer>
                 <StackPanel Visibility="{Binding HasEventTimers, Converter={StaticResource InverseBoolToVisibility}}" HorizontalAlignment="Center" VerticalAlignment="Center">
-                    <TextBlock Text="КАЛЕНДАРЬ ЕЩЁ НЕ СИНХРОНИЗИРОВАН" FontSize="14" FontWeight="Bold" Foreground="#FFB7A66F" HorizontalAlignment="Center" />
-                    <TextBlock Text="Войдите на персонажа — часы сервера считаются из игрового пакета" Margin="0,6,0,0" FontSize="11" Foreground="#FF929CA1" />
+                    <TextBlock Text="{services:BilingualText English='CALENDAR NOT SYNCHRONIZED YET', Russian='КАЛЕНДАРЬ ЕЩЁ НЕ СИНХРОНИЗИРОВАН'}" FontSize="14" FontWeight="Bold" Foreground="#FFB7A66F" HorizontalAlignment="Center" />
+                    <TextBlock Text="{services:BilingualText English='Log in to a character — server time comes from a game packet', Russian='Войдите на персонажа — часы сервера считаются из игрового пакета'}" Margin="0,6,0,0" FontSize="11" Foreground="#FF929CA1" />
                 </StackPanel>
             </Grid>
 
