@@ -6,7 +6,7 @@ Selected UI textures, icons, fonts, map tiles, names and lookup data originate f
 
 Pet map lookup data and the map-coordinate approach were adapted from the MIT-licensed `SkeeveAN/Aion-DPS-Meter` project. Its license text is retained at `src/Aion2Meter/data/pet-locations/LICENSE-Aion-DPS-Meter.txt`.
 
-Npcap is not redistributed in this repository or its public release archive. Users install it separately from the official Npcap site. Npcap's free license does not permit bundling it with a public third-party product; commercial redistribution requires an OEM license.
+Npcap is not redistributed in this repository or its public release archive. When Npcap is missing, the installer downloads the free graphical installer directly from the official `npcap.com` server, verifies its pinned SHA-256 digest, and launches it for the user. Npcap's free license does not permit bundling or silent redistribution with a public third-party product; fully unattended installation requires an OEM license.
 
 The Windows installer is generated with Inno Setup. Inno Setup is used as a build tool and is not stored in this repository; the generated setup runtime remains subject to the Inno Setup license.
 

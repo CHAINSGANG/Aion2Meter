@@ -7,6 +7,11 @@
 
 #define AppName "Aion II Meter"
 #define AppExeName "Aion2Meter.exe"
+#define NpcapVersion "1.89"
+#define NpcapInstallerName "npcap-1.89.exe"
+#define NpcapDownloadUrl "https://npcap.com/dist/npcap-1.89.exe"
+#define NpcapSha256 "8aed85e900d783d1308506e919587d3e540451947af8a82f2d04f819e44305cc"
+#define NpcapInstallerSize 1325224
 
 [Setup]
 AppId={{9F74F798-26AA-46CF-825E-22E9F2BD9E4D}
@@ -17,10 +22,10 @@ AppPublisher=CHAINSGANG
 AppPublisherURL=https://github.com/CHAINSGANG/Aion2Meter
 AppSupportURL=https://github.com/CHAINSGANG/Aion2Meter/issues
 AppUpdatesURL=https://github.com/CHAINSGANG/Aion2Meter/releases
-DefaultDirName={localappdata}\Programs\Aion2Meter
+DefaultDirName={autopf}\Aion2Meter
 DefaultGroupName={#AppName}
 DisableProgramGroupPage=yes
-PrivilegesRequired=lowest
+PrivilegesRequired=admin
 ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 OutputDir={#RepoRoot}\artifacts\release
@@ -33,6 +38,7 @@ WizardStyle=modern
 WizardSizePercent=105
 CloseApplications=yes
 RestartApplications=no
+SetupLogging=yes
 VersionInfoVersion={#AppVersion}.0
 VersionInfoCompany=CHAINSGANG
 VersionInfoDescription=Aion II Meter Installer
@@ -48,6 +54,9 @@ Name: "desktopicon"; Description: "Создать ярлык на рабочем
 
 [Files]
 Source: "{#RepoRoot}\artifacts\release\Aion2Meter-win-x64\app\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "{#NpcapDownloadUrl}"; DestDir: "{tmp}\Aion2Meter"; DestName: "{#NpcapInstallerName}"; \
+  Hash: "{#NpcapSha256}"; ExternalSize: {#NpcapInstallerSize}; \
+  Flags: external download deleteafterinstall ignoreversion; Check: not IsNpcapInstalled
 
 [Icons]
 Name: "{group}\{#AppName}"; Filename: "{app}\{#AppExeName}"; WorkingDir: "{app}"
@@ -55,7 +64,7 @@ Name: "{group}\Удалить {#AppName}"; Filename: "{uninstallexe}"
 Name: "{autodesktop}\{#AppName}"; Filename: "{app}\{#AppExeName}"; WorkingDir: "{app}"; Tasks: desktopicon
 
 [Run]
-Filename: "https://npcap.com/#download"; Description: "Скачать Npcap с официального сайта (необходим для захвата)"; Flags: postinstall shellexec skipifsilent; Check: not IsNpcapInstalled
+Filename: "{tmp}\Aion2Meter\{#NpcapInstallerName}"; StatusMsg: "Установка официального драйвера Npcap..."; Flags: waituntilterminated; Check: not IsNpcapInstalled
 Filename: "{app}\{#AppExeName}"; Description: "Запустить {#AppName}"; WorkingDir: "{app}"; Flags: postinstall nowait skipifsilent; Check: IsNpcapInstalled
 
 [UninstallDelete]
@@ -72,5 +81,13 @@ procedure InitializeWizard;
 begin
   if not IsNpcapInstalled then
     WizardForm.WelcomeLabel2.Caption := WizardForm.WelcomeLabel2.Caption + #13#10#13#10 +
-      'Npcap пока не установлен. После установки метра можно открыть официальную страницу Npcap прямо из последнего шага мастера.';
+      'Npcap пока не установлен. Мастер сам скачает Npcap {#NpcapVersion} с официального сервера, проверит SHA-256 и откроет его установку. Браузер не потребуется.';
+end;
+
+procedure CurPageChanged(CurPageID: Integer);
+begin
+  if (CurPageID = wpFinished) and (not IsNpcapInstalled) then
+    WizardForm.FinishedLabel.Caption :=
+      'Aion II Meter установлен, но установка Npcap не была завершена. ' +
+      'Запустите этот установщик ещё раз и завершите мастер Npcap — без драйвера захват трафика не работает.';
 end;
