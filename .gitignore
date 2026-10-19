@@ -1,0 +1,36 @@
+bin/
+obj/
+.vs/
+.idea/
+.vscode/
+*.user
+*.suo
+*.log
+artifacts/
+captures/
+sessions/
+/tools/
+
+# Local publish output accidentally produced at the repository root.
+/*.dll
+/*.exe
+/*.pdb
+/*.deps.json
+/*.runtimeconfig.json
+/cs/
+/de/
+/es/
+/fr/
+/it/
+/ja/
+/ko/
+/pl/
+/pt-BR/
+/ru/
+/tr/
+/zh-Hans/
+/zh-Hant/
+/data/
+
+# Local UI review captures.
+/*.png

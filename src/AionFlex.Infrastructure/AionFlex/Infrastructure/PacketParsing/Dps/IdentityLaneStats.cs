@@ -1,0 +1,3 @@
+namespace AionFlex.Infrastructure.PacketParsing.Dps;
+
+public readonly record struct IdentityLaneStats(long Candidates, long RatioRejected, long OverCap, long DecodeAttempts, long Decoded, long DecodeFailed, long PlayerInfoRecords, long NestedSkipped, long StreamsEvicted, long EvictedWithPending, long Errors, int MaxRetainedBytes, long Named, long AlreadyKnown, long LocalSkipped, long DecodeRejected, long SubFloorSkipped, long PendingRefused, int MaxPendingSeen, long SpawnRecords, long Spawned, long SpawnAlreadyDecoded, long SpawnSummonSkipped, long SpawnRemovedSkipped, long SpawnDecodeRejected, long LocalRecords, long LocalStatsApplied, long LocalStatsAlreadyKnown, long LocalStatsNotBound, long LocalStatsRejected, long LocalBound, long LocalBindPreviouslyBound);

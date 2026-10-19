@@ -1,0 +1,488 @@
+{
+  "_comment": "Theostone (item proc) skills. Auto-extracted from game L10N data. Code 3000000 is the normalized fallback for sliding-window skill resolution.",
+  "3000000": {
+    "en": "Theostone",
+    "ko": "신석",
+    "zh": "神石"
+  },
+  "3000017": {
+    "en": "Theostone: Zikel's Vestige",
+    "ko": "신석: 지켈의 편린",
+    "zh": "神石：吉凱爾的片段"
+  },
+  "3000018": {
+    "en": "Theostone: Tassin's Command",
+    "ko": "신석: 타신의 명령",
+    "zh": "神石：塔辛的命令"
+  },
+  "3000019": {
+    "en": "Theostone: Ulgorn's Will",
+    "ko": "신석: 울고른의 의지",
+    "zh": "神石：鄔爾古倫的意志"
+  },
+  "3000020": {
+    "en": "Theostone: Aultross's Promise",
+    "ko": "신석: 아울트로스의 약속",
+    "zh": "神石：奧特羅斯的約定"
+  },
+  "3000021": {
+    "en": "Theostone: Bargott's Ember",
+    "ko": "신석: 바고트의 불씨",
+    "zh": "神石：巴考特的火種"
+  },
+  "3000022": {
+    "en": "Theostone: Aulvicar's Hex",
+    "ko": "신석: 아울라프리의 주술",
+    "zh": "神石：阿爾拉弗里的咒術"
+  },
+  "3000023": {
+    "en": "Theostone: Gartua's Strength",
+    "ko": "신석: 가르투아의 힘",
+    "zh": "神石：卡爾吐亞的力量"
+  },
+  "3000024": {
+    "en": "Theostone: Rathman's Greed",
+    "ko": "신석: 라트만의 욕심",
+    "zh": "神石：萊特曼的野心"
+  },
+  "3000117": {
+    "en": "Theostone: Traufnir's Courage",
+    "ko": "신석: 트라우프니르의 용기",
+    "zh": "神石：喬伏尼的勇氣"
+  },
+  "3000118": {
+    "en": "Theostone: Sif's Knowledge",
+    "ko": "신석: 시프의 지식",
+    "zh": "神石：希芙的知識"
+  },
+  "3000119": {
+    "en": "Theostone: Freyr's Wisdom",
+    "ko": "신석: 프레이르의 지혜",
+    "zh": "神石：普萊爾的智慧"
+  },
+  "3000120": {
+    "en": "Theostone: Sigyn's Brilliance",
+    "ko": "신석: 시긴의 영특",
+    "zh": "神石：希琴的英明"
+  },
+  "3000121": {
+    "en": "Theostone: Boreas's Encouragement",
+    "ko": "신석: 보레아스의 격려",
+    "zh": "神石：布雷亞斯的激勵"
+  },
+  "3000122": {
+    "en": "Theostone: Charna's Acumen",
+    "ko": "신석: 헤카테의 총명",
+    "zh": "神石：海格黛的聰明"
+  },
+  "3000123": {
+    "en": "Theostone: Thrasymedes's Wisdom",
+    "ko": "신석: 트라시메데스의 현명",
+    "zh": "神石：崔希梅塔斯的賢明"
+  },
+  "3000124": {
+    "en": "Theostone: Jumentis's Dexterity",
+    "ko": "신석: 유벤투스의 민첩",
+    "zh": "神石：尤班特斯的敏捷"
+  },
+  "3000217": {
+    "en": "Theostone: Tiamat's Rage",
+    "ko": "신석: 티아마트의 격분",
+    "zh": "神石：提亞馬特的激憤"
+  },
+  "3000218": {
+    "en": "Theostone: Triniel's Rationality",
+    "ko": "신석: 트리니엘의 이성",
+    "zh": "神石：崔妮爾的理性"
+  },
+  "3000219": {
+    "en": "Theostone: Vaizel's Oath",
+    "ko": "신석: 바이젤의 맹세",
+    "zh": "神石：白傑爾的盟誓"
+  },
+  "3000220": {
+    "en": "Theostone: Meslamtaeda's Regret",
+    "ko": "신석: 메스람타에다의 후회",
+    "zh": "神石：梅斯蘭泰達的懊悔"
+  },
+  "3000221": {
+    "en": "Theostone: Tiamat's Counterstrike",
+    "ko": "신석: 티아마트의 반격",
+    "zh": "神石：提亞馬特的反擊"
+  },
+  "3000222": {
+    "en": "Theostone: Marchutan's Justice",
+    "ko": "신석: 마르쿠탄의 공정",
+    "zh": "神石：瑪爾庫坦的公正"
+  },
+  "3000223": {
+    "en": "Theostone: Yustiel's Compassion",
+    "ko": "신석: 유스티엘의 온정",
+    "zh": "神石：尤斯迪埃的溫情"
+  },
+  "3000224": {
+    "en": "Theostone: Beritra's Selfishness",
+    "ko": "신석: 브리트라의 이기심",
+    "zh": "神石：布里特拉的私心"
+  },
+  "3001007": {
+    "en": "Theostone: Kaisinel's Vestige",
+    "ko": "신석: 카이시넬의 편린",
+    "zh": "神石：凱西內爾的片段"
+  },
+  "3001008": {
+    "en": "Theostone: Gerod's Curse",
+    "ko": "신석: 게로드의 사술",
+    "zh": "神石：凱洛特的邪術"
+  },
+  "3001009": {
+    "en": "Theostone: Perion's Tragedy",
+    "ko": "신석: 페리온의 비극",
+    "zh": "神石：佩里翁的悲劇"
+  },
+  "3001010": {
+    "en": "Theostone: Heladrir's Chains",
+    "ko": "신석: 힐라드르의 사슬",
+    "zh": "神石：希爾拉德的鎖鏈"
+  },
+  "3001011": {
+    "en": "Theostone: Aulak's Roar",
+    "ko": "신석: 울라크의 포효",
+    "zh": "神石：烏拉克的咆哮"
+  },
+  "3001012": {
+    "en": "Theostone: Nua's Scheme",
+    "ko": "신석: 누아의 흉계",
+    "zh": "神石：努亞的謀略"
+  },
+  "3001013": {
+    "en": "Theostone: Reda's Tenacity",
+    "ko": "신석: 레다의 집요함",
+    "zh": "神石：雷伊達的執著"
+  },
+  "3001014": {
+    "en": "Theostone: Notun's Craft",
+    "ko": "신석: 노툰의 기교",
+    "zh": "神石：諾頓的技巧"
+  },
+  "3001015": {
+    "en": "Theostone: Santras's Secret",
+    "ko": "신석: 산트라스의 비밀",
+    "zh": "神石：山特拉斯的祕密"
+  },
+  "3001016": {
+    "en": "Theostone: Feruk's Instinct",
+    "ko": "신석: 페르크의 본능",
+    "zh": "神石：佩爾克的本能"
+  },
+  "3001025": {
+    "en": "Theostone: Karemiwen's Stability",
+    "ko": "신석: 카르미웬의 안정",
+    "zh": "神石：卡羅蜜溫的穩定"
+  },
+  "3001026": {
+    "en": "Theostone: Phernos's Compassion",
+    "ko": "신석: 페르노스의 연민",
+    "zh": "神石：菲爾諾斯的憐憫"
+  },
+  "3001027": {
+    "en": "Theostone: Edorin's Prayer",
+    "ko": "신석: 에도린의 기도",
+    "zh": "神石：艾多林的祈禱"
+  },
+  "3001028": {
+    "en": "Theostone: Peregrine's Smile",
+    "ko": "신석: 페레그란의 미소",
+    "zh": "神石：佩雷格蘭的微笑"
+  },
+  "3001029": {
+    "en": "Theostone: Karun's Benediction",
+    "ko": "신석: 카룬의 가호",
+    "zh": "神石：卡倫的加護"
+  },
+  "3001030": {
+    "en": "Theostone: Karemiwen's Escort",
+    "ko": "신석: 카르미웬의 호위",
+    "zh": "神石：卡羅蜜溫的護衛"
+  },
+  "3001031": {
+    "en": "Theostone: Mazion's Trust",
+    "ko": "신석: 마지온의 신뢰",
+    "zh": "神石：麻松的信賴"
+  },
+  "3001032": {
+    "en": "Theostone: Edorin's Battle Cry",
+    "ko": "신석: 에도린의 함성",
+    "zh": "神石：艾多林的喊聲"
+  },
+  "3001033": {
+    "en": "Theostone: Munin's Challenge",
+    "ko": "신석: 무닌의 도전",
+    "zh": "神石：默尼的挑戰"
+  },
+  "3001034": {
+    "en": "Theostone: Mazion's Passion",
+    "ko": "신석: 마지온의 열정",
+    "zh": "神石：麻松的熱情"
+  },
+  "3001035": {
+    "en": "Theostone: Edorin's Understanding",
+    "ko": "신석: 에도린의 이해",
+    "zh": "神石：艾多林的理解"
+  },
+  "3001036": {
+    "en": "Theostone: Peregrine's Smite",
+    "ko": "신석: 페레그란의 강타",
+    "zh": "神石：佩雷格蘭的強擊"
+  },
+  "3001037": {
+    "en": "Theostone: Kijan's Deceit",
+    "ko": "신석: 키잔의 속임수",
+    "zh": "神石：基強的詭計"
+  },
+  "3001107": {
+    "en": "Theostone: Bollvig's Tragedy",
+    "ko": "신석: 라스베르그의 비극",
+    "zh": "神石：拉斯貝爾格的悲劇"
+  },
+  "3001108": {
+    "en": "Theostone: Behemoth's Restraint",
+    "ko": "신석: 베헤모스의 구속",
+    "zh": "神石：貝希莫斯的拘束"
+  },
+  "3001109": {
+    "en": "Theostone: Khrudgelmir's Silence",
+    "ko": "신석: 스루드겔미르의 암묵",
+    "zh": "神石：司魯德蓋彌爾的靜默"
+  },
+  "3001110": {
+    "en": "Theostone: Charna's Root",
+    "ko": "신석: 헤카테의 속박",
+    "zh": "神石：海格黛的束縛"
+  },
+  "3001111": {
+    "en": "Theostone: Fasimedes's Dignity",
+    "ko": "신석: 파시메데스의 위엄",
+    "zh": "神石：帕西美達斯的威嚴"
+  },
+  "3001112": {
+    "en": "Theostone: Vidar's Dignity",
+    "ko": "신석: 비다르의 존엄",
+    "zh": "神石：畢達爾的尊嚴"
+  },
+  "3001113": {
+    "en": "Theostone: Deltras's Loyalty",
+    "ko": "신석: 델트라스의 충성",
+    "zh": "神石：泰爾拉斯的忠誠"
+  },
+  "3001114": {
+    "en": "Theostone: Io's Sadness",
+    "ko": "신석: 이오의 슬픔",
+    "zh": "神石：伊奧的悲傷"
+  },
+  "3001115": {
+    "en": "Theostone: Orissan's Blood",
+    "ko": "신석: 오릿사의 피",
+    "zh": "神石：奧理薩的血"
+  },
+  "3001116": {
+    "en": "Theostone: Mahisha's Wrath",
+    "ko": "신석: 마히샤의 분노",
+    "zh": "神石：瑪希薩的憤怒"
+  },
+  "3001125": {
+    "en": "Theostone: Ludra's Deception",
+    "ko": "신석: 루드라의 기만",
+    "zh": "神石：盧德萊的欺瞞"
+  },
+  "3001126": {
+    "en": "Theostone: Jumentis's Craft",
+    "ko": "신석: 유벤투스의 공작",
+    "zh": "神石：尤班特斯的策畫"
+  },
+  "3001127": {
+    "en": "Theostone: Thrasymedes's Compromise",
+    "ko": "신석: 트라시메데스의 타협",
+    "zh": "神石：崔希梅塔斯的妥協"
+  },
+  "3001128": {
+    "en": "Theostone: Boreas's Conviction",
+    "ko": "신석: 보레아스의 신념",
+    "zh": "神石：布雷亞斯的信念"
+  },
+  "3001129": {
+    "en": "Theostone: Jumentis's Meditation",
+    "ko": "신석: 유벤투스의 묵념",
+    "zh": "神石：尤班特斯的默哀"
+  },
+  "3001130": {
+    "en": "Theostone: Charna's Devotion",
+    "ko": "신석: 헤카테의 헌신",
+    "zh": "神石：海格黛的獻身"
+  },
+  "3001131": {
+    "en": "Theostone: Ahserion's Glory",
+    "ko": "신석: 안트릭샤의 영광",
+    "zh": "神石：安特利夏的光榮"
+  },
+  "3001132": {
+    "en": "Theostone: Vidar's Ritual",
+    "ko": "신석: 비다르의 의식",
+    "zh": "神石：畢達爾的意識"
+  },
+  "3001133": {
+    "en": "Theostone: Io's Pain",
+    "ko": "신석: 이오의 고통",
+    "zh": "神石：伊奧的痛苦"
+  },
+  "3001134": {
+    "en": "Theostone: Freyr's Despair",
+    "ko": "신석: 프레이르의 절망",
+    "zh": "神石：普萊爾的絕望"
+  },
+  "3001135": {
+    "en": "Theostone: Khrudgelmir's Stimulation",
+    "ko": "신석: 스루드겔미르의 자극",
+    "zh": "神石：司魯德蓋彌爾的刺激"
+  },
+  "3001136": {
+    "en": "Theostone: Orissan's Campaign",
+    "ko": "신석: 오릿사의 출정",
+    "zh": "神石：奧理薩的出征"
+  },
+  "3001137": {
+    "en": "Theostone: Sif's Guile",
+    "ko": "신석: 시프의 교활함",
+    "zh": "神石：希芙的狡猾"
+  },
+  "3001207": {
+    "en": "Theostone: Fregion's Schemes",
+    "ko": "신석: 프레기온의 술책",
+    "zh": "神石：普雷奇翁的計謀"
+  },
+  "3001208": {
+    "en": "Theostone: Ereshkigal's Imprisonment",
+    "ko": "신석: 에레슈키갈의 감금",
+    "zh": "神石：艾萊修奇卡的監禁"
+  },
+  "3001209": {
+    "en": "Theostone: Beritra's Conspiracy",
+    "ko": "신석: 브리트라의 음모",
+    "zh": "神石：布里特拉的陰謀"
+  },
+  "3001210": {
+    "en": "Theostone: Nezekan's March",
+    "ko": "신석: 네자칸의 진군",
+    "zh": "神石：奈薩肯的進軍"
+  },
+  "3001211": {
+    "en": "Theostone: Meslamtaeda's Greed",
+    "ko": "신석: 메스람타에다의 욕심",
+    "zh": "神石：梅斯蘭泰達的野心"
+  },
+  "3001212": {
+    "en": "Theostone: Ereshkigal's Honor",
+    "ko": "신석: 에레슈키갈의 명예",
+    "zh": "神石：艾萊修奇卡的名譽"
+  },
+  "3001213": {
+    "en": "Theostone: Kaisinel's Illusion",
+    "ko": "신석: 카이시넬의 환상",
+    "zh": "神石：凱西內爾的幻象"
+  },
+  "3001214": {
+    "en": "Theostone: Lumiel's Interference",
+    "ko": "신석: 루미엘의 참견",
+    "zh": "神石：露梅爾的干涉"
+  },
+  "3001215": {
+    "en": "Theostone: Zikel's Arrogance",
+    "ko": "신석: 지켈의 오만",
+    "zh": "神石：吉凱爾的傲慢"
+  },
+  "3001216": {
+    "en": "Theostone: Fregion's Strategy",
+    "ko": "신석: 프레기온의 책략",
+    "zh": "神石：普雷奇翁的策略"
+  },
+  "3001225": {
+    "en": "Theostone: Israphel's Poise",
+    "ko": "신석: 이스라펠의 여유",
+    "zh": "神石：伊斯拉佩爾的從容"
+  },
+  "3001226": {
+    "en": "Theostone: Zikel's Hope",
+    "ko": "신석: 지켈의 희망",
+    "zh": "神石：吉凱爾的希望"
+  },
+  "3001227": {
+    "en": "Theostone: Siel's Freedom",
+    "ko": "신석: 시엘의 자유",
+    "zh": "神石：希埃爾的自由"
+  },
+  "3001228": {
+    "en": "Theostone: Ariel's Protection",
+    "ko": "신석: 아리엘의 보호",
+    "zh": "神石：艾瑞爾的保護"
+  },
+  "3001229": {
+    "en": "Theostone: Tiamat's Benevolence",
+    "ko": "신석: 티아마트의 선의",
+    "zh": "神石：提亞馬特的善意"
+  },
+  "3001230": {
+    "en": "Theostone: Israphel's Mercy",
+    "ko": "신석: 이스라펠의 자비",
+    "zh": "神石：伊斯拉佩爾的慈悲"
+  },
+  "3001231": {
+    "en": "Theostone: Siel's Faith",
+    "ko": "신석: 시엘의 믿음",
+    "zh": "神石：希埃爾的信任"
+  },
+  "3001232": {
+    "en": "Theostone: Kaisinel's Judgment",
+    "ko": "신석: 카이시넬의 판단",
+    "zh": "神石：凱西內爾的判斷"
+  },
+  "3001233": {
+    "en": "Theostone: Ereshkigal's Inquiry",
+    "ko": "신석: 에레슈키갈의 탐구",
+    "zh": "神石：艾萊修奇卡的探求"
+  },
+  "3001234": {
+    "en": "Theostone: Zikel's Strategy",
+    "ko": "신석: 지켈의 전략",
+    "zh": "神石：吉凱爾的戰略"
+  },
+  "3001235": {
+    "en": "Theostone: Ariel's Focus",
+    "ko": "신석: 아리엘의 집중",
+    "zh": "神石：艾瑞爾的集中"
+  },
+  "3001236": {
+    "en": "Theostone: Siel's Wrath",
+    "ko": "신석: 시엘의 분노",
+    "zh": "神石：希埃爾的憤怒"
+  },
+  "3001237": {
+    "en": "Theostone: Fregion's Insult",
+    "ko": "신석: 프레기온의 모욕",
+    "zh": "神石：普雷奇翁的侮辱"
+  },
+  "140500001": {
+    "en": "Theostone Companion: Freyr's Wisdom",
+    "ko": "신석 동행: 프레이르의 지혜",
+    "zh": "神石同伴：普萊爾的智慧"
+  },
+  "161400001": {
+    "en": "Jointstrike: Curse",
+    "ko": "합격: 저주",
+    "zh": "合擊：詛咒"
+  },
+  "167800011": {
+    "en": "Element Unification",
+    "ko": "원소 통합",
+    "zh": "元素統合"
+  }
+}

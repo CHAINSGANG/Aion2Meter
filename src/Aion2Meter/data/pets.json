@@ -1,0 +1,2426 @@
+{
+  "1001": {
+    "en": "Black Dragon",
+    "group": "Special_01",
+    "ko": "블랙 드래곤",
+    "name": "BlackDragon_01",
+    "type": "Special",
+    "zh": "黑龍"
+  },
+  "1002": {
+    "en": "Krall Laborer",
+    "group": "Intellect_01",
+    "ko": "크랄 노역꾼",
+    "name": "KrallReg_01",
+    "type": "Intellect",
+    "zh": "克拉爾奴工"
+  },
+  "1003": {
+    "en": "Forest Specter",
+    "group": "Nature_01",
+    "ko": "숲의 혼령",
+    "name": "ForestWisp_01",
+    "type": "Nature",
+    "zh": "森林魂靈"
+  },
+  "1004": {
+    "en": "Fossa",
+    "group": "Feral_01",
+    "ko": "포사",
+    "name": "Fossa_01",
+    "type": "Feral",
+    "zh": "波沙"
+  },
+  "1005": {
+    "en": "Klaw",
+    "group": "Intellect_01",
+    "ko": "뉴트",
+    "name": "Neuth_01",
+    "type": "Intellect",
+    "zh": "紐特"
+  },
+  "1006": {
+    "en": "Sparkie",
+    "group": "Feral_01",
+    "ko": "스파키",
+    "name": "SparkyOd_01",
+    "type": "Feral",
+    "zh": "光蟲"
+  },
+  "1007": {
+    "en": "Potcrab",
+    "group": "Feral_01",
+    "ko": "캔서리드",
+    "name": "Crab_01",
+    "type": "Feral",
+    "zh": "肯索利德"
+  },
+  "1008": {
+    "en": "Baby Odyle Spider",
+    "group": "Feral_01",
+    "ko": "새끼 오드 거미",
+    "name": "OdSpider_01",
+    "type": "Feral",
+    "zh": "小奧德蜘蛛"
+  },
+  "1009": {
+    "en": "Kernon",
+    "group": "Feral_01",
+    "ko": "케르논",
+    "name": "Keneir_01",
+    "type": "Feral",
+    "zh": "凱勒農"
+  },
+  "1010": {
+    "en": "Manduri Fighter",
+    "group": "Intellect_01",
+    "ko": "만두리 싸움꾼",
+    "name": "ManduriWar_01",
+    "type": "Intellect",
+    "zh": "曼杜里打手"
+  },
+  "1011": {
+    "en": "Skyray",
+    "group": "Feral_01",
+    "ko": "드리톤",
+    "name": "Skyray_01",
+    "type": "Feral",
+    "zh": "德利頓"
+  },
+  "1012": {
+    "en": "Fungie",
+    "group": "Nature_01",
+    "ko": "펑기",
+    "name": "Fungy_01",
+    "type": "Nature",
+    "zh": "波奇"
+  },
+  "1013": {
+    "en": "Swarm",
+    "group": "Trans_01",
+    "ko": "스웜",
+    "name": "AbyssSwarm_01",
+    "type": "Trans",
+    "zh": "蟲子"
+  },
+  "1014": {
+    "en": "Drakan Guard Dog",
+    "group": "Feral_01",
+    "ko": "드라칸 경비견",
+    "name": "BeritraC_03",
+    "type": "Feral",
+    "zh": "德拉坎警備犬"
+  },
+  "1015": {
+    "en": "Kailin",
+    "group": "Feral_01",
+    "ko": "카이린",
+    "name": "Kailin_01",
+    "type": "Feral",
+    "zh": "卡伊琳"
+  },
+  "1016": {
+    "en": "Slink",
+    "group": "Feral_01",
+    "ko": "레피스마",
+    "name": "Lepisma_01",
+    "type": "Feral",
+    "zh": "蜥蜴"
+  },
+  "1017": {
+    "en": "Krall Warshaman",
+    "group": "Intellect_01",
+    "ko": "크랄 주술병",
+    "name": "KrallPrst_01",
+    "type": "Intellect",
+    "zh": "克拉爾咒術兵"
+  },
+  "1018": {
+    "en": "Varg Berserker",
+    "group": "Intellect_01",
+    "ko": "바르그 광전사",
+    "name": "Varg_03",
+    "type": "Intellect",
+    "zh": "座狼狂戰士"
+  },
+  "1021": {
+    "en": "Aberrant Odyle Spider",
+    "group": "Feral_01",
+    "ko": "변종 오드 거미",
+    "name": "OdSpider_04",
+    "type": "Feral",
+    "zh": "變種奧德蜘蛛"
+  },
+  "1022": {
+    "en": "Crasaur",
+    "group": "Feral_01",
+    "ko": "파이니",
+    "name": "Phaini_01",
+    "type": "Feral",
+    "zh": "蛇頸龍"
+  },
+  "1025": {
+    "en": "Mutated Aberrant Odyle Spider",
+    "group": "Feral_01",
+    "ko": "변이된 변종 오드 거미",
+    "name": "OdSpider_04_V01",
+    "type": "Feral",
+    "zh": "變異的變種奧德蜘蛛"
+  },
+  "1026": {
+    "en": "Krall Warrior",
+    "group": "Intellect_01",
+    "ko": "크랄 전사",
+    "name": "KrallWar_01",
+    "type": "Intellect",
+    "zh": "克拉爾戰士"
+  },
+  "1027": {
+    "en": "Withered Agrint",
+    "group": "Nature_01",
+    "ko": "메마른 어그린트",
+    "name": "Agrint_02",
+    "type": "Nature",
+    "zh": "乾枯的奧格林特"
+  },
+  "1028": {
+    "en": "Krao Mutant",
+    "group": "Trans_01",
+    "ko": "크라오 변이체",
+    "name": "KraoElite_01",
+    "type": "Trans",
+    "zh": "克勞變異體"
+  },
+  "1029": {
+    "en": "Klaw Scout",
+    "group": "Intellect_01",
+    "ko": "뉴트 정찰병",
+    "name": "Neuth_02",
+    "type": "Intellect",
+    "zh": "紐特偵察兵"
+  },
+  "1030": {
+    "en": "Nagarant Guardian Warrior",
+    "group": "Intellect_01",
+    "ko": "나가란트 수호전사",
+    "name": "NagaElite_04",
+    "type": "Intellect",
+    "zh": "納迦蘭特守護戰士"
+  },
+  "1031": {
+    "en": "Konutin Worker",
+    "group": "Nature_01",
+    "ko": "코누티 일꾼",
+    "name": "Conuti_02",
+    "type": "Nature",
+    "zh": "可努提工人"
+  },
+  "1032": {
+    "en": "Elite Keneire",
+    "group": "Feral_01",
+    "ko": "정예 케네이르",
+    "name": "Keneir_01_V01",
+    "type": "Feral",
+    "zh": "精銳凱尼爾"
+  },
+  "1033": {
+    "en": "Elite Manduri Fighter",
+    "group": "Intellect_01",
+    "ko": "정예 만두리 싸움꾼",
+    "name": "ManduriWar_01_V01",
+    "type": "Intellect",
+    "zh": "精銳曼杜里打手"
+  },
+  "1034": {
+    "en": "Giant Sparkie",
+    "group": "Feral_01",
+    "ko": "거대 스파키",
+    "name": "SparkyOd_02",
+    "type": "Feral",
+    "zh": "巨大光蟲"
+  },
+  "1035": {
+    "en": "Skama",
+    "group": "Feral_01",
+    "ko": "스카마",
+    "name": "Fish_01",
+    "type": "Feral",
+    "zh": "斯卡馬"
+  },
+  "1036": {
+    "en": "Lupyllini",
+    "group": "Feral_01",
+    "ko": "루필리니",
+    "name": "Lufilini_02",
+    "type": "Feral",
+    "zh": "路比利尼"
+  },
+  "1037": {
+    "en": "Male Crestlich",
+    "group": "Feral_01",
+    "ko": "수컷 크레스틀리치",
+    "name": "Crestlich_02",
+    "type": "Feral",
+    "zh": "公魁鳥"
+  },
+  "1038": {
+    "en": "Airon",
+    "group": "Feral_01",
+    "ko": "하이브",
+    "name": "Airon_01",
+    "type": "Feral",
+    "zh": "海伊布"
+  },
+  "1039": {
+    "en": "Crestlich",
+    "group": "Feral_01",
+    "ko": "크레스틀리치",
+    "name": "Crestlich_01",
+    "type": "Feral",
+    "zh": "魁鳥"
+  },
+  "1040": {
+    "en": "Aullaeu Shaman",
+    "group": "Intellect_01",
+    "ko": "아울라우 주술사",
+    "name": "OwlMag_01",
+    "type": "Intellect",
+    "zh": "阿爾拉烏咒術士"
+  },
+  "1041": {
+    "en": "Cave Bat",
+    "group": "Feral_01",
+    "ko": "동굴 박쥐",
+    "name": "CaveBat_01",
+    "type": "Feral",
+    "zh": "洞穴蝙蝠"
+  },
+  "1042": {
+    "en": "Ursus",
+    "group": "Feral_01",
+    "ko": "우르서스",
+    "name": "Ursuss_01",
+    "type": "Feral",
+    "zh": "烏爾蘇"
+  },
+  "1043": {
+    "en": "Elite Ursus",
+    "group": "Feral_01",
+    "ko": "정예 우르서스",
+    "name": "UrsussElite_01",
+    "type": "Feral",
+    "zh": "精銳烏爾蘇"
+  },
+  "1044": {
+    "en": "Aultross's Doppelganger",
+    "group": "Intellect_01",
+    "ko": "아울트로스의 분신",
+    "name": "Owltros_02",
+    "type": "Intellect",
+    "zh": "奧特羅斯分身"
+  },
+  "1045": {
+    "en": "Sylphen",
+    "group": "Feral_01",
+    "ko": "뮤타",
+    "name": "Muta_01",
+    "type": "Feral",
+    "zh": "飛螳"
+  },
+  "1046": {
+    "en": "Armadon",
+    "group": "Feral_01",
+    "ko": "아르마돈",
+    "name": "Mole_01",
+    "type": "Feral",
+    "zh": "亞勒馬頓"
+  },
+  "1047": {
+    "en": "Aberrant Armadon",
+    "group": "Feral_01",
+    "ko": "변종 아르마돈",
+    "name": "Mole_01_V01",
+    "type": "Feral",
+    "zh": "變種亞勒馬頓"
+  },
+  "1048": {
+    "en": "Forest Spirit",
+    "group": "Nature_01",
+    "ko": "숲 정령",
+    "name": "ForestEle_01",
+    "type": "Nature",
+    "zh": "森林精靈"
+  },
+  "1049": {
+    "en": "Mutated Forest Spirit",
+    "group": "Nature_01",
+    "ko": "변이된 숲 정령",
+    "name": "ForestEle_01_V01",
+    "type": "Nature",
+    "zh": "變異的森林精靈"
+  },
+  "1050": {
+    "en": "Gravi",
+    "group": "Nature_01",
+    "ko": "그라비",
+    "name": "Gravi_01",
+    "type": "Nature",
+    "zh": "格拉比"
+  },
+  "1051": {
+    "en": "Magic Gravi",
+    "group": "Nature_01",
+    "ko": "마법 그라비",
+    "name": "Gravi_02",
+    "type": "Nature",
+    "zh": "魔法格拉比"
+  },
+  "1052": {
+    "en": "Large Leaf Gravi",
+    "group": "Nature_01",
+    "ko": "큰 잎사귀 그라비",
+    "name": "Gravi_03",
+    "type": "Nature",
+    "zh": "大葉格拉比"
+  },
+  "1053": {
+    "en": "Aberrant Potcrab",
+    "group": "Feral_01",
+    "ko": "변종 캔서리드",
+    "name": "Crab_01_V01",
+    "type": "Feral",
+    "zh": "變種肯索利德"
+  },
+  "1054": {
+    "en": "Mumu Warrior",
+    "group": "Intellect_01",
+    "ko": "무무 전사",
+    "name": "SkurvWar_01",
+    "type": "Intellect",
+    "zh": "姆姆戰士"
+  },
+  "1055": {
+    "en": "Grave Rat",
+    "group": "Feral_01",
+    "ko": "무덤 쥐",
+    "name": "GraveRat_01",
+    "type": "Feral",
+    "zh": "墓鼠"
+  },
+  "1056": {
+    "en": "Drakan Probe",
+    "group": "Trans_01",
+    "ko": "드라칸 탐사기",
+    "name": "BeritraC_06",
+    "type": "Trans",
+    "zh": "德拉坎探查器"
+  },
+  "1057": {
+    "en": "Coradon",
+    "group": "Feral_01",
+    "ko": "코라돈",
+    "name": "Coradon_01",
+    "type": "Feral",
+    "zh": "可拉敦"
+  },
+  "1058": {
+    "en": "Black Smoke Murute",
+    "group": "Nature_01",
+    "ko": "검은연기 무르트",
+    "name": "AshGuard_01",
+    "type": "Nature",
+    "zh": "黑煙穆勒特"
+  },
+  "1059": {
+    "en": "Giant Bee",
+    "group": "Feral_01",
+    "ko": "왕벌",
+    "name": "Bee_01",
+    "type": "Feral",
+    "zh": "蜂王"
+  },
+  "1060": {
+    "en": "Starturtle",
+    "group": "Feral_01",
+    "ko": "스타터틀",
+    "name": "Starturtle_01",
+    "type": "Feral",
+    "zh": "星龜"
+  },
+  "1061": {
+    "en": "Slime",
+    "group": "Trans_01",
+    "ko": "슬라임",
+    "name": "Slime_01",
+    "type": "Trans",
+    "zh": "史萊姆"
+  },
+  "1062": {
+    "en": "Contaminated Slime",
+    "group": "Trans_01",
+    "ko": "오염된 슬라임",
+    "name": "Slime_02",
+    "type": "Trans",
+    "zh": "被汙染的史萊姆"
+  },
+  "1063": {
+    "en": "Vigilant Oculazen",
+    "group": "Trans_01",
+    "ko": "감시의 오큘라젠",
+    "name": "Oculazen_01",
+    "type": "Trans",
+    "zh": "監視眼魔"
+  },
+  "1064": {
+    "en": "Oculazen",
+    "group": "Trans_01",
+    "ko": "오큘라젠",
+    "name": "Oculazen_02",
+    "type": "Trans",
+    "zh": "眼魔"
+  },
+  "1065": {
+    "en": "Biruta",
+    "group": "Intellect_01",
+    "ko": "비로타",
+    "name": "VirotaWar_01",
+    "type": "Intellect",
+    "zh": "維若塔"
+  },
+  "1066": {
+    "en": "Papis",
+    "group": "Feral_01",
+    "ko": "파피스",
+    "name": "Papis_01",
+    "type": "Feral",
+    "zh": "帕皮斯"
+  },
+  "1067": {
+    "en": "Scorpion",
+    "group": "Feral_01",
+    "ko": "스콜피온",
+    "name": "Scorpion_01",
+    "type": "Feral",
+    "zh": "蠍獸"
+  },
+  "1068": {
+    "en": "Krao Test Subject",
+    "group": "Trans_01",
+    "ko": "크라오 실험체",
+    "name": "KraoWar_01",
+    "type": "Trans",
+    "zh": "克勞實驗體"
+  },
+  "1069": {
+    "en": "Stone Spirit",
+    "group": "Nature_01",
+    "ko": "돌 정령",
+    "name": "EarthEleOd_01",
+    "type": "Nature",
+    "zh": "石精靈"
+  },
+  "1071": {
+    "en": "Cadaver Insectoid",
+    "group": "Feral_01",
+    "ko": "시체 벌레",
+    "name": "AltBug_01",
+    "type": "Feral",
+    "zh": "屍蟲"
+  },
+  "1072": {
+    "en": "Tog",
+    "group": "Feral_01",
+    "ko": "토그",
+    "name": "Tog_01",
+    "type": "Feral",
+    "zh": "托格"
+  },
+  "1073": {
+    "en": "Nepenthes",
+    "group": "Nature_01",
+    "ko": "네펜데스",
+    "name": "Rafflesia_01",
+    "type": "Nature",
+    "zh": "豬籠草"
+  },
+  "1074": {
+    "en": "Kuru Worker",
+    "group": "Intellect_01",
+    "ko": "쿠루 일꾼",
+    "name": "Kuru_01",
+    "type": "Intellect",
+    "zh": "庫魯工人"
+  },
+  "1075": {
+    "en": "Kuru Tinkerer",
+    "group": "Intellect_01",
+    "ko": "쿠루 잡역꾼",
+    "name": "Kuru_02",
+    "type": "Intellect",
+    "zh": "庫魯雜工"
+  },
+  "1077": {
+    "en": "Harcon",
+    "group": "Trans_01",
+    "ko": "하르콘",
+    "name": "KraoElite_03",
+    "type": "Trans",
+    "zh": "哈爾坤"
+  },
+  "1078": {
+    "en": "Urugugu Brawler",
+    "group": "Intellect_01",
+    "ko": "우루구구 투사",
+    "name": "OwlSoldier_09",
+    "type": "Intellect",
+    "zh": "烏努庫庫鬥士"
+  },
+  "1079": {
+    "en": "Ultimate Wind Spirit",
+    "group": "Nature_01",
+    "ko": "최상급 바람의 정령",
+    "name": "WindEle_04",
+    "type": "Nature",
+    "zh": "最上級風之精靈"
+  },
+  "1080": {
+    "en": "Sentinel K'nash",
+    "group": "Intellect_01",
+    "ko": "감시병기 크나쉬",
+    "name": "BeritraD_04",
+    "type": "Intellect",
+    "zh": "監視兵器克納許"
+  },
+  "1081": {
+    "en": "Dionae",
+    "group": "Nature_01",
+    "ko": "디오나에",
+    "name": "Dionaea_01",
+    "type": "Nature",
+    "zh": "迪歐那耶"
+  },
+  "1082": {
+    "en": "Ultimate Fire Spirit",
+    "group": "Nature_01",
+    "ko": "최상급 불의 정령",
+    "name": "FireEle_04",
+    "type": "Nature",
+    "zh": "最上級火之精靈"
+  },
+  "1083": {
+    "en": "Spider",
+    "group": "Feral_01",
+    "ko": "거미",
+    "name": "Spider_01",
+    "type": "Feral",
+    "zh": "蜘蛛"
+  },
+  "1084": {
+    "en": "Kalgolem",
+    "group": "Trans_01",
+    "ko": "칼크겔름",
+    "name": "Kalgolem_01",
+    "type": "Trans",
+    "zh": "卡克蓋崙"
+  },
+  "1086": {
+    "en": "Fungen",
+    "group": "Nature_01",
+    "ko": "펑거스",
+    "name": "Fungus_01",
+    "type": "Nature",
+    "zh": "波克斯"
+  },
+  "1087": {
+    "en": "Pino",
+    "group": "Trans_01",
+    "ko": "피노",
+    "name": "Pino_01",
+    "type": "Trans",
+    "zh": "皮諾"
+  },
+  "1088": {
+    "en": "Pino Worker",
+    "group": "Trans_01",
+    "ko": "피노 일꾼",
+    "name": "Pino_02",
+    "type": "Trans",
+    "zh": "皮諾工人"
+  },
+  "1089": {
+    "en": "Aberrant Skama",
+    "group": "Feral_01",
+    "ko": "변종 스카마",
+    "name": "Fish_01_V01",
+    "type": "Feral",
+    "zh": "變種斯卡馬"
+  },
+  "1090": {
+    "en": "Ultimate Water Spirit",
+    "group": "Nature_01",
+    "ko": "최상급 물의 정령",
+    "name": "WaterEle_04",
+    "type": "Nature",
+    "zh": "最上級水之精靈"
+  },
+  "1091": {
+    "en": "Red Spark Ignus",
+    "group": "Nature_01",
+    "ko": "붉은불꽃 이그누스",
+    "name": "FireGuard_01",
+    "type": "Nature",
+    "zh": "紅火花伊格努斯"
+  },
+  "1092": {
+    "en": "Lesser Wind Spirit",
+    "group": "Nature_01",
+    "ko": "하급 바람의 정령",
+    "name": "WindEle_01",
+    "type": "Nature",
+    "zh": "下級風之精靈"
+  },
+  "1093": {
+    "en": "Phantasmal Lakshmi",
+    "group": "Intellect_01",
+    "ko": "몽환의 라크슈미",
+    "name": "NagaElite_01",
+    "type": "Intellect",
+    "zh": "夢幻拉克修米"
+  },
+  "1094": {
+    "en": "Intermediate Wind Spirit",
+    "group": "Nature_01",
+    "ko": "중급 바람의 정령",
+    "name": "WindEle_02",
+    "type": "Nature",
+    "zh": "中級風之精靈"
+  },
+  "1095": {
+    "en": "Superior Wind Spirit",
+    "group": "Nature_01",
+    "ko": "상급 바람의 정령",
+    "name": "WindEle_03",
+    "type": "Nature",
+    "zh": "上級風之精靈"
+  },
+  "1096": {
+    "en": "Superior Fire Spirit",
+    "group": "Nature_01",
+    "ko": "상급 불의 정령",
+    "name": "FireEle_03",
+    "type": "Nature",
+    "zh": "上級火之精靈"
+  },
+  "1097": {
+    "en": "Karnif",
+    "group": "Feral_01",
+    "ko": "칼니프",
+    "name": "Kalnif_01",
+    "type": "Feral",
+    "zh": "劍齒豹"
+  },
+  "1098": {
+    "en": "Modified Karnif",
+    "group": "Feral_01",
+    "ko": "개조된 칼니프",
+    "name": "Kalnif_02",
+    "type": "Feral",
+    "zh": "改造的劍齒豹"
+  },
+  "1099": {
+    "en": "Elite Karnif",
+    "group": "Feral_01",
+    "ko": "정예 칼니프",
+    "name": "KalnifElite_01",
+    "type": "Feral",
+    "zh": "精銳劍齒豹"
+  },
+  "1100": {
+    "en": "Ultimate Earth Spirit",
+    "group": "Nature_01",
+    "ko": "최상급 땅의 정령",
+    "name": "EarthEle_04",
+    "type": "Nature",
+    "zh": "最上級地之精靈"
+  },
+  "1101": {
+    "en": "Forest Guardian",
+    "group": "Nature_01",
+    "ko": "숲의 수호자",
+    "name": "ForestArc_01",
+    "type": "Nature",
+    "zh": "森林守護者"
+  },
+  "1102": {
+    "en": "Dried Up Forest Guardian",
+    "group": "Nature_01",
+    "ko": "말라붙은 숲의 수호자",
+    "name": "ForestArc_01_V01",
+    "type": "Nature",
+    "zh": "乾枯森林守護者"
+  },
+  "1103": {
+    "en": "Pretor Veil Administrator",
+    "group": "Intellect_01",
+    "ko": "프렐 장막 관리자",
+    "name": "PretorBoss_01",
+    "type": "Intellect",
+    "zh": "普雷爾帳幕管理者"
+  },
+  "1104": {
+    "en": "Manduri Trebuchet Worker",
+    "group": "Intellect_01",
+    "ko": "만두리 투석꾼",
+    "name": "ManduriRng_01",
+    "type": "Intellect",
+    "zh": "曼杜里投石工"
+  },
+  "1105": {
+    "en": "Biruta Herbalist",
+    "group": "Intellect_01",
+    "ko": "비로타 약초꾼",
+    "name": "VirotaRag_01",
+    "type": "Intellect",
+    "zh": "維若塔採藥人"
+  },
+  "1106": {
+    "en": "Tayga",
+    "group": "Feral_01",
+    "ko": "류크록",
+    "name": "Tayga_01",
+    "type": "Feral",
+    "zh": "琉克虎"
+  },
+  "1107": {
+    "en": "Krao Seal Guardian",
+    "group": "Trans_01",
+    "ko": "크라오 봉인 수호자",
+    "name": "KraoElite_02",
+    "type": "Trans",
+    "zh": "克勞封印守護者"
+  },
+  "1108": {
+    "en": "Enhanced Krall Combatant",
+    "group": "Intellect_01",
+    "ko": "크랄 강화 전투병",
+    "name": "KrallWar_01_V01",
+    "type": "Intellect",
+    "zh": "克拉爾強化戰鬥兵"
+  },
+  "1109": {
+    "en": "Enhanced Krall Sentry",
+    "group": "Intellect_01",
+    "ko": "크랄 강화 경계병",
+    "name": "KrallWar_01_V02",
+    "type": "Intellect",
+    "zh": "克拉爾強化警戒兵"
+  },
+  "1110": {
+    "en": "Blue Kalgolem",
+    "group": "Trans_01",
+    "ko": "푸른 칼크겔름",
+    "name": "Kalgolem_02",
+    "type": "Trans",
+    "zh": "藍色卡克蓋崙"
+  },
+  "1111": {
+    "en": "Swift Lugi",
+    "group": "Special_01",
+    "ko": "날쌘 루기",
+    "name": "ShugoBeast_01",
+    "type": "Special",
+    "zh": "靈活路奇"
+  },
+  "1112": {
+    "en": "Wandering Merchant Lugi",
+    "group": "Special_01",
+    "ko": "떠돌이 상인 루기",
+    "name": "ShugoBeast_02",
+    "type": "Special",
+    "zh": "漂泊商人路奇"
+  },
+  "1113": {
+    "en": "White Dragon",
+    "group": "Special_01",
+    "ko": "화이트 드래곤",
+    "name": "BlackDragon_01_CV01",
+    "type": "Special",
+    "zh": "白龍"
+  },
+  "1114": {
+    "en": "Ashen Spider",
+    "group": "Feral_01",
+    "ko": "잿빛 거미",
+    "name": "OdSpider_03",
+    "type": "Feral",
+    "zh": "灰色蜘蛛"
+  },
+  "1115": {
+    "en": "Kuru Overseer",
+    "group": "Intellect_01",
+    "ko": "쿠루 감독관",
+    "name": "Kuru_03",
+    "type": "Intellect",
+    "zh": "庫魯監督官"
+  },
+  "1116": {
+    "en": "Withered Branch Spider",
+    "group": "Feral_01",
+    "ko": "마른 가지 거미",
+    "name": "OdSpider_03_V01",
+    "type": "Feral",
+    "zh": "枯枝蜘蛛"
+  },
+  "1117": {
+    "en": "Unstable Spider",
+    "group": "Feral_01",
+    "ko": "불안정한 거미",
+    "name": "Spider_01_V01",
+    "type": "Feral",
+    "zh": "不穩定的蜘蛛"
+  },
+  "1118": {
+    "en": "Aberrant Bee",
+    "group": "Feral_01",
+    "ko": "변종 벌",
+    "name": "Bee_01_V01",
+    "type": "Feral",
+    "zh": "變種蜜蜂"
+  },
+  "1119": {
+    "en": "Aberrant Coradon",
+    "group": "Feral_01",
+    "ko": "변종 코라돈",
+    "name": "Coradon_01_V01",
+    "type": "Feral",
+    "zh": "變種可拉敦"
+  },
+  "1120": {
+    "en": "Young Kailin",
+    "group": "Feral_01",
+    "ko": "어린 카이린",
+    "name": "Kailin_01_V01",
+    "type": "Feral",
+    "zh": "年幼的卡伊琳"
+  },
+  "1121": {
+    "en": "Young Slink",
+    "group": "Feral_01",
+    "ko": "어린 레피스마",
+    "name": "Lepisma_01_V01",
+    "type": "Feral",
+    "zh": "年幼的蜥蜴"
+  },
+  "1122": {
+    "en": "Young Tog",
+    "group": "Feral_01",
+    "ko": "어린 토그",
+    "name": "Tog_01_V01",
+    "type": "Feral",
+    "zh": "年幼的托格"
+  },
+  "1123": {
+    "en": "Young Ursus",
+    "group": "Feral_01",
+    "ko": "어린 우르서스",
+    "name": "Ursuss_01_V01",
+    "type": "Feral",
+    "zh": "年幼的烏爾蘇"
+  },
+  "1124": {
+    "en": "Zaif",
+    "group": "Feral_01",
+    "ko": "자이프",
+    "name": "Zaif_01",
+    "type": "Feral",
+    "zh": "野狼"
+  },
+  "1125": {
+    "en": "Aberrant Zaif",
+    "group": "Feral_01",
+    "ko": "변종 자이프",
+    "name": "Zaif_01_CV02",
+    "type": "Feral",
+    "zh": "變種野狼"
+  },
+  "1126": {
+    "en": "Aberrant Tog",
+    "group": "Feral_01",
+    "ko": "변종 토그",
+    "name": "Tog_01_CV01",
+    "type": "Feral",
+    "zh": "變種托格"
+  },
+  "1127": {
+    "en": "Odyle Stone Spirit",
+    "group": "Nature_01",
+    "ko": "오드 돌 정령",
+    "name": "EarthEleOd_01_CV01",
+    "type": "Nature",
+    "zh": "奧德石精靈"
+  },
+  "1128": {
+    "en": "Drana Slime",
+    "group": "Trans_01",
+    "ko": "드라나 슬라임",
+    "name": "Slime_02_CV01",
+    "type": "Trans",
+    "zh": "德拉那史萊姆"
+  },
+  "1129": {
+    "en": "Drana Swarm",
+    "group": "Trans_01",
+    "ko": "드라나 스웜",
+    "name": "AbyssSwarm_01_CV01",
+    "type": "Trans",
+    "zh": "德拉那蟲子"
+  },
+  "1130": {
+    "en": "Mutated Cadaver Insectoid",
+    "group": "Feral_01",
+    "ko": "변이된 시체 벌레",
+    "name": "AltBug_01_CV02",
+    "type": "Feral",
+    "zh": "變異的屍蟲"
+  },
+  "1131": {
+    "en": "Drana Spore",
+    "group": "Nature_01",
+    "ko": "드라나 포자",
+    "name": "ForestEle_01_CV01",
+    "type": "Nature",
+    "zh": "德拉那孢子"
+  },
+  "1132": {
+    "en": "Ashen Lupyllini",
+    "group": "Feral_01",
+    "ko": "잿빛 루필리니",
+    "name": "Lufilini_02_CV01",
+    "type": "Feral",
+    "zh": "灰色路比利尼"
+  },
+  "1133": {
+    "en": "Forest Dionae",
+    "group": "Nature_01",
+    "ko": "숲 디오나에",
+    "name": "Dionaea_01_CV01",
+    "type": "Nature",
+    "zh": "森林迪歐那耶"
+  },
+  "1134": {
+    "en": "Eternal Coradon",
+    "group": "Feral_01",
+    "ko": "영원의 코라돈",
+    "name": "Coradon_01_V04",
+    "type": "Feral",
+    "zh": "永恆可拉敦"
+  },
+  "1135": {
+    "en": "Ashen Dionae",
+    "group": "Nature_01",
+    "ko": "잿빛 디오나에",
+    "name": "Dionaea_01_V01",
+    "type": "Nature",
+    "zh": "灰色迪歐那耶"
+  },
+  "1136": {
+    "en": "Rafflesia",
+    "group": "Nature_01",
+    "ko": "라플레시아",
+    "name": "Rafflesia_01_CV01",
+    "type": "Nature",
+    "zh": "拉普蕾西亞"
+  },
+  "1137": {
+    "en": "Mumu Worker",
+    "group": "Intellect_01",
+    "ko": "무무 일꾼",
+    "name": "SkurvWar_02",
+    "type": "Intellect",
+    "zh": "姆姆工人"
+  },
+  "1138": {
+    "en": "Mumu Overseer",
+    "group": "Intellect_01",
+    "ko": "무무 감독관",
+    "name": "SkurvWar_04",
+    "type": "Intellect",
+    "zh": "姆姆監督官"
+  },
+  "1139": {
+    "en": "Swamp Monster",
+    "group": "Trans_01",
+    "ko": "늪 괴물",
+    "name": "BigMan_01",
+    "type": "Trans",
+    "zh": "沼澤怪物"
+  },
+  "1140": {
+    "en": "Forest Monster",
+    "group": "Trans_01",
+    "ko": "숲 괴물",
+    "name": "BigMan_01_V01",
+    "type": "Trans",
+    "zh": "森林怪物"
+  },
+  "1141": {
+    "en": "Marsh Targon",
+    "group": "Trans_01",
+    "ko": "늪지 타르곤",
+    "name": "BigMan_01_V02",
+    "type": "Trans",
+    "zh": "沼澤塔勒昆"
+  },
+  "1142": {
+    "en": "Distorted Mutant",
+    "group": "Trans_01",
+    "ko": "일그러진 변이체",
+    "name": "BigMan_01_CV01",
+    "type": "Trans",
+    "zh": "歪曲的變異體"
+  },
+  "1143": {
+    "en": "Mutated Ursus",
+    "group": "Feral_01",
+    "ko": "변이된 우르서스",
+    "name": "Ursuss_01_CV01",
+    "type": "Feral",
+    "zh": "變異的烏爾蘇"
+  },
+  "1144": {
+    "en": "Mutated Forest Guardian",
+    "group": "Nature_01",
+    "ko": "변이된 숲의 수호자",
+    "name": "ForestArc_01_CV01",
+    "type": "Nature",
+    "zh": "變異的森林守護者"
+  },
+  "1145": {
+    "en": "Mutated Insectoid Valka",
+    "group": "Feral_01",
+    "ko": "변이충 발카",
+    "name": "Bug_01",
+    "type": "Feral",
+    "zh": "變異蟲巴爾卡"
+  },
+  "1146": {
+    "en": "Gatekeeper Pinopi",
+    "group": "Trans_01",
+    "ko": "문지기 피노피",
+    "name": "PinoBoss_01",
+    "type": "Trans",
+    "zh": "守門人皮諾彼"
+  },
+  "1147": {
+    "en": "Dratona",
+    "group": "Intellect_01",
+    "ko": "드라토나",
+    "name": "Dratona_01",
+    "type": "Intellect",
+    "zh": "德拉多納"
+  },
+  "1148": {
+    "en": "Drakana Kalgolem",
+    "group": "Trans_01",
+    "ko": "드라카나 칼크겔름",
+    "name": "Kalgolem_01_V02",
+    "type": "Trans",
+    "zh": "德拉卡納卡克蓋崙"
+  },
+  "1149": {
+    "en": "Baikron",
+    "group": "Special_01",
+    "ko": "바이크론",
+    "name": "Bike_01",
+    "type": "Special",
+    "zh": "飛輪"
+  },
+  "1150": {
+    "en": "Azure Baikron",
+    "group": "Special_01",
+    "ko": "감청빛 바이크론",
+    "name": "Bike_01_CV01",
+    "type": "Special",
+    "zh": "紺青色飛輪"
+  },
+  "1151": {
+    "en": "Silver Baikron",
+    "group": "Special_01",
+    "ko": "은빛 바이크론",
+    "name": "Bike_01_CV02",
+    "type": "Special",
+    "zh": "銀色飛輪"
+  },
+  "1152": {
+    "en": "Golden Baikron",
+    "group": "Special_01",
+    "ko": "황금빛 바이크론",
+    "name": "Bike_01_CV03",
+    "type": "Special",
+    "zh": "金黃飛輪"
+  },
+  "1153": {
+    "en": "Drana Mutant Brute",
+    "group": "Trans_01",
+    "ko": "드라나 변이체 덩치",
+    "name": "DranaVar_02",
+    "type": "Trans",
+    "zh": "德拉那變異體大塊頭"
+  },
+  "1154": {
+    "en": "Faded Mutant Brute",
+    "group": "Trans_01",
+    "ko": "빛바랜 변이체 덩치",
+    "name": "DranaVar_02_CV01",
+    "type": "Trans",
+    "zh": "褪色的變異體大塊頭"
+  },
+  "1155": {
+    "en": "Superior Water Spirit",
+    "group": "Nature_01",
+    "ko": "상급 물의 정령",
+    "name": "WaterEle_03",
+    "type": "Nature",
+    "zh": "上級水之精靈"
+  },
+  "1156": {
+    "en": "Elite Klaw",
+    "group": "Intellect_01",
+    "ko": "정예 뉴트",
+    "name": "Neuth_03",
+    "type": "Intellect",
+    "zh": "精銳紐特"
+  },
+  "1157": {
+    "en": "Cadaver Cleaner",
+    "group": "Trans_01",
+    "ko": "시체 청소부",
+    "name": "Imp_01",
+    "type": "Trans",
+    "zh": "屍體清道夫"
+  },
+  "1158": {
+    "en": "Venomous Insect Sram",
+    "group": "Feral_01",
+    "ko": "맹독충 스람",
+    "name": "Bug_02",
+    "type": "Feral",
+    "zh": "劇毒蟲斯拉姆"
+  },
+  "1159": {
+    "en": "Parasite Swarm",
+    "group": "Trans_01",
+    "ko": "기생 스웜",
+    "name": "AbyssSwarm_02",
+    "type": "Trans",
+    "zh": "寄生蟲子"
+  },
+  "1160": {
+    "en": "Drana Contaminant",
+    "group": "Trans_01",
+    "ko": "드라나 오염체",
+    "name": "DranaVar_04",
+    "type": "Trans",
+    "zh": "德拉那汙染體"
+  },
+  "1161": {
+    "en": "Faded Floater",
+    "group": "Trans_01",
+    "ko": "빛바랜 부유체",
+    "name": "DranaVar_04_CV01",
+    "type": "Trans",
+    "zh": "褪色的漂浮體"
+  },
+  "1162": {
+    "en": "Kerubar",
+    "group": "Intellect_01",
+    "ko": "케루빔",
+    "name": "Cherubim_01",
+    "type": "Intellect",
+    "zh": "凱魯賓"
+  },
+  "1163": {
+    "en": "Basilisk",
+    "group": "Feral_01",
+    "ko": "바실리스크",
+    "name": "Basilisk_01",
+    "type": "Feral",
+    "zh": "蜥怪"
+  },
+  "1164": {
+    "en": "Lesser Earth Spirit",
+    "group": "Nature_01",
+    "ko": "하급 땅의 정령",
+    "name": "EarthEle_01",
+    "type": "Nature",
+    "zh": "下級地之精靈"
+  },
+  "1165": {
+    "en": "Intermediate Earth Spirit",
+    "group": "Nature_01",
+    "ko": "중급 땅의 정령",
+    "name": "EarthEle_02",
+    "type": "Nature",
+    "zh": "中級地之精靈"
+  },
+  "1166": {
+    "en": "Superior Earth Spirit",
+    "group": "Nature_01",
+    "ko": "상급 땅의 정령",
+    "name": "EarthEle_03",
+    "type": "Nature",
+    "zh": "上級地之精靈"
+  },
+  "1167": {
+    "en": "Flame Stone Guardian Statue",
+    "group": "Trans_01",
+    "ko": "화염석 수호상",
+    "name": "Gargoyle_01",
+    "type": "Trans",
+    "zh": "火焰石守護像"
+  },
+  "1168": {
+    "en": "Lesser Water Spirit",
+    "group": "Nature_01",
+    "ko": "하급 물의 정령",
+    "name": "WaterEle_01",
+    "type": "Nature",
+    "zh": "下級水之精靈"
+  },
+  "1169": {
+    "en": "Intermediate Water Spirit",
+    "group": "Nature_01",
+    "ko": "중급 물의 정령",
+    "name": "WaterEle_02",
+    "type": "Nature",
+    "zh": "中級水之精靈"
+  },
+  "1170": {
+    "en": "Kerubian",
+    "group": "Intellect_01",
+    "ko": "케루비언",
+    "name": "Cherubim_02",
+    "type": "Intellect",
+    "zh": "凱魯比安"
+  },
+  "1171": {
+    "en": "Kerubiel",
+    "group": "Intellect_01",
+    "ko": "케루비엘",
+    "name": "Cherubim_03",
+    "type": "Intellect",
+    "zh": "凱魯貝爾"
+  },
+  "1172": {
+    "en": "Duduka Worker",
+    "group": "Trans_01",
+    "ko": "두두카 일꾼",
+    "name": "Duduka_01",
+    "type": "Trans",
+    "zh": "杜杜卡工人"
+  },
+  "1173": {
+    "en": "Duduka Trebuchet Worker",
+    "group": "Trans_01",
+    "ko": "두두카 투석병",
+    "name": "Duduka_02",
+    "type": "Trans",
+    "zh": "杜杜卡投石兵"
+  },
+  "1174": {
+    "en": "Drana Predator",
+    "group": "Trans_01",
+    "ko": "드라나 포식자",
+    "name": "DranaVar_03",
+    "type": "Trans",
+    "zh": "德拉那捕食者"
+  },
+  "1175": {
+    "en": "Faded Predator",
+    "group": "Trans_01",
+    "ko": "빛바랜 포식자",
+    "name": "DranaVar_03_CV01",
+    "type": "Trans",
+    "zh": "褪色的捕食者"
+  },
+  "1176": {
+    "en": "Mudthorn",
+    "group": "Trans_01",
+    "ko": "바이올란트",
+    "name": "FafBlood_02_CV01",
+    "type": "Trans",
+    "zh": "刺魔"
+  },
+  "1177": {
+    "en": "Ancient Spirit",
+    "group": "Nature_01",
+    "ko": "고대의 정령",
+    "name": "Gartua_01_V01",
+    "type": "Nature",
+    "zh": "古代精靈"
+  },
+  "1178": {
+    "en": "Spirit King's Bodyguard Warrior",
+    "group": "Nature_01",
+    "ko": "정령왕의 호위 전사",
+    "name": "EleGuard_01",
+    "type": "Nature",
+    "zh": "精靈王護衛戰士"
+  },
+  "1179": {
+    "en": "Drana Mutant",
+    "group": "Trans_01",
+    "ko": "드라나 변이체",
+    "name": "DranaVar_01",
+    "type": "Trans",
+    "zh": "德拉那變異體"
+  },
+  "1180": {
+    "en": "Faded Mutant",
+    "group": "Trans_01",
+    "ko": "빛바랜 변이체",
+    "name": "DranaVar_01_CV01",
+    "type": "Trans",
+    "zh": "褪色的變異體"
+  },
+  "1181": {
+    "en": "Brax",
+    "group": "Feral_01",
+    "ko": "브락스",
+    "name": "Brax_01",
+    "type": "Feral",
+    "zh": "布拉斯"
+  },
+  "1182": {
+    "en": "Elite Soulless Corpse Gnat",
+    "group": "Trans_01",
+    "ko": "정예 영혼 없는 송장 각다귀",
+    "name": "CorpeSpider_01",
+    "type": "Trans",
+    "zh": "精銳無魂的棺材大蚊"
+  },
+  "1183": {
+    "en": "Soulless Corpse Gnat",
+    "group": "Trans_01",
+    "ko": "영혼 없는 송장 각다귀",
+    "name": "CorpeSpider_01_V01",
+    "type": "Trans",
+    "zh": "無魂的棺材大蚊"
+  },
+  "1184": {
+    "en": "Drakan Watcher",
+    "group": "Intellect_01",
+    "ko": "드라칸 감시자",
+    "name": "Drakan_02",
+    "type": "Intellect",
+    "zh": "德拉坎監視者"
+  },
+  "1185": {
+    "en": "Dratona Tinkerer",
+    "group": "Intellect_01",
+    "ko": "드라토나 잡역꾼",
+    "name": "Dratona_01_V01",
+    "type": "Intellect",
+    "zh": "德拉多納雜工"
+  },
+  "1186": {
+    "en": "Poison Blood",
+    "group": "Trans_01",
+    "ko": "독혈",
+    "name": "FafBlood_02",
+    "type": "Trans",
+    "zh": "毒血"
+  },
+  "1187": {
+    "en": "Intermediate Fire Spirit",
+    "group": "Nature_01",
+    "ko": "중급 불의 정령",
+    "name": "FireEle_02",
+    "type": "Nature",
+    "zh": "中級火之精靈"
+  },
+  "1188": {
+    "en": "Vivel",
+    "group": "Feral_01",
+    "ko": "비벨",
+    "name": "GraveBat_01",
+    "type": "Feral",
+    "zh": "蝠妖"
+  },
+  "1189": {
+    "en": "Tamed Zaif",
+    "group": "Feral_01",
+    "ko": "길들인 자이프",
+    "name": "Zaif_01_V01",
+    "type": "Feral",
+    "zh": "馴養的野狼"
+  },
+  "1190": {
+    "en": "Elite Poisonous Spore Fungen",
+    "group": "Nature_01",
+    "ko": "정예 독 포자 펑거스",
+    "name": "ToxFungus_01",
+    "type": "Nature",
+    "zh": "精銳毒孢子波克斯"
+  },
+  "1191": {
+    "en": "Furious Feruk",
+    "group": "Intellect_01",
+    "ko": "광폭한 페르크",
+    "name": "Ferk_01",
+    "type": "Intellect",
+    "zh": "狂暴的佩爾克"
+  },
+  "1192": {
+    "en": "Silver Blade Rotan",
+    "group": "Trans_01",
+    "ko": "은빛칼날 로탄",
+    "name": "Rotan_01",
+    "type": "Trans",
+    "zh": "銀刃羅坦"
+  },
+  "1193": {
+    "en": "Addicted Shulak Cart Worker",
+    "group": "Intellect_01",
+    "ko": "중독된 슈라크 수레꾼",
+    "name": "AddShulack_03",
+    "type": "Intellect",
+    "zh": "中毒的斯拉克車夫"
+  },
+  "1194": {
+    "en": "Guardite",
+    "group": "Trans_01",
+    "ko": "가디트",
+    "name": "Guardit_01",
+    "type": "Trans",
+    "zh": "加迪特"
+  },
+  "1195": {
+    "en": "Dracuni Herbalist",
+    "group": "Intellect_01",
+    "ko": "드라쿠니 약초꾼",
+    "name": "Dracuni_01",
+    "type": "Intellect",
+    "zh": "德拉庫尼採藥人"
+  },
+  "1196": {
+    "en": "Elite Dratona",
+    "group": "Intellect_01",
+    "ko": "정예 드라토나",
+    "name": "Dratona_03",
+    "type": "Intellect",
+    "zh": "精銳德拉多納"
+  },
+  "1197": {
+    "en": "Watcher Guardite",
+    "group": "Trans_01",
+    "ko": "감시 가디트",
+    "name": "Guardit_02",
+    "type": "Trans",
+    "zh": "監視加迪特"
+  },
+  "1198": {
+    "en": "Ashen Basilisk",
+    "group": "Feral_01",
+    "ko": "잿빛 바실리스크",
+    "name": "Basilisk_01_CV01",
+    "type": "Feral",
+    "zh": "灰色蜥怪"
+  },
+  "1199": {
+    "en": "Flame Barghest",
+    "group": "Feral_01",
+    "ko": "화염 발게스트",
+    "name": "Balgest_01",
+    "type": "Feral",
+    "zh": "火焰地獄犬"
+  },
+  "1200": {
+    "en": "Naga Elite Priest",
+    "group": "Intellect_01",
+    "ko": "나가 정예 사제",
+    "name": "NagaElite_03",
+    "type": "Intellect",
+    "zh": "納迦精銳祭司"
+  },
+  "1201": {
+    "en": "Modified Lupyllini",
+    "group": "Intellect_01",
+    "ko": "개조된 루필리니",
+    "name": "Lufilini_01",
+    "type": "Intellect",
+    "zh": "改造的路比利尼"
+  },
+  "1202": {
+    "en": "Decomposed Lupyllini",
+    "group": "Intellect_01",
+    "ko": "부패된 루필리니",
+    "name": "Lufilini_01_V01",
+    "type": "Intellect",
+    "zh": "腐敗的路比利尼"
+  },
+  "1203": {
+    "en": "Tamed Karnif",
+    "group": "Feral_01",
+    "ko": "길들인 칼니프",
+    "name": "Kalnif_01_V01",
+    "type": "Feral",
+    "zh": "馴養的劍齒豹"
+  },
+  "1204": {
+    "en": "Pagati",
+    "group": "Special_01",
+    "ko": "파가티",
+    "name": "Pagati_01",
+    "type": "Special",
+    "zh": "帕卡迪"
+  },
+  "1205": {
+    "en": "Reindeer",
+    "group": "Special_01",
+    "ko": "루돌프",
+    "name": "Rudolph_01",
+    "type": "Special",
+    "zh": "麋鹿"
+  },
+  "1206": {
+    "en": "Elite Guardite",
+    "group": "Trans_01",
+    "ko": "정예 가디트",
+    "name": "Guardit_03",
+    "type": "Trans",
+    "zh": "精銳加迪特"
+  },
+  "1207": {
+    "en": "Agrint",
+    "group": "Nature_01",
+    "ko": "어그린트",
+    "name": "Agrint_01",
+    "type": "Nature",
+    "zh": "奧格林特"
+  },
+  "1208": {
+    "en": "Ashen Agrint",
+    "group": "Nature_01",
+    "ko": "잿빛 어그린트",
+    "name": "Agrint_01_CV01",
+    "type": "Nature",
+    "zh": "灰色奧格林特"
+  },
+  "1209": {
+    "en": "Thin Agrint",
+    "group": "Nature_01",
+    "ko": "앙상한 어그린트",
+    "name": "Agrint_01_V01",
+    "type": "Nature",
+    "zh": "乾癟的奧格林特"
+  },
+  "1210": {
+    "en": "Dry Leaf Agrint",
+    "group": "Nature_01",
+    "ko": "마른 잎사귀 어그린트",
+    "name": "Agrint_01_V02",
+    "type": "Nature",
+    "zh": "枯葉奧格林特"
+  },
+  "1211": {
+    "en": "Sky Whale",
+    "group": "Special_01",
+    "ko": "하늘 고래",
+    "name": "SkyWhale_01",
+    "type": "Special",
+    "zh": "天空鯨魚"
+  },
+  "1212": {
+    "en": "Void",
+    "group": "Special_01",
+    "ko": "보이드",
+    "name": "SkyWhale_02",
+    "type": "Special",
+    "zh": "虛空鯨"
+  },
+  "1213": {
+    "en": "Lesser Fire Spirit",
+    "group": "Nature_01",
+    "ko": "하급 불의 정령",
+    "name": "FireEle_01",
+    "type": "Nature",
+    "zh": "下級火之精靈"
+  },
+  "1214": {
+    "en": "Black Spirit",
+    "group": "Nature_01",
+    "ko": "암흑 정령",
+    "name": "DarkEle_01",
+    "type": "Nature",
+    "zh": "暗黑精靈"
+  },
+  "1215": {
+    "en": "Predator Saraswati",
+    "group": "Intellect_01",
+    "ko": "포식자 사라스와티",
+    "name": "NagaElite_02",
+    "type": "Intellect",
+    "zh": "捕食者薩拉斯瓦提"
+  },
+  "1216": {
+    "en": "Dark Spirit",
+    "group": "Trans_01",
+    "ko": "어둠의 정령",
+    "name": "Specter_01",
+    "type": "Trans",
+    "zh": "黑暗精靈"
+  },
+  "1217": {
+    "en": "Congealed Drana",
+    "group": "Trans_01",
+    "ko": "응고된 드라나",
+    "name": "DranaVar_06",
+    "type": "Trans",
+    "zh": "凝固的德拉那"
+  },
+  "1218": {
+    "en": "Faded Drana",
+    "group": "Trans_01",
+    "ko": "빛바랜 드라나",
+    "name": "DranaVar_06_CV01",
+    "type": "Trans",
+    "zh": "褪色的德拉那"
+  },
+  "1219": {
+    "en": "Zelophi",
+    "group": "Nature_01",
+    "ko": "제르피",
+    "name": "Jellofi_01",
+    "type": "Nature",
+    "zh": "傑爾比"
+  },
+  "1220": {
+    "en": "Ashpile Forester",
+    "group": "Nature_01",
+    "ko": "잿더미 숲지기",
+    "name": "ForKeeper_01",
+    "type": "Nature",
+    "zh": "灰燼守林者"
+  },
+  "1221": {
+    "en": "Ashen Forester",
+    "group": "Nature_01",
+    "ko": "잿빛 숲지기",
+    "name": "ForKeeper_01_CV01",
+    "type": "Nature",
+    "zh": "灰色守林者"
+  },
+  "1222": {
+    "en": "Varg Shaman",
+    "group": "Intellect_01",
+    "ko": "바르그 주술사",
+    "name": "Varg_04",
+    "type": "Intellect",
+    "zh": "座狼咒術士"
+  },
+  "1223": {
+    "en": "Infernal Steed",
+    "group": "Special_01",
+    "ko": "화염마",
+    "name": "Horse_02",
+    "type": "Special",
+    "zh": "火焰馬"
+  },
+  "1224": {
+    "en": "Red Horse Doll",
+    "group": "Special_01",
+    "ko": "붉은 말 인형",
+    "name": "Redhorse_01",
+    "type": "Special",
+    "zh": "赤馬娃娃"
+  },
+  "1225": {
+    "en": "Frosty Snowman",
+    "group": "Special_01",
+    "ko": "흰 눈송이 눈사람",
+    "name": "Snowman_01",
+    "type": "Special",
+    "zh": "白色雪花雪人"
+  },
+  "1226": {
+    "en": "Pom-Pom Hat Snowman",
+    "group": "Special_01",
+    "ko": "방울 모자 눈사람",
+    "name": "Snowman_02",
+    "type": "Special",
+    "zh": "水滴帽子雪人"
+  },
+  "1230": {
+    "en": "Test Subject Hoka",
+    "group": "Feral_01",
+    "ko": "실험체 호카",
+    "name": "Hoka_01",
+    "type": "Feral",
+    "zh": "實驗體夫卡"
+  },
+  "1236": {
+    "en": "Luminous Golden Unicorn",
+    "group": "Special_01",
+    "ko": "찬란한 황금 유니콘",
+    "name": "Horse_01",
+    "type": "Special",
+    "zh": "燦爛黃金獨角獸"
+  },
+  "1238": {
+    "en": "Sweet Unicorn",
+    "group": "Special_01",
+    "ko": "달콤한 유니콘",
+    "name": "Horse_01_CV02",
+    "type": "Special",
+    "zh": "甜美獨角獸"
+  },
+  "1240": {
+    "en": "White Bunny",
+    "group": "Special_01",
+    "ko": "하얀 토끼",
+    "name": "Rabbit_01",
+    "type": "Special",
+    "zh": "白兔"
+  },
+  "1241": {
+    "en": "Star",
+    "group": "Special_01",
+    "ko": "별님",
+    "name": "Pajama_02",
+    "type": "Special",
+    "zh": "星星"
+  },
+  "1242": {
+    "en": "Moon",
+    "group": "Special_01",
+    "ko": "달님",
+    "name": "Pajama_01",
+    "type": "Special",
+    "zh": "月亮"
+  },
+  "1243": {
+    "en": "Babymeow",
+    "group": "Special_01",
+    "ko": "베비냥",
+    "name": "Cat_01",
+    "type": "Special",
+    "zh": "北鼻喵"
+  },
+  "1244": {
+    "en": "Aristomeow",
+    "group": "Special_01",
+    "ko": "도도냥",
+    "name": "Cat_02",
+    "type": "Special",
+    "zh": "高冷喵"
+  },
+  "1245": {
+    "en": "Azure Flame Kumiho",
+    "group": "Special_01",
+    "ko": "푸른 불꽃 구미호",
+    "name": "Gumiho_01",
+    "type": "Special",
+    "zh": "藍火九尾狐"
+  },
+  "1246": {
+    "en": "Pearlescent Butterfly Kite",
+    "group": "Special_01",
+    "ko": "자개꽃나비 청자연",
+    "name": "SUL_01",
+    "type": "Special",
+    "zh": "珍珠貝彩蝶風箏"
+  },
+  "1247": {
+    "en": "Fluffball Haechi",
+    "group": "Special_01",
+    "ko": "솜구름 해치",
+    "name": "SUL_02",
+    "type": "Special",
+    "zh": "棉雲獬豸"
+  },
+  "1248": {
+    "en": "Teddy Plushie",
+    "group": "Special_01",
+    "ko": "곰돌이 인형",
+    "name": "Pajama_03",
+    "type": "Special",
+    "zh": "小熊娃娃"
+  },
+  "1249": {
+    "en": "Unicorn Plush",
+    "group": "Special_01",
+    "ko": "유니콘 인형",
+    "name": "Horse_03",
+    "type": "Special",
+    "zh": "獨角獸娃娃"
+  },
+  "1250": {
+    "en": "Glossy Pink Puppy",
+    "group": "Special_01",
+    "ko": "핑크 글로시 퍼피",
+    "name": "Balloon_01",
+    "type": "Special",
+    "zh": "粉色光澤小狗"
+  },
+  "1251": {
+    "en": "Chickpea",
+    "group": "Special_01",
+    "ko": "삐약이",
+    "name": "Chick_01",
+    "type": "Special",
+    "zh": "小雞"
+  },
+  "1252": {
+    "en": "Harp Seal",
+    "group": "Special_01",
+    "ko": "하프물범",
+    "name": "Seal_01",
+    "type": "Special",
+    "zh": "豎琴海豹"
+  },
+  "1253": {
+    "en": "Umbral Shadow Unicorn",
+    "group": "Special_01",
+    "ko": "심연의 그림자 유니콘",
+    "name": "Horse_01_CV01",
+    "type": "Special",
+    "zh": "深淵影子獨角獸"
+  },
+  "1259": {
+    "en": "Kurpak Krall Supporter",
+    "group": "Intellect_01",
+    "ko": "쿠르팍 크랄 지원병",
+    "name": "KrallPrst_01_CV01",
+    "type": "Intellect",
+    "zh": "庫爾帕克拉爾支援兵"
+  },
+  "1260": {
+    "en": "Lava Stone Spirit",
+    "group": "Nature_01",
+    "ko": "용암 돌 정령",
+    "name": "EarthEleOd_01_CV03",
+    "type": "Nature",
+    "zh": "熔岩石精靈"
+  },
+  "1261": {
+    "en": "Gravarax",
+    "group": "Nature_01",
+    "ko": "그라바락스",
+    "name": "Gravarax_01",
+    "type": "Nature",
+    "zh": "格拉巴拉斯"
+  },
+  "1262": {
+    "en": "Poofy Lamb",
+    "group": "Special_01",
+    "ko": "몽글몽글 양",
+    "name": "Sheep_01",
+    "type": "Special",
+    "zh": "軟綿綿小羊"
+  },
+  "1263": {
+    "en": "Driznak",
+    "group": "Trans_01",
+    "ko": "드리즈낙",
+    "name": "Driznak_01",
+    "type": "Trans",
+    "zh": "德里茲納"
+  },
+  "1264": {
+    "en": "Snowfield Frugon",
+    "group": "Intellect_01",
+    "ko": "설원 프루곤",
+    "name": "Frugon_01",
+    "type": "Intellect",
+    "zh": "雪原夫魯坤"
+  },
+  "1265": {
+    "en": "Tuka",
+    "group": "Nature_01",
+    "ko": "투카",
+    "name": "Tuka_01",
+    "type": "Nature",
+    "zh": "圖卡"
+  },
+  "1266": {
+    "en": "Icecap Pachyron",
+    "group": "Feral_01",
+    "ko": "만년설 파키론",
+    "name": "Pachyron_01",
+    "type": "Feral",
+    "zh": "萬年雪帕奇倫"
+  },
+  "1267": {
+    "en": "Snowfield Debry",
+    "group": "Feral_01",
+    "ko": "설원 데브리",
+    "name": "Debrie_01",
+    "type": "Feral",
+    "zh": "雪原德布里"
+  },
+  "1268": {
+    "en": "Desert Lamphu",
+    "group": "Feral_01",
+    "ko": "사막 람푸",
+    "name": "Ramfu_01",
+    "type": "Feral",
+    "zh": "荒漠拉姆普"
+  },
+  "1269": {
+    "en": "Lagur",
+    "group": "Feral_01",
+    "ko": "라구르",
+    "name": "Lagur_01",
+    "type": "Feral",
+    "zh": "拉古勒"
+  },
+  "1270": {
+    "en": "Floofy",
+    "group": "Feral_01",
+    "ko": "플루피",
+    "name": "Flufi_01",
+    "type": "Feral",
+    "zh": "弗路彼"
+  },
+  "1271": {
+    "en": "Ghula",
+    "group": "Feral_01",
+    "ko": "굴라",
+    "name": "Gula_01",
+    "type": "Feral",
+    "zh": "古拉"
+  },
+  "1272": {
+    "en": "Pokus",
+    "group": "Feral_01",
+    "ko": "포쿠스",
+    "name": "Pokus_01",
+    "type": "Feral",
+    "zh": "波庫斯"
+  },
+  "1273": {
+    "en": "Draconute Shaman",
+    "group": "Intellect_01",
+    "ko": "드라코뉴트 주술사",
+    "name": "DracoMagic_01",
+    "type": "Intellect",
+    "zh": "德拉克紐特咒術士"
+  },
+  "1274": {
+    "en": "Rollin' Pink Skateboard",
+    "group": "Special_01",
+    "ko": "핑키 스핀 스케이트보드",
+    "name": "SkateBoard_01",
+    "type": "Special",
+    "zh": "粉紅旋轉滑板"
+  },
+  "1275": {
+    "en": "Snowfield Tuka",
+    "group": "Nature_01",
+    "ko": "설원 투카",
+    "name": "Tuka_01_V01",
+    "type": "Nature",
+    "zh": "雪原圖卡"
+  },
+  "1276": {
+    "en": "Debry",
+    "group": "Feral_01",
+    "ko": "데브리",
+    "name": "Debrie_01_CV01",
+    "type": "Feral",
+    "zh": "德布里"
+  },
+  "1277": {
+    "en": "Snowfield Stone Spirit",
+    "group": "Nature_01",
+    "ko": "설원 돌 정령",
+    "name": "EarthEleOd_01_CV02",
+    "type": "Nature",
+    "zh": "雪原石精靈"
+  },
+  "1278": {
+    "en": "Chonky Hamster",
+    "group": "Special_01",
+    "ko": "볼빵빵 햄스터",
+    "name": "Hamster_01",
+    "type": "Special",
+    "zh": "圓鼓鼓倉鼠"
+  },
+  "1279": {
+    "en": "Lava Gravarax",
+    "group": "Nature_01",
+    "ko": "용암 그라바락스",
+    "name": "Gravarax_01_CV01",
+    "type": "Nature",
+    "zh": "熔岩格拉巴拉斯"
+  },
+  "1280": {
+    "en": "Snowfield Floofy",
+    "group": "Feral_01",
+    "ko": "설원 플루피",
+    "name": "Flufi_01_CV01",
+    "type": "Feral",
+    "zh": "雪原弗路彼"
+  },
+  "1281": {
+    "en": "Pachyron",
+    "group": "Feral_01",
+    "ko": "파키론",
+    "name": "Pachyron_01_CV01",
+    "type": "Feral",
+    "zh": "帕奇倫"
+  },
+  "1282": {
+    "en": "Lava Pokus",
+    "group": "Feral_01",
+    "ko": "용암 포쿠스",
+    "name": "Pokus_01_CV01",
+    "type": "Feral",
+    "zh": "熔岩波庫斯"
+  },
+  "1283": {
+    "en": "Snowfield Trogas",
+    "group": "Intellect_01",
+    "ko": "설원 트로가스",
+    "name": "Trogas_01",
+    "type": "Intellect",
+    "zh": "雪原特羅加斯"
+  },
+  "1284": {
+    "en": "Snowfield Torba",
+    "group": "Feral_01",
+    "ko": "설원 토르바",
+    "name": "Torba_01",
+    "type": "Feral",
+    "zh": "雪原托爾巴"
+  },
+  "1285": {
+    "en": "Trogas",
+    "group": "Intellect_01",
+    "ko": "트로가스",
+    "name": "Trogas_01_V01",
+    "type": "Intellect",
+    "zh": "特羅加斯"
+  },
+  "1286": {
+    "en": "Desert Small Latoha",
+    "group": "Intellect_01",
+    "ko": "사막 작은 라토하",
+    "name": "Latoha_01",
+    "type": "Intellect",
+    "zh": "荒漠小拉托哈"
+  },
+  "1287": {
+    "en": "Desert Swift Latoha",
+    "group": "Intellect_01",
+    "ko": "사막 날쌘 라토하",
+    "name": "Latoha_02",
+    "type": "Intellect",
+    "zh": "荒漠靈活的拉托哈"
+  },
+  "1289": {
+    "en": "Red Dragon",
+    "group": "Special_01",
+    "ko": "레드 드래곤",
+    "name": "BlackDragon_01_CV02",
+    "type": "Special",
+    "zh": "紅龍"
+  },
+  "1290": {
+    "en": "Desert Magic Latoha",
+    "group": "Intellect_01",
+    "ko": "사막 마법 라토하",
+    "name": "Latoha_03",
+    "type": "Intellect",
+    "zh": "荒漠魔法拉托哈"
+  },
+  "1291": {
+    "en": "Orange Dragon",
+    "group": "Special_01",
+    "ko": "오렌지 드래곤",
+    "name": "BlackDragon_01_CV03",
+    "type": "Special",
+    "zh": "橘龍"
+  },
+  "1292": {
+    "en": "Yellow Dragon",
+    "group": "Special_01",
+    "ko": "옐로우 드래곤",
+    "name": "BlackDragon_01_CV04",
+    "type": "Special",
+    "zh": "黃龍"
+  },
+  "1299": {
+    "en": "Two",
+    "group": "Special_01",
+    "ko": "2",
+    "name": "Showcase_01",
+    "type": "Special",
+    "zh": "2"
+  },
+  "1300": {
+    "en": "Iralcig Small Latoha",
+    "group": "Intellect_01",
+    "ko": "이랄시그 작은 라토하",
+    "name": "Latoha_01_CV01",
+    "type": "Intellect",
+    "zh": "伊拉斯克小拉托哈"
+  },
+  "1301": {
+    "en": "Iralcig Swift Latoha",
+    "group": "Intellect_01",
+    "ko": "이랄시그 날쌘 라토하",
+    "name": "Latoha_02_CV01",
+    "type": "Intellect",
+    "zh": "伊拉斯克靈活的拉托哈"
+  },
+  "1302": {
+    "en": "Torba",
+    "group": "Feral_01",
+    "ko": "토르바",
+    "name": "Torba_01_CV01",
+    "type": "Feral",
+    "zh": "托爾巴"
+  },
+  "1303": {
+    "en": "Frugon",
+    "group": "Intellect_01",
+    "ko": "프루곤",
+    "name": "Frugon_01_V01",
+    "type": "Intellect",
+    "zh": "夫魯坤"
+  },
+  "1304": {
+    "en": "Gray Ursus",
+    "group": "Feral_01",
+    "ko": "회색 우르서스",
+    "name": "Ursuss_01_CV02",
+    "type": "Feral",
+    "zh": "灰色烏爾蘇"
+  },
+  "1305": {
+    "en": "Snowfield Lamphu",
+    "group": "Feral_01",
+    "ko": "설원 람푸",
+    "name": "Ramfu_01_CV01",
+    "type": "Feral",
+    "zh": "雪原拉姆普"
+  },
+  "1306": {
+    "en": "Snowfield Kalgolem",
+    "group": "Trans_01",
+    "ko": "설원 칼크겔름",
+    "name": "Kalgolem_02_CV01",
+    "type": "Trans",
+    "zh": "雪原卡克蓋崙"
+  },
+  "1307": {
+    "en": "Lava-Maned Kailin",
+    "group": "Feral_01",
+    "ko": "용암 갈기 카이린",
+    "name": "Kailin_01_V02",
+    "type": "Feral",
+    "zh": "熔岩鬃毛卡伊琳"
+  },
+  "1308": {
+    "en": "Lava Starturtle",
+    "group": "Feral_01",
+    "ko": "용암 스타터틀",
+    "name": "Starturtle_01_CV01",
+    "type": "Feral",
+    "zh": "熔岩星龜"
+  },
+  "1309": {
+    "en": "Ice Ghula",
+    "group": "Feral_01",
+    "ko": "얼음 굴라",
+    "name": "Gula_01_CV01",
+    "type": "Feral",
+    "zh": "冰凍古拉"
+  },
+  "1310": {
+    "en": "Iralcig Magic Latoha",
+    "group": "Intellect_01",
+    "ko": "이랄시그 마법 라토하",
+    "name": "Latoha_03_CV01",
+    "type": "Intellect",
+    "zh": "伊拉斯克魔法拉托哈"
+  },
+  "1311": {
+    "en": "Kurpak Krall Scout",
+    "group": "Intellect_01",
+    "ko": "쿠르팍 크랄 정찰병",
+    "name": "KrallReg_01_CV01",
+    "type": "Intellect",
+    "zh": "庫爾帕克拉爾偵察兵"
+  },
+  "1312": {
+    "en": "Kurpak Krall Enforcer",
+    "group": "Intellect_01",
+    "ko": "쿠르팍 크랄 행동대장",
+    "name": "KrallWar_01_CV01",
+    "type": "Intellect",
+    "zh": "庫爾帕克拉爾行動隊長"
+  },
+  "1313": {
+    "en": "Snowfield Lagur",
+    "group": "Feral_01",
+    "ko": "눈밭 라구르",
+    "name": "Lagur_01_CV01",
+    "type": "Feral",
+    "zh": "雪地拉古勒"
+  },
+  "1314": {
+    "en": "Obsidian Driznak",
+    "group": "Trans_01",
+    "ko": "흑요석 드리즈낙",
+    "name": "Driznak_01_CV01",
+    "type": "Trans",
+    "zh": "黑曜石德里茲納"
+  },
+  "1315": {
+    "en": "Icecap Kailin",
+    "group": "Feral_01",
+    "ko": "만년설 카이린",
+    "name": "Kailin_01_CV01",
+    "type": "Feral",
+    "zh": "萬年雪卡伊琳"
+  },
+  "1316": {
+    "en": "Ashpile Durgal",
+    "group": "Feral_01",
+    "ko": "잿더미 두르갈",
+    "name": "Durgal_01",
+    "type": "Feral",
+    "zh": "灰燼杜爾加"
+  },
+  "1317": {
+    "en": "Durgal",
+    "group": "Feral_01",
+    "ko": "두르갈",
+    "name": "Durgal_01_CV01",
+    "type": "Feral",
+    "zh": "杜爾加"
+  },
+  "1318": {
+    "en": "Red Fur Durgal",
+    "group": "Feral_01",
+    "ko": "붉은 털 두르갈",
+    "name": "Durgal_01_CV02",
+    "type": "Feral",
+    "zh": "紅毛杜爾加"
+  },
+  "1319": {
+    "en": "Icecap Durgal",
+    "group": "Feral_01",
+    "ko": "만년설 두르갈",
+    "name": "Durgal_01_V01",
+    "type": "Feral",
+    "zh": "萬年雪杜爾加"
+  },
+  "1320": {
+    "en": "Snowfield Zaif",
+    "group": "Feral_01",
+    "ko": "설원 자이프",
+    "name": "Zaif_01_CV04",
+    "type": "Feral",
+    "zh": "雪原野狼"
+  },
+  "1321": {
+    "en": "Young Snowfield Zaif",
+    "group": "Feral_01",
+    "ko": "어린 설원 자이프",
+    "name": "Zaif_01_CV05",
+    "type": "Feral",
+    "zh": "年幼的雪原野狼"
+  },
+  "1322": {
+    "en": "Teddy Tube",
+    "group": "Special_01",
+    "ko": "곰돌이 튜브",
+    "name": "Float_01",
+    "type": "Special",
+    "zh": "小熊泳圈"
+  },
+  "1323": {
+    "en": "Squishy Octopus",
+    "group": "Special_01",
+    "ko": "말랑 문어",
+    "name": "Octopus_01",
+    "type": "Special",
+    "zh": "軟Q章魚"
+  },
+  "1325": {
+    "en": "Goodnight Teddy Bear",
+    "group": "Special_01",
+    "ko": "굿나잇 테디베어",
+    "name": "BabyBear_01",
+    "type": "Special",
+    "zh": "晚安泰迪熊"
+  },
+  "1339": {
+    "en": "Baby Birb",
+    "group": "Special_01",
+    "ko": "아기 오목눈이",
+    "name": "Titmouse_01",
+    "type": "Special",
+    "zh": "麻糬山雀"
+  },
+  "1340": {
+    "en": "Gold Void",
+    "group": "Special_01",
+    "ko": "황금빛 보이드",
+    "name": "SkyWhale_01_CV01",
+    "type": "Special",
+    "zh": "金黃色虛空鯨"
+  },
+  "1341": {
+    "en": "Silver Void",
+    "group": "Special_01",
+    "ko": "은빛 보이드",
+    "name": "SkyWhale_01_CV02",
+    "type": "Special",
+    "zh": "銀色虛空鯨"
+  },
+  "1342": {
+    "en": "Bronze Void",
+    "group": "Special_01",
+    "ko": "구릿빛 보이드",
+    "name": "SkyWhale_01_CV03",
+    "type": "Special",
+    "zh": "古銅色虛空鯨"
+  },
+  "1344": {
+    "en": "Fiery Black Kumiho",
+    "group": "Special_01",
+    "ko": "홍염의 검은 구미호",
+    "name": "Gumiho_01_CV01",
+    "type": "Special",
+    "zh": "紅焰墨黑九尾狐"
+  },
+  "9000": {
+    "en": "Flostick",
+    "group": "Special_01",
+    "ko": "플로봉",
+    "name": "CLB01_01",
+    "type": "Special",
+    "zh": "flover手燈"
+  },
+  "9002": {
+    "en": "Baby Flomeow",
+    "group": "Special_01",
+    "ko": "베비 플로냥",
+    "name": "CLB01_03",
+    "type": "Special",
+    "zh": "寶貝flover喵"
+  },
+  "9999": {
+    "en": "Test",
+    "group": "Special_01",
+    "ko": "테스트",
+    "name": "TestDummy",
+    "type": "Special",
+    "zh": "測試"
+  }
+}

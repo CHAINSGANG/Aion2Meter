@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <AssemblyName>Aion2Meter</AssemblyName>
+    <RootNamespace>Aion2Meter</RootNamespace>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>Assets\Brand\Aion2Meter.ico</ApplicationIcon>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AionFlex.Core\AionFlex.Core.csproj" />
+    <ProjectReference Include="..\AionFlex.Application\AionFlex.Application.csproj" />
+    <ProjectReference Include="..\AionFlex.Infrastructure\AionFlex.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="data\**\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Resource Include="Assets\Fonts\Aion2Atreia_EN_Bold.ttf" />
+    <Resource Include="Assets\Fonts\NotoSans-Bold.otf" />
+    <Resource Include="Assets\Brand\Aion2Meter.ico" />
+    <Resource Include="Assets\Brand\Aion2MeterEmblem.png" />
+    <Resource Include="Assets\Textures\DamageMeterAtlas.png" />
+    <Resource Include="Assets\Textures\CommonAtlas.png" />
+    <Resource Include="Assets\Textures\TargetHpFrame.png" />
+    <Resource Include="Assets\Textures\HudAtlas.png" />
+    <Resource Include="Assets\Textures\DebuffDefenseDown.png" />
+    <Resource Include="Assets\Textures\EliteHpFrame.png" />
+    <Resource Include="Assets\Textures\HeroHpFrame.png" />
+    <Resource Include="Assets\Textures\BossHpFrame.png" />
+  </ItemGroup>
+</Project>

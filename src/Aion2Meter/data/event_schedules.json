@@ -1,0 +1,778 @@
+{
+  "_meta": {
+    "generator": "tools/build_event_schedules.py",
+    "times": "server-local wall clock (HH:mm); days = server-local weekday",
+    "sources": {
+      "TW": "D:\\aion2-extracts\\AION2\\Content\\Data\\Table",
+      "Global": "D:\\aion2-extracts\\GLOBAL-release\\Aion2\\Content\\Data\\Table"
+    },
+    "shugoFestaSources": {
+      "Global": "D:\\aion2-extracts\\GLOBAL-20261012-servers\\AION2\\Content\\Data\\Table"
+    }
+  },
+  "services": {
+    "TW": {
+      "rift": {
+        "first": "02:00",
+        "everyMinutes": 180
+      },
+      "events": [
+        {
+          "id": "siege:abyss_ar1_artifactwar",
+          "kind": "siege",
+          "name": {
+            "en": "Artifact Siege",
+            "ko": "아티팩트 점령전",
+            "zh": "神器占領戰"
+          },
+          "location": {
+            "en": "Chaotic Lower Reshanta",
+            "ko": "혼돈의 에레슈란타 하층",
+            "zh": "渾沌艾雷修藍塔下層"
+          },
+          "days": [
+            "Wed",
+            "Sat"
+          ],
+          "times": [
+            "22:00"
+          ],
+          "source": "EventSchedule 3001 -> AbyssArtifactEvent 1001"
+        },
+        {
+          "id": "siege:abyss_ar2_artifactwar",
+          "kind": "siege",
+          "name": {
+            "en": "Artifact Siege",
+            "ko": "아티팩트 점령전",
+            "zh": "神器占領戰"
+          },
+          "location": {
+            "en": "Chaotic Middle Reshanta",
+            "ko": "혼돈의 에레슈란타 중층",
+            "zh": "渾沌艾雷修藍塔中層"
+          },
+          "days": [
+            "Wed",
+            "Sat"
+          ],
+          "times": [
+            "22:00"
+          ],
+          "source": "EventSchedule 3002 -> AbyssArtifactEvent 2001"
+        },
+        {
+          "id": "boss:1006",
+          "kind": "abyssBoss",
+          "npcId": 2600089,
+          "name": {
+            "en": "Watcher Kaira",
+            "ko": "감시자 카이라",
+            "zh": "監視者卡伊拉"
+          },
+          "location": {
+            "en": "Chaotic Lower Reshanta",
+            "ko": "혼돈의 에레슈란타 하층",
+            "zh": "渾沌艾雷修藍塔下層"
+          },
+          "days": [
+            "Sun",
+            "Mon",
+            "Tue",
+            "Wed",
+            "Thu",
+            "Fri",
+            "Sat"
+          ],
+          "times": [
+            "01:00",
+            "05:00",
+            "09:00",
+            "13:00",
+            "17:00",
+            "21:00"
+          ],
+          "source": "WorldMapFieldNamed 2002 -> PeriodSpawn 1006 (FieldBoss_AR1_CycleBoss_01)"
+        },
+        {
+          "id": "boss:1013",
+          "kind": "abyssBoss",
+          "npcId": 2600084,
+          "name": {
+            "en": "Guardian Lord Nahma",
+            "ko": "수호신장 나흐마",
+            "zh": "守護神將納赫瑪"
+          },
+          "location": {
+            "en": "Chaotic Lower Reshanta",
+            "ko": "혼돈의 에레슈란타 하층",
+            "zh": "渾沌艾雷修藍塔下層"
+          },
+          "days": [
+            "Sun",
+            "Fri"
+          ],
+          "times": [
+            "22:00"
+          ],
+          "source": "WorldMapFieldNamed 2003 -> PeriodSpawn 1013 (FieldBoss_AR1_DayBoss_01)"
+        },
+        {
+          "id": "boss:1014",
+          "kind": "abyssBoss",
+          "npcId": 2600093,
+          "name": {
+            "en": "Guardian Lord Nahma",
+            "ko": "수호신장 나흐마",
+            "zh": "守護神將納赫瑪"
+          },
+          "location": {
+            "en": "Chaotic Lower Reshanta",
+            "ko": "혼돈의 에레슈란타 하층",
+            "zh": "渾沌艾雷修藍塔下層"
+          },
+          "days": [
+            "Sun",
+            "Fri"
+          ],
+          "times": [
+            "22:00"
+          ],
+          "source": "WorldMapFieldNamed 2004 -> PeriodSpawn 1014 (FieldBoss_AR1_DayBoss_02)"
+        },
+        {
+          "id": "boss:1015",
+          "kind": "abyssBoss",
+          "npcId": 2600094,
+          "name": {
+            "en": "Guardian Lord Nahma",
+            "ko": "수호신장 나흐마",
+            "zh": "守護神將納赫瑪"
+          },
+          "location": {
+            "en": "Chaotic Lower Reshanta",
+            "ko": "혼돈의 에레슈란타 하층",
+            "zh": "渾沌艾雷修藍塔下層"
+          },
+          "days": [
+            "Sun",
+            "Fri"
+          ],
+          "times": [
+            "22:00"
+          ],
+          "source": "WorldMapFieldNamed 2005 -> PeriodSpawn 1015 (FieldBoss_AR1_DayBoss_03)"
+        },
+        {
+          "id": "boss:1018",
+          "kind": "abyssBoss",
+          "npcId": 2600096,
+          "name": {
+            "en": "Executor Tamasa",
+            "ko": "집행자 타마사",
+            "zh": "執行者塔瑪沙"
+          },
+          "location": {
+            "en": "Chaotic Lower Reshanta",
+            "ko": "혼돈의 에레슈란타 하층",
+            "zh": "渾沌艾雷修藍塔下層"
+          },
+          "days": [
+            "Wed",
+            "Sat"
+          ],
+          "times": [
+            "22:30"
+          ],
+          "source": "WorldMapFieldNamed 2006 -> PeriodSpawn 1018 (FieldBoss_AR1_DayBoss_04)"
+        },
+        {
+          "id": "boss:1019",
+          "kind": "abyssBoss",
+          "npcId": 2600097,
+          "name": {
+            "en": "Executor Argo",
+            "ko": "집행자 아그로",
+            "zh": "執行者阿格羅"
+          },
+          "location": {
+            "en": "Chaotic Lower Reshanta",
+            "ko": "혼돈의 에레슈란타 하층",
+            "zh": "渾沌艾雷修藍塔下層"
+          },
+          "days": [
+            "Wed",
+            "Sat"
+          ],
+          "times": [
+            "22:30"
+          ],
+          "source": "WorldMapFieldNamed 2007 -> PeriodSpawn 1019 (FieldBoss_AR1_DayBoss_05)"
+        },
+        {
+          "id": "boss:1020",
+          "kind": "abyssBoss",
+          "npcId": 2600098,
+          "name": {
+            "en": "Executor Kaira",
+            "ko": "집행자 카이라",
+            "zh": "執行者卡伊拉"
+          },
+          "location": {
+            "en": "Chaotic Lower Reshanta",
+            "ko": "혼돈의 에레슈란타 하층",
+            "zh": "渾沌艾雷修藍塔下層"
+          },
+          "days": [
+            "Wed",
+            "Sat"
+          ],
+          "times": [
+            "22:30"
+          ],
+          "source": "WorldMapFieldNamed 2008 -> PeriodSpawn 1020 (FieldBoss_AR1_DayBoss_06)"
+        },
+        {
+          "id": "boss:1151",
+          "kind": "abyssBoss",
+          "npcId": 2600479,
+          "name": {
+            "en": "Enraged Guardian Lord Nahma",
+            "ko": "분노한 수호신장 나흐마",
+            "zh": "憤怒的守護神將納赫瑪"
+          },
+          "location": {
+            "en": "Chaotic Middle Reshanta",
+            "ko": "혼돈의 에레슈란타 중층",
+            "zh": "渾沌艾雷修藍塔中層"
+          },
+          "days": [
+            "Sun",
+            "Fri"
+          ],
+          "times": [
+            "22:00"
+          ],
+          "source": "WorldMapFieldNamed 2201 -> PeriodSpawn 1151 (FieldBoss_AR3_DayBoss_02)"
+        },
+        {
+          "id": "boss:1152",
+          "kind": "abyssBoss",
+          "npcId": 2600480,
+          "name": {
+            "en": "Enraged Guardian Lord Nahma",
+            "ko": "분노한 수호신장 나흐마",
+            "zh": "憤怒的守護神將納赫瑪"
+          },
+          "location": {
+            "en": "Chaotic Middle Reshanta",
+            "ko": "혼돈의 에레슈란타 중층",
+            "zh": "渾沌艾雷修藍塔中層"
+          },
+          "days": [
+            "Sun",
+            "Fri"
+          ],
+          "times": [
+            "22:00"
+          ],
+          "source": "WorldMapFieldNamed 2202 -> PeriodSpawn 1152 (FieldBoss_AR3_DayBoss_03)"
+        },
+        {
+          "id": "boss:1153",
+          "kind": "abyssBoss",
+          "npcId": 2600520,
+          "name": {
+            "en": "Executioner Dramos",
+            "ko": "처형관 드라모스",
+            "zh": "處刑官德拉莫斯"
+          },
+          "location": {
+            "en": "Chaotic Middle Reshanta",
+            "ko": "혼돈의 에레슈란타 중층",
+            "zh": "渾沌艾雷修藍塔中層"
+          },
+          "days": [
+            "Wed",
+            "Sat"
+          ],
+          "times": [
+            "22:30"
+          ],
+          "source": "WorldMapFieldNamed 2203 -> PeriodSpawn 1153 (FieldBoss_AR3_DayBoss_04)"
+        },
+        {
+          "id": "boss:1154",
+          "kind": "abyssBoss",
+          "npcId": 2600521,
+          "name": {
+            "en": "Turncoat Ducal",
+            "ko": "반역자 듀칼",
+            "zh": "反逆者杜卡爾"
+          },
+          "location": {
+            "en": "Chaotic Middle Reshanta",
+            "ko": "혼돈의 에레슈란타 중층",
+            "zh": "渾沌艾雷修藍塔中層"
+          },
+          "days": [
+            "Wed",
+            "Sat"
+          ],
+          "times": [
+            "22:30"
+          ],
+          "source": "WorldMapFieldNamed 2204 -> PeriodSpawn 1154 (FieldBoss_AR3_DayBoss_05)"
+        },
+        {
+          "id": "boss:1155",
+          "kind": "abyssBoss",
+          "npcId": 2600522,
+          "name": {
+            "en": "Ravager Marakha",
+            "ko": "파멸자 마라카",
+            "zh": "破滅者瑪拉卡"
+          },
+          "location": {
+            "en": "Chaotic Middle Reshanta",
+            "ko": "혼돈의 에레슈란타 중층",
+            "zh": "渾沌艾雷修藍塔中層"
+          },
+          "days": [
+            "Wed",
+            "Sat"
+          ],
+          "times": [
+            "22:30"
+          ],
+          "source": "WorldMapFieldNamed 2205 -> PeriodSpawn 1155 (FieldBoss_AR3_DayBoss_06)"
+        }
+      ]
+    },
+    "Global": {
+      "rift": {
+        "first": "02:00",
+        "everyMinutes": 180
+      },
+      "events": [
+        {
+          "id": "siege:abyss_ar1_artifactwar",
+          "kind": "siege",
+          "name": {
+            "en": "Artifact Siege",
+            "ko": "아티팩트 점령전",
+            "zh": "神器占領戰"
+          },
+          "location": {
+            "en": "Chaotic Lower Reshanta",
+            "ko": "혼돈의 에레슈란타 하층",
+            "zh": "渾沌艾雷修藍塔下層"
+          },
+          "days": [
+            "Mon",
+            "Thu",
+            "Sat"
+          ],
+          "times": [
+            "21:00"
+          ],
+          "source": "EventSchedule 3001 -> AbyssArtifactEvent 1001"
+        },
+        {
+          "id": "boss:1006",
+          "kind": "abyssBoss",
+          "npcId": 2600089,
+          "name": {
+            "en": "Watcher Kaira",
+            "ko": "감시자 카이라",
+            "zh": "監視者卡伊拉"
+          },
+          "location": {
+            "en": "Chaotic Lower Reshanta",
+            "ko": "혼돈의 에레슈란타 하층",
+            "zh": "渾沌艾雷修藍塔下層"
+          },
+          "days": [
+            "Sun",
+            "Mon",
+            "Tue",
+            "Wed",
+            "Thu",
+            "Fri",
+            "Sat"
+          ],
+          "times": [
+            "01:00",
+            "04:00",
+            "07:00",
+            "10:00",
+            "13:00",
+            "16:00",
+            "19:00",
+            "22:00"
+          ],
+          "source": "WorldMapFieldNamed 2002 -> PeriodSpawn 1006 (FieldBoss_AR1_CycleBoss_01)"
+        },
+        {
+          "id": "boss:1013",
+          "kind": "abyssBoss",
+          "npcId": 2600084,
+          "name": {
+            "en": "Guardian Lord Nahma",
+            "ko": "수호신장 나흐마",
+            "zh": "守護神將納赫瑪"
+          },
+          "location": {
+            "en": "Chaotic Lower Reshanta",
+            "ko": "혼돈의 에레슈란타 하층",
+            "zh": "渾沌艾雷修藍塔下層"
+          },
+          "days": [
+            "Sun",
+            "Fri"
+          ],
+          "times": [
+            "21:00"
+          ],
+          "source": "WorldMapFieldNamed 2003 -> PeriodSpawn 1013 (FieldBoss_AR1_DayBoss_01)"
+        },
+        {
+          "id": "boss:1014",
+          "kind": "abyssBoss",
+          "npcId": 2600093,
+          "name": {
+            "en": "Guardian Lord Nahma",
+            "ko": "수호신장 나흐마",
+            "zh": "守護神將納赫瑪"
+          },
+          "location": {
+            "en": "Chaotic Lower Reshanta",
+            "ko": "혼돈의 에레슈란타 하층",
+            "zh": "渾沌艾雷修藍塔下層"
+          },
+          "days": [
+            "Sun",
+            "Fri"
+          ],
+          "times": [
+            "21:00"
+          ],
+          "source": "WorldMapFieldNamed 2004 -> PeriodSpawn 1014 (FieldBoss_AR1_DayBoss_02)"
+        },
+        {
+          "id": "boss:1015",
+          "kind": "abyssBoss",
+          "npcId": 2600094,
+          "name": {
+            "en": "Guardian Lord Nahma",
+            "ko": "수호신장 나흐마",
+            "zh": "守護神將納赫瑪"
+          },
+          "location": {
+            "en": "Chaotic Lower Reshanta",
+            "ko": "혼돈의 에레슈란타 하층",
+            "zh": "渾沌艾雷修藍塔下層"
+          },
+          "days": [
+            "Sun",
+            "Fri"
+          ],
+          "times": [
+            "21:00"
+          ],
+          "source": "WorldMapFieldNamed 2005 -> PeriodSpawn 1015 (FieldBoss_AR1_DayBoss_03)"
+        },
+        {
+          "id": "boss:1018",
+          "kind": "abyssBoss",
+          "npcId": 2600096,
+          "name": {
+            "en": "Executor Tamasa",
+            "ko": "집행자 타마사",
+            "zh": "執行者塔瑪沙"
+          },
+          "location": {
+            "en": "Chaotic Lower Reshanta",
+            "ko": "혼돈의 에레슈란타 하층",
+            "zh": "渾沌艾雷修藍塔下層"
+          },
+          "days": [
+            "Mon",
+            "Thu",
+            "Sat"
+          ],
+          "times": [
+            "21:30"
+          ],
+          "source": "WorldMapFieldNamed 2006 -> PeriodSpawn 1018 (FieldBoss_AR1_DayBoss_04)"
+        },
+        {
+          "id": "boss:1019",
+          "kind": "abyssBoss",
+          "npcId": 2600097,
+          "name": {
+            "en": "Executor Argo",
+            "ko": "집행자 아그로",
+            "zh": "執行者阿格羅"
+          },
+          "location": {
+            "en": "Chaotic Lower Reshanta",
+            "ko": "혼돈의 에레슈란타 하층",
+            "zh": "渾沌艾雷修藍塔下層"
+          },
+          "days": [
+            "Mon",
+            "Thu",
+            "Sat"
+          ],
+          "times": [
+            "21:30"
+          ],
+          "source": "WorldMapFieldNamed 2007 -> PeriodSpawn 1019 (FieldBoss_AR1_DayBoss_05)"
+        },
+        {
+          "id": "boss:1020",
+          "kind": "abyssBoss",
+          "npcId": 2600098,
+          "name": {
+            "en": "Executor Kaira",
+            "ko": "집행자 카이라",
+            "zh": "執行者卡伊拉"
+          },
+          "location": {
+            "en": "Chaotic Lower Reshanta",
+            "ko": "혼돈의 에레슈란타 하층",
+            "zh": "渾沌艾雷修藍塔下層"
+          },
+          "days": [
+            "Mon",
+            "Thu",
+            "Sat"
+          ],
+          "times": [
+            "21:30"
+          ],
+          "source": "WorldMapFieldNamed 2008 -> PeriodSpawn 1020 (FieldBoss_AR1_DayBoss_06)"
+        },
+        {
+          "id": "boss:1151",
+          "kind": "abyssBoss",
+          "npcId": 2600479,
+          "name": {
+            "en": "Enraged Guardian Lord Nahma",
+            "ko": "분노한 수호신장 나흐마",
+            "zh": "憤怒的守護神將納赫瑪"
+          },
+          "location": {
+            "en": "Chaotic Middle Reshanta",
+            "ko": "혼돈의 에레슈란타 중층",
+            "zh": "渾沌艾雷修藍塔中層"
+          },
+          "days": [
+            "Sun",
+            "Fri"
+          ],
+          "times": [
+            "21:00"
+          ],
+          "source": "WorldMapFieldNamed 2201 -> PeriodSpawn 1151 (FieldBoss_AR3_DayBoss_02)"
+        },
+        {
+          "id": "boss:1152",
+          "kind": "abyssBoss",
+          "npcId": 2600480,
+          "name": {
+            "en": "Enraged Guardian Lord Nahma",
+            "ko": "분노한 수호신장 나흐마",
+            "zh": "憤怒的守護神將納赫瑪"
+          },
+          "location": {
+            "en": "Chaotic Middle Reshanta",
+            "ko": "혼돈의 에레슈란타 중층",
+            "zh": "渾沌艾雷修藍塔中層"
+          },
+          "days": [
+            "Sun",
+            "Fri"
+          ],
+          "times": [
+            "21:00"
+          ],
+          "source": "WorldMapFieldNamed 2202 -> PeriodSpawn 1152 (FieldBoss_AR3_DayBoss_03)"
+        },
+        {
+          "id": "boss:1153",
+          "kind": "abyssBoss",
+          "npcId": 2600520,
+          "name": {
+            "en": "Executioner Dramos",
+            "ko": "처형관 드라모스",
+            "zh": "處刑官德拉莫斯"
+          },
+          "location": {
+            "en": "Chaotic Middle Reshanta",
+            "ko": "혼돈의 에레슈란타 중층",
+            "zh": "渾沌艾雷修藍塔中層"
+          },
+          "days": [
+            "Mon",
+            "Thu",
+            "Sat"
+          ],
+          "times": [
+            "21:30"
+          ],
+          "source": "WorldMapFieldNamed 2203 -> PeriodSpawn 1153 (FieldBoss_AR3_DayBoss_04)"
+        },
+        {
+          "id": "boss:1154",
+          "kind": "abyssBoss",
+          "npcId": 2600521,
+          "name": {
+            "en": "Turncoat Ducal",
+            "ko": "반역자 듀칼",
+            "zh": "反逆者杜卡爾"
+          },
+          "location": {
+            "en": "Chaotic Middle Reshanta",
+            "ko": "혼돈의 에레슈란타 중층",
+            "zh": "渾沌艾雷修藍塔中層"
+          },
+          "days": [
+            "Mon",
+            "Thu",
+            "Sat"
+          ],
+          "times": [
+            "21:30"
+          ],
+          "source": "WorldMapFieldNamed 2204 -> PeriodSpawn 1154 (FieldBoss_AR3_DayBoss_05)"
+        },
+        {
+          "id": "boss:1155",
+          "kind": "abyssBoss",
+          "npcId": 2600522,
+          "name": {
+            "en": "Ravager Marakha",
+            "ko": "파멸자 마라카",
+            "zh": "破滅者瑪拉卡"
+          },
+          "location": {
+            "en": "Chaotic Middle Reshanta",
+            "ko": "혼돈의 에레슈란타 중층",
+            "zh": "渾沌艾雷修藍塔中層"
+          },
+          "days": [
+            "Mon",
+            "Thu",
+            "Sat"
+          ],
+          "times": [
+            "21:30"
+          ],
+          "source": "WorldMapFieldNamed 2205 -> PeriodSpawn 1155 (FieldBoss_AR3_DayBoss_06)"
+        },
+        {
+          "id": "invasion",
+          "kind": "invasion",
+          "name": {
+            "en": "Dimensional Invasion",
+            "ko": "차원 침공",
+            "zh": "次元進攻"
+          },
+          "days": [
+            "Sun",
+            "Mon",
+            "Tue",
+            "Wed",
+            "Thu",
+            "Fri",
+            "Sat"
+          ],
+          "times": [
+            "00:30",
+            "01:30",
+            "02:30",
+            "03:30",
+            "04:30",
+            "05:30",
+            "06:30",
+            "07:30",
+            "08:30",
+            "09:30",
+            "10:30",
+            "11:30",
+            "12:30",
+            "13:30",
+            "14:30",
+            "15:30",
+            "16:30",
+            "17:30",
+            "18:30",
+            "19:30",
+            "20:30",
+            "21:30",
+            "22:30",
+            "23:30"
+          ],
+          "durationSeconds": 180,
+          "progressSeconds": {
+            "min": 600,
+            "max": 600
+          },
+          "source": "EventSchedule 1001, 2001 -> FieldEvent EFieldEventKind::Invasion (6 rows)"
+        },
+        {
+          "id": "shugoFesta",
+          "kind": "shugoFesta",
+          "name": {
+            "en": "Shugo Festival",
+            "ko": "슈고 페스타",
+            "zh": "樹古慶典"
+          },
+          "days": [
+            "Sun",
+            "Mon",
+            "Tue",
+            "Wed",
+            "Thu",
+            "Fri",
+            "Sat"
+          ],
+          "times": [
+            "00:00",
+            "01:00",
+            "02:00",
+            "03:00",
+            "04:00",
+            "05:00",
+            "06:00",
+            "07:00",
+            "08:00",
+            "09:00",
+            "10:00",
+            "11:00",
+            "12:00",
+            "13:00",
+            "14:00",
+            "15:00",
+            "16:00",
+            "17:00",
+            "18:00",
+            "19:00",
+            "20:00",
+            "21:00",
+            "22:00",
+            "23:00"
+          ],
+          "durationSeconds": 180,
+          "progressSeconds": {
+            "min": 175,
+            "max": 300
+          },
+          "source": "EventSchedule 1101, 1102, 1103, 1104, 1105, 1106, 1107, 1108, 1109, 2101, 2102, 2103, 2104, 2105, 2106, 2107, 2108, 2109 -> FieldEvent EFieldEventKind::ShugoFesta (18 games); GLOBAL-20261012-servers\\AION2\\Content\\Data\\Table"
+        }
+      ]
+    }
+  }
+}

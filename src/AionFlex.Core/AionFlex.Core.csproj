@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>Aion2Meter.Core</AssemblyName>
+    <RootNamespace>AionFlex.Core</RootNamespace>
+    <TargetFramework>net10.0</TargetFramework>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <NoWarn>$(NoWarn);CS0169;CS0649</NoWarn>
+  </PropertyGroup>
+</Project>

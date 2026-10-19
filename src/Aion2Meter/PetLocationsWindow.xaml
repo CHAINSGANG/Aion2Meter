@@ -1,0 +1,185 @@
+<Window x:Class="Aion2Meter.PetLocationsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
+        Title="Aion II Meter · Где найти питомца"
+        Width="880" Height="620" MinWidth="720" MinHeight="500"
+        WindowStyle="None" ResizeMode="CanResizeWithGrip" AllowsTransparency="True"
+        Background="Transparent" ShowInTaskbar="False" UseLayoutRounding="True" SnapsToDevicePixels="True">
+    <shell:WindowChrome.WindowChrome>
+        <shell:WindowChrome CaptionHeight="0" ResizeBorderThickness="6" CornerRadius="0" GlassFrameThickness="0" UseAeroCaptionButtons="False" />
+    </shell:WindowChrome.WindowChrome>
+
+    <Window.Resources>
+        <ImageBrush x:Key="AionClose" ImageSource="/Aion2Meter;component/Assets/Textures/CommonAtlas.png" ViewboxUnits="Absolute" Viewbox="372,194,54,54" Stretch="Uniform" />
+        <SolidColorBrush x:Key="PanelBackground" Color="#FC1C242A" />
+        <SolidColorBrush x:Key="SoftLine" Color="#24FFFFFF" />
+
+        <Style x:Key="LocationChip" TargetType="Border">
+            <Setter Property="Background" Value="#5910171C" />
+            <Setter Property="BorderBrush" Value="#426E777C" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="2" />
+            <Setter Property="Padding" Value="9,7" />
+            <Setter Property="Margin" Value="0,0,0,5" />
+        </Style>
+
+        <Style x:Key="MapSelectorStyle" TargetType="ComboBox">
+            <Setter Property="Foreground" Value="#FFF1E7CF" />
+            <Setter Property="Background" Value="#FF20282E" />
+            <Setter Property="BorderBrush" Value="#FF626D73" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="10,7" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="FontWeight" Value="Bold" />
+        </Style>
+    </Window.Resources>
+
+    <Border Margin="2" Background="{StaticResource PanelBackground}" BorderBrush="#FF687177" BorderThickness="1" CornerRadius="1">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="54" />
+                <RowDefinition Height="92" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="32" />
+            </Grid.RowDefinitions>
+
+            <Border BorderBrush="{StaticResource SoftLine}" BorderThickness="0,0,0,1">
+                <Grid Margin="14,0,8,0" Background="Transparent" MouseLeftButtonDown="DragRegion_MouseLeftButtonDown">
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                    <Image Width="29" Height="29" Source="/Aion2Meter;component/Assets/Brand/Aion2MeterEmblem.png" Stretch="Uniform" />
+                    <StackPanel Grid.Column="1" Margin="9,0,0,0" Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="ГДЕ НАЙТИ" FontFamily="{StaticResource AionFont}" FontSize="16" FontWeight="Bold" VerticalAlignment="Center" />
+                        <Border Margin="10,0,0,0" Padding="8,3" Background="#4AD1A741" CornerRadius="8" VerticalAlignment="Center">
+                            <TextBlock Text="ТОЧКИ ИЗ КЛИЕНТА" FontSize="8" FontWeight="Bold" Foreground="#FFF1D987" />
+                        </Border>
+                    </StackPanel>
+                    <Button Grid.Column="2" Style="{StaticResource IconButtonStyle}" ToolTip="Закрыть" Click="CloseButton_Click">
+                        <Border Width="25" Height="25" Background="{StaticResource AionClose}" />
+                    </Button>
+                </Grid>
+            </Border>
+
+            <Border Grid.Row="1" Background="#5010161B" BorderBrush="{StaticResource SoftLine}" BorderThickness="0,0,0,1">
+                <Grid Margin="17,10">
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="70" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                    <Border Width="62" Height="62" BorderBrush="#99D7B654" BorderThickness="1" CornerRadius="4" Background="#4010171C">
+                        <Grid>
+                            <TextBlock Text="♞" FontSize="28" Foreground="#889FA9AE" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="{Binding Pet.HasPortrait, Converter={StaticResource InverseBoolToVisibility}}" />
+                            <Image Source="{Binding Pet.PortraitPath}" Margin="3" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality" Visibility="{Binding Pet.HasPortrait, Converter={StaticResource BoolToVisibility}}" />
+                        </Grid>
+                    </Border>
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                        <TextBlock Text="{Binding Pet.Name}" FontSize="18" FontWeight="Bold" />
+                        <TextBlock Text="{Binding Snapshot.Summary}" Margin="0,6,0,0" FontSize="11" Foreground="#FFB8C1C5" />
+                    </StackPanel>
+                    <Border Grid.Column="2" Padding="11,7" Background="#442CA279" CornerRadius="2" VerticalAlignment="Center">
+                        <StackPanel>
+                            <TextBlock Text="{Binding Pet.LevelText}" FontFamily="{StaticResource AionFont}" FontSize="12" FontWeight="Bold" Foreground="#FFF0E4C8" HorizontalAlignment="Right" />
+                            <TextBlock Text="КОЛЛЕКЦИЯ" Margin="0,3,0,0" FontSize="8" FontWeight="Bold" Foreground="#FFA8E4CB" HorizontalAlignment="Right" />
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </Border>
+
+            <Grid Grid.Row="2" Margin="12,11,12,10">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="265" />
+                    <ColumnDefinition Width="12" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <Grid>
+                    <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="*" /><RowDefinition Height="Auto" /><RowDefinition Height="160" /></Grid.RowDefinitions>
+                    <TextBlock Text="ЗОНЫ" Margin="3,0,0,7" FontSize="9" FontWeight="Bold" Foreground="#FF9CA6AB" />
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                        <ItemsControl ItemsSource="{Binding Snapshot.Regions}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Style="{StaticResource LocationChip}">
+                                        <TextBlock Text="{Binding DisplayText}" FontSize="11" FontWeight="SemiBold" TextWrapping="Wrap" />
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+
+                    <TextBlock Grid.Row="2" Text="МОБЫ-ИСТОЧНИКИ" Margin="3,12,0,7" FontSize="9" FontWeight="Bold" Foreground="#FF9CA6AB" />
+                    <ScrollViewer Grid.Row="3" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                        <ItemsControl ItemsSource="{Binding SelectedMap.Sources}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Style="{StaticResource LocationChip}">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                                            <StackPanel>
+                                                <TextBlock Text="{Binding Name}" FontSize="11" FontWeight="Bold" TextTrimming="CharacterEllipsis" ToolTip="{Binding Name}" />
+                                                <TextBlock Text="{Binding LevelText}" Margin="0,3,0,0" FontSize="9" Foreground="#FF96A1A7" />
+                                            </StackPanel>
+                                            <TextBlock Grid.Column="1" Text="{Binding SpawnText}" Margin="8,0,0,0" FontSize="9" FontWeight="Bold" Foreground="#FFD8BD69" VerticalAlignment="Center" />
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </Grid>
+
+                <Grid Grid.Column="2">
+                    <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="*" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+                    <ComboBox x:Name="MapSelector" ItemsSource="{Binding Snapshot.Maps}" SelectedItem="{Binding SelectedMap, Mode=TwoWay}"
+                              Style="{StaticResource MapSelectorStyle}" SelectionChanged="MapSelector_SelectionChanged">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel>
+                                    <TextBlock Text="{Binding Title}" FontSize="12" FontWeight="Bold" />
+                                    <TextBlock Text="{Binding Subtitle}" Margin="0,2,0,0" FontSize="9" Foreground="#FF9DA8AD" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+
+                    <Border Grid.Row="1" Margin="0,9,0,8" BorderBrush="#FF4D585E" BorderThickness="1" CornerRadius="2" Background="#FF0E161B" ClipToBounds="True">
+                        <Grid>
+                            <Image Source="{Binding MapPreview}" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality" Visibility="{Binding HasMapPreview, Converter={StaticResource BoolToVisibility}}" />
+                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="{Binding HasMapPreview, Converter={StaticResource InverseBoolToVisibility}}">
+                                <TextBlock Text="⌖" FontSize="31" Foreground="#99D6B650" HorizontalAlignment="Center" />
+                                <TextBlock Text="ДЛЯ ЭТОЙ ЛОКАЦИИ НЕТ ФОНОВОЙ КАРТЫ" Margin="0,8,0,0" FontSize="10" FontWeight="Bold" Foreground="#FF9EA8AD" />
+                                <TextBlock Text="Список мобов и число точек всё равно доступны" Margin="0,4,0,0" FontSize="9" Foreground="#FF78848A" />
+                            </StackPanel>
+                            <Border HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10" Padding="8,5"
+                                    Background="#D9121A1F" BorderBrush="#4DFFFFFF" BorderThickness="1" CornerRadius="2"
+                                    Visibility="{Binding HasMapPreview, Converter={StaticResource BoolToVisibility}}">
+                                <StackPanel Orientation="Horizontal">
+                                    <Ellipse Width="7" Height="7" Fill="#FF65E6EE" VerticalAlignment="Center" />
+                                    <TextBlock Text="ВЫ" Margin="5,0,12,0" FontSize="8" FontWeight="Bold" VerticalAlignment="Center" />
+                                    <Ellipse Width="7" Height="7" Fill="#FFE1BE58" VerticalAlignment="Center" />
+                                    <TextBlock Text="МОБЫ" Margin="5,0,0,0" FontSize="8" FontWeight="Bold" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+                    </Border>
+
+                    <Border Grid.Row="2" Padding="10,7" Background="#5010161B" BorderBrush="#365F686D" BorderThickness="1" CornerRadius="2">
+                        <Grid>
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                            <StackPanel>
+                                <TextBlock Text="{Binding NavigationText}" FontFamily="{StaticResource AionFont}" FontSize="11" FontWeight="Bold" Foreground="#FF6FE2E8" TextTrimming="CharacterEllipsis" />
+                                <TextBlock Text="{Binding NavigationDetail}" Margin="0,3,0,0" FontSize="9" Foreground="#FF9DA8AD" TextTrimming="CharacterEllipsis" />
+                            </StackPanel>
+                            <TextBlock Grid.Column="1" Text="{Binding SelectedMap.SpawnText}" Margin="12,0,0,0" FontSize="9" FontWeight="Bold" Foreground="#FFD8BD69" VerticalAlignment="Center" />
+                        </Grid>
+                    </Border>
+                </Grid>
+            </Grid>
+
+            <Border Grid.Row="3" BorderBrush="{StaticResource SoftLine}" BorderThickness="0,1,0,0" Background="#3510161B">
+                <Grid Margin="14,0">
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                    <TextBlock Text="Точки прочитаны из игровых MapData" FontSize="9" Foreground="#FF9DA6AB" VerticalAlignment="Center" />
+                    <TextBlock Grid.Column="1" Text="Маршрут строится по пакетам игры" FontSize="9" Foreground="#FF6F9F8B" VerticalAlignment="Center" />
+                </Grid>
+            </Border>
+        </Grid>
+    </Border>
+</Window>

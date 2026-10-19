@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Aion2Meter/Aion2Meter.csproj" />
+    <Project Path="src/AionFlex.Application/AionFlex.Application.csproj" />
+    <Project Path="src/AionFlex.Core/AionFlex.Core.csproj" />
+    <Project Path="src/AionFlex.Infrastructure/AionFlex.Infrastructure.csproj" />
+  </Folder>
+</Solution>

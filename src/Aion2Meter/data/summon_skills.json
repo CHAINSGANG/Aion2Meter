@@ -1,0 +1,109 @@
+{
+  "_meta": {
+    "version": "1.1",
+    "source": "Skill.json -> SkillEffect(Spawn, EffectValueList[9]) -> NpcData(PC_Summon), INTERSECTED with the wire-proven allowlist in the generator",
+    "generator": "tools/build_summon_skills.py",
+    "pcSummonTemplateCount": 186,
+    "excludedDerivedFamilies": [
+      14170000,
+      14180000,
+      15200000,
+      15390000,
+      16100000,
+      16110000,
+      16120000,
+      16130000,
+      16250000
+    ],
+    "note": "Base player-skill families whose damage is WIRE-PROVEN to be emitted only by spawned PC_Summon carrier NPCs, never the player character. An unconfirmed unnamed actor emitting ONLY these families is a summon. A derived family is EXCLUDED until captures prove carrier-only emission — Fire Wall/Cold Storm have caster-emitted System variants (15390058/15200048), so chain-derivation alone is NOT sufficient."
+  },
+  "skills": {
+    "15280000": {
+      "en": "Bittercold Wind",
+      "npcTemplates": [
+        2920011,
+        2920012,
+        2920202,
+        2920295,
+        2920296,
+        2920492,
+        2920653,
+        2920654,
+        2920655,
+        2920656,
+        2920657,
+        2920658,
+        2920659,
+        2920660,
+        2920661,
+        2920662,
+        2920826,
+        2920827,
+        2920828,
+        2920829,
+        2920830,
+        2920831,
+        2920832,
+        2920833,
+        2920834,
+        2920835
+      ]
+    },
+    "17150000": {
+      "en": "Divine Aura",
+      "npcTemplates": [
+        2920637,
+        2920638,
+        2920639,
+        2920640,
+        2920641,
+        2920642,
+        2920643,
+        2920644,
+        2920645,
+        2920646,
+        2920647,
+        2920648,
+        2920649,
+        2920650,
+        2920651,
+        2920652,
+        2920865,
+        2920866,
+        2920867,
+        2920868,
+        2920869,
+        2920870,
+        2920871,
+        2920872,
+        2920873,
+        2920874
+      ]
+    },
+    "17390000": {
+      "en": "Summon Resurrection",
+      "npcTemplates": [
+        2920503,
+        2920744,
+        2920807
+      ]
+    },
+    "19400000": {
+      "en": "Time Bomb",
+      "npcTemplates": [
+        2921342,
+        2921343,
+        2921344,
+        2921345,
+        2921346,
+        2921347,
+        2921387,
+        2921395,
+        2921396,
+        2921397,
+        2921398,
+        2921399
+      ]
+    }
+  }
+}

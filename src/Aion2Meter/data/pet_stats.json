@@ -1,0 +1,63 @@
+{
+  "Feral_01": {
+    "1": {
+      "GroundVehicleSpeed": 1
+    },
+    "2": {
+      "Accuracy": 1,
+      "GroundVehicleSpeed": 2
+    },
+    "3": {
+      "Accuracy": 2,
+      "DEX": 1,
+      "GroundVehicleSpeed": 3
+    }
+  },
+  "Intellect_01": {
+    "1": {
+      "HPMax": 10
+    },
+    "2": {
+      "Critical": 1,
+      "HPMax": 20
+    },
+    "3": {
+      "Critical": 2,
+      "HPMax": 30,
+      "STR": 1
+    }
+  },
+  "Nature_01": {
+    "1": {
+      "SPMax": 300
+    },
+    "2": {
+      "CriticalResist": 1,
+      "SPMax": 600
+    },
+    "3": {
+      "AGI": 1,
+      "CriticalResist": 2,
+      "SPMax": 900
+    }
+  },
+  "Special_01": {
+    "1": {},
+    "2": {},
+    "3": {}
+  },
+  "Trans_01": {
+    "1": {
+      "VehicleSprintCost": 10
+    },
+    "2": {
+      "Evasion": 1,
+      "VehicleSprintCost": 20
+    },
+    "3": {
+      "CON": 1,
+      "Evasion": 2,
+      "VehicleSprintCost": 30
+    }
+  }
+}
