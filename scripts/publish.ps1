@@ -2,7 +2,7 @@ param(
     [ValidateSet('Debug', 'Release')]
     [string]$Configuration = 'Release',
     [string]$Runtime = 'win-x64',
-    [string]$Version = '0.2.4',
+    [string]$Version = '0.2.5',
     [string]$InnoCompiler
 )
 

@@ -10,7 +10,7 @@ internal static class UiLanguageService
     private static readonly IReadOnlyDictionary<string, (string English, string Russian)> Texts =
         new Dictionary<string, (string, string)>(StringComparer.Ordinal)
         {
-            ["CombatAnalysis"] = ("Combat Analysis", "Анализ боя"),
+            ["CombatAnalysis"] = ("Aion 2 DPS", "Aion 2 DPS"),
             ["Close"] = ("Close", "Закрыть"),
             ["Settings"] = ("Settings and tools", "Настройки и инструменты"),
             ["Opacity"] = ("Three opacity levels", "Три уровня прозрачности"),

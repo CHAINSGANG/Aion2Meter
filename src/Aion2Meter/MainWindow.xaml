@@ -8,7 +8,7 @@
         xmlns:services="clr-namespace:Aion2Meter.Services"
         xmlns:primitives="clr-namespace:System.Windows.Controls.Primitives;assembly=PresentationFramework"
         mc:Ignorable="d"
-        Title="Aion II Meter"
+        Title="Aion 2 DPS"
         Icon="/Aion2Meter;component/Assets/Brand/Aion2Meter.ico"
         Width="560"
         Height="510"
@@ -259,6 +259,10 @@
             <Setter Property="Height" Value="32" />
             <Setter Property="Margin" Value="0" />
             <Setter Property="Padding" Value="0" />
+        </Style>
+
+        <Style x:Key="CompactHeaderIconButton" TargetType="Button" BasedOn="{StaticResource HeaderIconButton}">
+            <Setter Property="Width" Value="36" />
         </Style>
 
         <Style x:Key="ModeIconButtonStyle" TargetType="Button" BasedOn="{StaticResource IconButtonStyle}">
@@ -606,22 +610,22 @@
                             <Button Style="{StaticResource HeaderLogoButton}" ToolTip="{services:LocalizedText Tools}" Click="OpenTools_Click">
                                 <Control Width="30" Height="30" Template="{StaticResource MeterLogoTemplate}" IsHitTestVisible="False" />
                             </Button>
-                            <TextBlock Margin="8,0,0,0" Text="{services:LocalizedText CombatAnalysis}" FontFamily="{StaticResource AionFont}" FontSize="16" FontWeight="Bold" VerticalAlignment="Center" />
+                            <TextBlock Margin="6,0,0,0" Text="{services:LocalizedText CombatAnalysis}" FontFamily="{StaticResource AionFont}" FontSize="15" FontWeight="Bold" VerticalAlignment="Center" />
                         </StackPanel>
                         <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                            <Button Style="{StaticResource HeaderIconButton}" ToolTip="{services:LocalizedText Settings}" Click="OpenTools_Click">
+                            <Button Style="{StaticResource CompactHeaderIconButton}" ToolTip="{services:LocalizedText Settings}" Click="OpenTools_Click">
                                 <Border Width="26" Height="26" Background="{StaticResource AionSettings}" />
                             </Button>
-                            <Button Style="{StaticResource HeaderIconButton}" ToolTip="{services:LocalizedText Opacity}" Click="CycleOpacityButton_Click">
+                            <Button Style="{StaticResource CompactHeaderIconButton}" ToolTip="{services:LocalizedText Opacity}" Click="CycleOpacityButton_Click">
                                 <Border x:Name="CompactOpacityIcon" Width="27" Height="27" Background="{StaticResource DmOpacity1}" />
                             </Button>
-                            <Button Style="{StaticResource HeaderIconButton}" ToolTip="{services:LocalizedText Expand}" Click="ToggleCompactButton_Click">
+                            <Button Style="{StaticResource CompactHeaderIconButton}" ToolTip="{services:LocalizedText Expand}" Click="ToggleCompactButton_Click">
                                 <Border Width="27" Height="27" Background="{StaticResource DmViewMax}" />
                             </Button>
-                            <Button Style="{StaticResource HeaderIconButton}" ToolTip="{services:LocalizedText MinimizeTray}" Click="MinimizeToTrayButton_Click">
+                            <Button Style="{StaticResource CompactHeaderIconButton}" ToolTip="{services:LocalizedText MinimizeTray}" Click="MinimizeToTrayButton_Click">
                                 <Grid Width="24" Height="24"><Border Height="2" Width="15" Background="#FFE8E3D6" VerticalAlignment="Bottom" Margin="0,0,0,4" /></Grid>
                             </Button>
-                            <Button Style="{StaticResource HeaderIconButton}" ToolTip="{services:LocalizedText Close}" Click="CloseButton_Click">
+                            <Button Style="{StaticResource CompactHeaderIconButton}" ToolTip="{services:LocalizedText Close}" Click="CloseButton_Click">
                                 <Border Width="24" Height="24" Background="{StaticResource AionClose}" />
                             </Button>
                         </StackPanel>
