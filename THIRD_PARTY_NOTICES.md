@@ -8,6 +8,8 @@ Pet map lookup data and the map-coordinate approach were adapted from the MIT-li
 
 Npcap is not redistributed in this repository or its public release archive. Users install it separately from the official Npcap site. Npcap's free license does not permit bundling it with a public third-party product; commercial redistribution requires an OEM license.
 
+The Windows installer is generated with Inno Setup. Inno Setup is used as a build tool and is not stored in this repository; the generated setup runtime remains subject to the Inno Setup license.
+
 The project also references these NuGet packages at their pinned versions:
 
 - K4os.Compression.LZ4 1.3.8
