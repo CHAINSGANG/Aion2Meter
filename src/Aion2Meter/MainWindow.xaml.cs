@@ -36,12 +36,19 @@ public partial class MainWindow : Window
     private bool _settingsReady;
     private bool _isApplyingSize;
     private int _sizeApplyVersion;
+    private bool _heightUpdateQueued;
+    private int _lastCompactVisibleRows = 1;
+    private int _lastExpandedVisibleRows = 1;
+    private int _lastCompactDebuffSlotHeight = DebuffSlotHeight;
+    private int _lastExpandedDebuffSlotHeight = DebuffSlotHeight;
     private bool _hasCustomCompactSize;
     private bool _hasCustomExpandedSize;
     private double _compactWidth = DefaultCompactWidth;
     private double _compactHeight = 248;
+    private double _compactPreferredHeight = 248;
     private double _expandedWidth = 600;
     private double _expandedHeight = 510;
+    private double _expandedPreferredHeight = 510;
     private ToolsWindow? _toolsWindow;
     private PetsWindow? _petsWindow;
     private PartyCheckWindow? _partyCheckWindow;
@@ -68,6 +75,8 @@ public partial class MainWindow : Window
             settings.ShowPartyMembers,
             settings.ShowTargetDebuffs,
             settings.DisplayMode);
+        _lastCompactDebuffSlotHeight = _lastExpandedDebuffSlotHeight =
+            _viewModel.ShowTargetDebuffs && _viewModel.IsDamageMode ? DebuffSlotHeight : 0;
 
         _settingsSaveTimer = new DispatcherTimer(DispatcherPriority.Background)
         {
@@ -86,8 +95,10 @@ public partial class MainWindow : Window
         UpdateOpacityIcons();
         _compactWidth = Clamp(settings.CompactWidth, MinimumCompactWidth, 1800, DefaultCompactWidth);
         _compactHeight = Clamp(settings.CompactHeight, 210, MaxHeight, 248);
+        _compactPreferredHeight = _compactHeight;
         _expandedWidth = Clamp(settings.ExpandedWidth, 520, 1800, 600);
         _expandedHeight = Clamp(settings.ExpandedHeight, 430, MaxHeight, 510);
+        _expandedPreferredHeight = _expandedHeight;
         _hasCustomCompactSize = settings.HasCustomCompactSize;
         _hasCustomExpandedSize = settings.HasCustomExpandedSize;
 
@@ -176,12 +187,14 @@ public partial class MainWindow : Window
         {
             _compactWidth = ActualWidth;
             _compactHeight = ActualHeight;
+            _compactPreferredHeight = ActualHeight;
             _hasCustomCompactSize = true;
         }
         else
         {
             _expandedWidth = ActualWidth;
             _expandedHeight = ActualHeight;
+            _expandedPreferredHeight = ActualHeight;
             _hasCustomExpandedSize = true;
         }
         QueueSettingsSave();
@@ -242,7 +255,7 @@ public partial class MainWindow : Window
                  e.PropertyName == nameof(MeterViewModel.ShowTargetDebuffs) ||
                  e.PropertyName == nameof(MeterViewModel.DisplayMode))
         {
-            UpdateMeterHeight();
+            QueueMeterHeightUpdate();
             QueueSettingsSave();
         }
         else if (e.PropertyName == nameof(MeterViewModel.BossOnly))
@@ -253,8 +266,23 @@ public partial class MainWindow : Window
 
     private void Players_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
-        UpdateMeterHeight();
+        QueueMeterHeightUpdate();
         Dispatcher.BeginInvoke(DispatcherPriority.Loaded, ApplyTextOpacityToOpenWindows);
+    }
+
+    private void QueueMeterHeightUpdate()
+    {
+        if (_heightUpdateQueued)
+        {
+            return;
+        }
+
+        _heightUpdateQueued = true;
+        Dispatcher.BeginInvoke(() =>
+        {
+            _heightUpdateQueued = false;
+            UpdateMeterHeight();
+        }, DispatcherPriority.Loaded);
     }
 
     private void DynamicItems_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e) =>
@@ -610,31 +638,42 @@ public partial class MainWindow : Window
         MinHeight = 210;
         _isCompact = true;
         ApplyWindowSize(_compactWidth, _compactHeight);
-        if (!_hasCustomCompactSize)
-        {
-            UpdateMeterHeight();
-        }
+        UpdateMeterHeight(force: !_hasCustomCompactSize);
         QueueCompactTargetMarquee();
         QueueSettingsSave();
     }
 
-    private void UpdateMeterHeight()
+    private void UpdateMeterHeight(bool force = false)
     {
         int visibleRows = Math.Clamp(_viewModel.Players.Count, 1, 10);
         int debuffSlotHeight = _viewModel.ShowTargetDebuffs && _viewModel.IsDamageMode ? DebuffSlotHeight : 0;
         if (_isCompact)
         {
-            if (!_hasCustomCompactSize)
+            bool contentChanged = visibleRows != _lastCompactVisibleRows ||
+                                  debuffSlotHeight != _lastCompactDebuffSlotHeight;
+            _lastCompactVisibleRows = visibleRows;
+            _lastCompactDebuffSlotHeight = debuffSlotHeight;
+            if (force || contentChanged)
             {
-                ApplyWindowSize(Width, 174 + visibleRows * 40 + debuffSlotHeight);
+                double compactRequiredHeight = 174 + visibleRows * 40 + debuffSlotHeight;
+                double desiredHeight = Math.Max(_compactPreferredHeight, compactRequiredHeight);
+                if (Math.Abs(Height - desiredHeight) > 0.5)
+                {
+                    ApplyWindowSize(Width, desiredHeight);
+                }
             }
             return;
         }
 
+        bool expandedContentChanged = visibleRows != _lastExpandedVisibleRows ||
+                                      debuffSlotHeight != _lastExpandedDebuffSlotHeight;
+        _lastExpandedVisibleRows = visibleRows;
+        _lastExpandedDebuffSlotHeight = debuffSlotHeight;
         double requiredHeight = 220 + visibleRows * 51 + debuffSlotHeight;
-        if (!_hasCustomExpandedSize && Height < requiredHeight)
+        double expandedDesiredHeight = Math.Min(MaxHeight, Math.Max(_expandedPreferredHeight, requiredHeight));
+        if ((force || expandedContentChanged) && Math.Abs(Height - expandedDesiredHeight) > 0.5)
         {
-            ApplyWindowSize(Width, Math.Min(MaxHeight, requiredHeight));
+            ApplyWindowSize(Width, expandedDesiredHeight);
         }
     }
 
@@ -646,10 +685,7 @@ public partial class MainWindow : Window
         MinHeight = 430;
         _isCompact = false;
         ApplyWindowSize(Math.Max(520, _expandedWidth), Math.Max(430, _expandedHeight));
-        if (!_hasCustomExpandedSize)
-        {
-            UpdateMeterHeight();
-        }
+        UpdateMeterHeight(force: !_hasCustomExpandedSize);
         QueueSettingsSave();
     }
 
@@ -744,9 +780,9 @@ public partial class MainWindow : Window
             Height = ActualHeight,
             IsCompact = _isCompact,
             CompactWidth = _compactWidth,
-            CompactHeight = _compactHeight,
+            CompactHeight = _compactPreferredHeight,
             ExpandedWidth = _expandedWidth,
-            ExpandedHeight = _expandedHeight,
+            ExpandedHeight = _expandedPreferredHeight,
             HasCustomCompactSize = _hasCustomCompactSize,
             HasCustomExpandedSize = _hasCustomExpandedSize,
             OpacityLevel = _opacityLevelIndex,

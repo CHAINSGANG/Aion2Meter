@@ -4,7 +4,7 @@
     <TargetFramework>net10.0-windows</TargetFramework>
     <UseWPF>true</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>
-    <Version>0.2.5</Version>
+    <Version>0.2.6</Version>
     <AssemblyName>Aion2Meter</AssemblyName>
     <RootNamespace>Aion2Meter</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
