@@ -10,6 +10,9 @@ namespace Aion2Meter.Services;
 internal sealed class GameWindowAttachment : IDisposable
 {
     private const int GwlHwndParent = -8;
+    private const int GwlExStyle = -20;
+    private const long WsExToolWindow = 0x00000080L;
+    private const long WsExNoActivate = 0x08000000L;
     private readonly Window _meterWindow;
     private readonly DispatcherTimer _timer;
     private nint _gameWindow;
@@ -48,7 +51,10 @@ internal sealed class GameWindowAttachment : IDisposable
             ShowWindow(_gameWindow, 9);
         }
         _meterWindow.Show();
-        _meterWindow.Activate();
+        if (_gameWindow != 0)
+        {
+            SetForegroundWindow(_gameWindow);
+        }
     }
 
     private void Refresh()
@@ -81,6 +87,8 @@ internal sealed class GameWindowAttachment : IDisposable
             return;
         }
 
+        nint extendedStyle = GetWindowLongPtr(meterHandle, GwlExStyle);
+        SetWindowLongPtr(meterHandle, GwlExStyle, extendedStyle | (nint)(WsExToolWindow | WsExNoActivate));
         SetWindowLongPtr(meterHandle, GwlHwndParent, gameWindow);
         _meterWindow.Topmost = gameWindow == 0;
     }
@@ -125,6 +133,12 @@ internal sealed class GameWindowAttachment : IDisposable
 
     [DllImport("user32.dll")]
     private static extern bool ShowWindow(nint hWnd, int nCmdShow);
+
+    [DllImport("user32.dll")]
+    private static extern bool SetForegroundWindow(nint hWnd);
+
+    [DllImport("user32.dll", EntryPoint = "GetWindowLongPtrW")]
+    private static extern nint GetWindowLongPtr(nint hWnd, int nIndex);
 
     [DllImport("user32.dll", EntryPoint = "SetWindowLongPtrW")]
     private static extern nint SetWindowLongPtr(nint hWnd, int nIndex, nint newLong);

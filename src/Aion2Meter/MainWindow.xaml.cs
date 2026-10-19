@@ -30,6 +30,7 @@ public partial class MainWindow : Window
     private readonly bool _openPartyOnLoad;
     private readonly bool _openTimersOnLoad;
     private int _opacityLevelIndex;
+    private double _windowOpacity = 1;
     private double _textOpacity = 1;
     private bool _isCompact;
     private bool _settingsReady;
@@ -79,7 +80,8 @@ public partial class MainWindow : Window
         };
 
         _opacityLevelIndex = Math.Clamp(settings.OpacityLevel, 0, OpacityLevels.Length - 1);
-        Opacity = Math.Clamp(settings.WindowOpacity, 0.25, 1);
+        Opacity = 1;
+        _windowOpacity = Math.Clamp(settings.WindowOpacity, 0.25, 1);
         _textOpacity = Math.Clamp(settings.TextOpacity, 0.25, 1);
         UpdateOpacityIcons();
         _compactWidth = Clamp(settings.CompactWidth, MinimumCompactWidth, 1800, DefaultCompactWidth);
@@ -124,6 +126,7 @@ public partial class MainWindow : Window
             () => Dispatcher.Invoke(ExitApplication));
         _gameWindowAttachment = new GameWindowAttachment(this);
         _gameWindowAttachment.Start();
+        ApplyWindowFillOpacityToOpenWindows();
         ApplyTextOpacityToOpenWindows();
         await _viewModel.InitializeAsync();
         RefreshNotificationPopupPlacement();
@@ -327,6 +330,7 @@ public partial class MainWindow : Window
         _breakdownWindows[player.PlayerId] = window;
         window.Closed += (_, _) => _breakdownWindows.Remove(player.PlayerId);
         window.Show();
+        ApplyWindowFillOpacity(window);
         ApplyTextOpacity(window);
         e.Handled = true;
     }
@@ -352,6 +356,7 @@ public partial class MainWindow : Window
         };
         _toolsWindow.Closed += (_, _) => _toolsWindow = null;
         _toolsWindow.Show();
+        ApplyWindowFillOpacity(_toolsWindow);
         ApplyTextOpacity(_toolsWindow);
     }
 
@@ -371,6 +376,7 @@ public partial class MainWindow : Window
         };
         _petsWindow.Closed += (_, _) => _petsWindow = null;
         _petsWindow.Show();
+        ApplyWindowFillOpacity(_petsWindow);
         ApplyTextOpacity(_petsWindow);
     }
 
@@ -390,6 +396,7 @@ public partial class MainWindow : Window
         };
         _partyCheckWindow.Closed += (_, _) => _partyCheckWindow = null;
         _partyCheckWindow.Show();
+        ApplyWindowFillOpacity(_partyCheckWindow);
         ApplyTextOpacity(_partyCheckWindow);
     }
 
@@ -409,6 +416,7 @@ public partial class MainWindow : Window
         };
         _timersWindow.Closed += (_, _) => _timersWindow = null;
         _timersWindow.Show();
+        ApplyWindowFillOpacity(_timersWindow);
         ApplyTextOpacity(_timersWindow);
     }
 
@@ -473,25 +481,60 @@ public partial class MainWindow : Window
     internal void CycleOpacity()
     {
         _opacityLevelIndex = (_opacityLevelIndex + 1) % OpacityLevels.Length;
-        Opacity = OpacityLevels[_opacityLevelIndex];
+        _windowOpacity = OpacityLevels[_opacityLevelIndex];
         UpdateOpacityIcons();
+        ApplyWindowFillOpacityToOpenWindows();
         _toolsWindow?.SyncOpacitySliders();
         QueueSettingsSave();
     }
 
-    internal double WindowOpacityPercent => Opacity * 100;
+    internal double WindowOpacityPercent => _windowOpacity * 100;
     internal double TextOpacityPercent => _textOpacity * 100;
 
     internal void SetCustomOpacity(double windowPercent, double textPercent)
     {
-        Opacity = Math.Clamp(windowPercent / 100d, 0.25, 1);
+        _windowOpacity = Math.Clamp(windowPercent / 100d, 0.25, 1);
         _textOpacity = Math.Clamp(textPercent / 100d, 0.25, 1);
         _opacityLevelIndex = Enumerable.Range(0, OpacityLevels.Length)
-            .OrderBy(index => Math.Abs(OpacityLevels[index] - Opacity))
+            .OrderBy(index => Math.Abs(OpacityLevels[index] - _windowOpacity))
             .First();
         UpdateOpacityIcons();
+        ApplyWindowFillOpacityToOpenWindows();
         ApplyTextOpacityToOpenWindows();
         QueueSettingsSave();
+    }
+
+    private void ApplyWindowFillOpacityToOpenWindows()
+    {
+        ApplyWindowFillOpacity(this);
+        if (_toolsWindow is not null) ApplyWindowFillOpacity(_toolsWindow);
+        if (_petsWindow is not null) ApplyWindowFillOpacity(_petsWindow);
+        if (_partyCheckWindow is not null) ApplyWindowFillOpacity(_partyCheckWindow);
+        if (_timersWindow is not null) ApplyWindowFillOpacity(_timersWindow);
+        foreach (PlayerBreakdownWindow window in _breakdownWindows.Values) ApplyWindowFillOpacity(window);
+    }
+
+    private void ApplyWindowFillOpacity(Window window)
+    {
+        window.Opacity = 1;
+        foreach (string key in new[] { "PanelBackground", "PanelHeader", "DarkStrip" })
+        {
+            if (window.Resources[key] is Brush brush)
+            {
+                brush.Opacity = _windowOpacity;
+            }
+        }
+
+        // A few auxiliary windows use a literal root fill rather than a named
+        // resource. Its background fades independently while text stays crisp.
+        if (!ReferenceEquals(window, this) && VisualTreeHelper.GetChildrenCount(window) > 0 &&
+            VisualTreeHelper.GetChild(window, 0) is System.Windows.Controls.Border root &&
+            root.Background is SolidColorBrush solid)
+        {
+            SolidColorBrush copy = solid.Clone();
+            copy.Opacity = _windowOpacity;
+            root.Background = copy;
+        }
     }
 
     private void ApplyTextOpacityToOpenWindows()
@@ -707,7 +750,7 @@ public partial class MainWindow : Window
             HasCustomCompactSize = _hasCustomCompactSize,
             HasCustomExpandedSize = _hasCustomExpandedSize,
             OpacityLevel = _opacityLevelIndex,
-            WindowOpacity = Opacity,
+            WindowOpacity = _windowOpacity,
             TextOpacity = _textOpacity,
             BossOnly = _viewModel.BossOnly,
             ShowPartyMembers = _viewModel.ShowPartyMembers,
