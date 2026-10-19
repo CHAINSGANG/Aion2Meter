@@ -351,6 +351,18 @@ public sealed class MeterViewModel : BindableBase, IDisposable
     public string PauseText => IsPaused ? "ПРОДОЛЖИТЬ" : "ПАУЗА";
     public string PauseGlyph => IsPaused ? "▶" : "Ⅱ";
 
+    public void RestorePreferences(
+        bool bossOnly,
+        bool showPartyMembers,
+        bool showTargetDebuffs,
+        MeterDisplayMode displayMode)
+    {
+        BossOnly = bossOnly;
+        DisplayMode = displayMode;
+        ShowPartyMembers = displayMode == MeterDisplayMode.DamageTaken || showPartyMembers;
+        ShowTargetDebuffs = showTargetDebuffs;
+    }
+
     public async Task InitializeAsync()
     {
         if (_initialized)

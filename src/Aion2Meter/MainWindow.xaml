@@ -200,8 +200,9 @@
                 </Canvas>
             </Grid>
             <ControlTemplate.Triggers>
-                <EventTrigger RoutedEvent="FrameworkElement.Loaded">
-                    <BeginStoryboard>
+                <Trigger Property="IsVisible" Value="True">
+                    <Trigger.EnterActions>
+                    <BeginStoryboard x:Name="SparklesStoryboard">
                         <Storyboard>
                             <DoubleAnimation Storyboard.TargetName="LocalNameGlow" Storyboard.TargetProperty="Opacity" From="0.56" To="0.82" Duration="0:0:1.8" AutoReverse="True" RepeatBehavior="Forever" />
                             <DoubleAnimation Storyboard.TargetName="SparkA" Storyboard.TargetProperty="RenderTransform.(TranslateTransform.X)" From="150" To="-18" Duration="0:0:3.1" RepeatBehavior="Forever" />
@@ -216,7 +217,11 @@
                             <DoubleAnimation Storyboard.TargetName="SparkE" Storyboard.TargetProperty="Opacity" BeginTime="0:0:1.35" From="0.1" To="0.9" Duration="0:0:0.75" AutoReverse="True" RepeatBehavior="Forever" />
                         </Storyboard>
                     </BeginStoryboard>
-                </EventTrigger>
+                    </Trigger.EnterActions>
+                    <Trigger.ExitActions>
+                        <RemoveStoryboard BeginStoryboardName="SparklesStoryboard" />
+                    </Trigger.ExitActions>
+                </Trigger>
             </ControlTemplate.Triggers>
         </ControlTemplate>
 

@@ -65,7 +65,7 @@ Name: "{autodesktop}\{#AppName}"; Filename: "{app}\{#AppExeName}"; WorkingDir: "
 
 [Run]
 Filename: "{tmp}\Aion2Meter\{#NpcapInstallerName}"; StatusMsg: "Установка официального драйвера Npcap..."; Flags: waituntilterminated; Check: not IsNpcapInstalled
-Filename: "{app}\{#AppExeName}"; Description: "Запустить {#AppName}"; WorkingDir: "{app}"; Flags: postinstall nowait skipifsilent; Check: IsNpcapInstalled
+Filename: "{app}\{#AppExeName}"; Description: "Запустить {#AppName}"; WorkingDir: "{app}"; Flags: postinstall nowait skipifsilent runascurrentuser; Check: IsNpcapInstalled
 
 [UninstallDelete]
 Type: filesandordirs; Name: "{app}\logs"

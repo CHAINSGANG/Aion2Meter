@@ -9,6 +9,7 @@ using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
+using Aion2Meter.Services;
 using Aion2Meter.ViewModels;
 
 namespace Aion2Meter;
@@ -20,6 +21,8 @@ public partial class MainWindow : Window
     private const int DebuffSlotHeight = 34;
     private static readonly double[] OpacityLevels = [1.0, 0.72, 0.46];
     private readonly MeterViewModel _viewModel = new();
+    private readonly MeterSettingsStore _settingsStore = new();
+    private readonly DispatcherTimer _settingsSaveTimer;
     private readonly bool _openToolsOnLoad;
     private readonly bool _openPetsOnLoad;
     private readonly bool _openPetLocationOnLoad;
@@ -27,6 +30,13 @@ public partial class MainWindow : Window
     private readonly bool _openTimersOnLoad;
     private int _opacityLevelIndex;
     private bool _isCompact;
+    private bool _settingsReady;
+    private bool _isApplyingSize;
+    private int _sizeApplyVersion;
+    private bool _hasCustomCompactSize;
+    private bool _hasCustomExpandedSize;
+    private double _compactWidth = DefaultCompactWidth;
+    private double _compactHeight = 248;
     private double _expandedWidth = 600;
     private double _expandedHeight = 510;
     private ToolsWindow? _toolsWindow;
@@ -37,10 +47,36 @@ public partial class MainWindow : Window
 
     public MainWindow()
     {
+        MeterSettings settings = _settingsStore.Load();
         InitializeComponent();
         DataContext = _viewModel;
         _viewModel.PropertyChanged += ViewModel_PropertyChanged;
         _viewModel.Players.CollectionChanged += Players_CollectionChanged;
+        _viewModel.RestorePreferences(
+            settings.BossOnly,
+            settings.ShowPartyMembers,
+            settings.ShowTargetDebuffs,
+            settings.DisplayMode);
+
+        _settingsSaveTimer = new DispatcherTimer(DispatcherPriority.Background)
+        {
+            Interval = TimeSpan.FromMilliseconds(350)
+        };
+        _settingsSaveTimer.Tick += (_, _) =>
+        {
+            _settingsSaveTimer.Stop();
+            SaveSettings();
+        };
+
+        _opacityLevelIndex = Math.Clamp(settings.OpacityLevel, 0, OpacityLevels.Length - 1);
+        Opacity = OpacityLevels[_opacityLevelIndex];
+        UpdateOpacityIcons();
+        _compactWidth = Clamp(settings.CompactWidth, MinimumCompactWidth, 1800, DefaultCompactWidth);
+        _compactHeight = Clamp(settings.CompactHeight, 210, MaxHeight, 248);
+        _expandedWidth = Clamp(settings.ExpandedWidth, 520, 1800, 600);
+        _expandedHeight = Clamp(settings.ExpandedHeight, 430, MaxHeight, 510);
+        _hasCustomCompactSize = settings.HasCustomCompactSize;
+        _hasCustomExpandedSize = settings.HasCustomExpandedSize;
 
         _openToolsOnLoad = Array.Exists(Environment.GetCommandLineArgs(), argument =>
             argument.Equals("--tools", StringComparison.OrdinalIgnoreCase));
@@ -53,11 +89,19 @@ public partial class MainWindow : Window
         _openTimersOnLoad = Array.Exists(Environment.GetCommandLineArgs(), argument =>
             argument.Equals("--timers", StringComparison.OrdinalIgnoreCase));
 
-        if (!Array.Exists(Environment.GetCommandLineArgs(), argument =>
-                argument.Equals("--expanded", StringComparison.OrdinalIgnoreCase)))
+        bool forceExpanded = Array.Exists(Environment.GetCommandLineArgs(), argument =>
+            argument.Equals("--expanded", StringComparison.OrdinalIgnoreCase));
+        if (!forceExpanded && settings.IsCompact)
         {
-            EnterCompactMode();
+            EnterCompactMode(captureCurrentSize: false);
         }
+        else
+        {
+            ApplyWindowSize(_expandedWidth, _expandedHeight);
+        }
+
+        RestoreWindowPosition(settings.Left, settings.Top);
+        _settingsReady = true;
     }
 
     private async void Window_Loaded(object sender, RoutedEventArgs e)
@@ -91,11 +135,34 @@ public partial class MainWindow : Window
         }
     }
 
-    private void Window_LocationChanged(object? sender, EventArgs e) =>
+    private void Window_LocationChanged(object? sender, EventArgs e)
+    {
         RefreshNotificationPopupPlacement();
+        QueueSettingsSave();
+    }
 
-    private void Window_SizeChanged(object sender, SizeChangedEventArgs e) =>
+    private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
+    {
         RefreshNotificationPopupPlacement();
+        if (!_settingsReady || _isApplyingSize || WindowState != WindowState.Normal)
+        {
+            return;
+        }
+
+        if (_isCompact)
+        {
+            _compactWidth = ActualWidth;
+            _compactHeight = ActualHeight;
+            _hasCustomCompactSize = true;
+        }
+        else
+        {
+            _expandedWidth = ActualWidth;
+            _expandedHeight = ActualHeight;
+            _hasCustomExpandedSize = true;
+        }
+        QueueSettingsSave();
+    }
 
     private void Window_StateChanged(object? sender, EventArgs e) =>
         RefreshNotificationPopupPlacement();
@@ -120,6 +187,8 @@ public partial class MainWindow : Window
 
     private void Window_Closed(object? sender, EventArgs e)
     {
+        _settingsSaveTimer.Stop();
+        SaveSettings();
         _toolsWindow?.Close();
         _petsWindow?.Close();
         _partyCheckWindow?.Close();
@@ -145,6 +214,11 @@ public partial class MainWindow : Window
                  e.PropertyName == nameof(MeterViewModel.DisplayMode))
         {
             UpdateMeterHeight();
+            QueueSettingsSave();
+        }
+        else if (e.PropertyName == nameof(MeterViewModel.BossOnly))
+        {
+            QueueSettingsSave();
         }
     }
 
@@ -315,11 +389,8 @@ public partial class MainWindow : Window
     {
         _opacityLevelIndex = (_opacityLevelIndex + 1) % OpacityLevels.Length;
         Opacity = OpacityLevels[_opacityLevelIndex];
-
-        string level = (_opacityLevelIndex + 1).ToString();
-        var icon = (Brush)FindResource($"DmOpacity{level}");
-        OpacityIcon.Background = icon;
-        CompactOpacityIcon.Background = icon;
+        UpdateOpacityIcons();
+        QueueSettingsSave();
     }
 
     private void ToggleCompactButton_Click(object sender, RoutedEventArgs e)
@@ -358,18 +429,25 @@ public partial class MainWindow : Window
         Clipboard.SetImage(bitmap);
     }
 
-    private void EnterCompactMode()
+    private void EnterCompactMode(bool captureCurrentSize = true)
     {
-        _expandedWidth = ActualWidth > 0 ? ActualWidth : Width;
-        _expandedHeight = ActualHeight > 0 ? ActualHeight : Height;
+        if (captureCurrentSize)
+        {
+            _expandedWidth = ActualWidth > 0 ? ActualWidth : Width;
+            _expandedHeight = ActualHeight > 0 ? ActualHeight : Height;
+        }
         DetailedLayout.Visibility = Visibility.Collapsed;
         CompactLayout.Visibility = Visibility.Visible;
         MinWidth = MinimumCompactWidth;
         MinHeight = 210;
-        Width = DefaultCompactWidth;
         _isCompact = true;
-        UpdateMeterHeight();
+        ApplyWindowSize(_compactWidth, _compactHeight);
+        if (!_hasCustomCompactSize)
+        {
+            UpdateMeterHeight();
+        }
         QueueCompactTargetMarquee();
+        QueueSettingsSave();
     }
 
     private void UpdateMeterHeight()
@@ -378,14 +456,17 @@ public partial class MainWindow : Window
         int debuffSlotHeight = _viewModel.ShowTargetDebuffs && _viewModel.IsDamageMode ? DebuffSlotHeight : 0;
         if (_isCompact)
         {
-            Height = 174 + visibleRows * 40 + debuffSlotHeight;
+            if (!_hasCustomCompactSize)
+            {
+                ApplyWindowSize(Width, 174 + visibleRows * 40 + debuffSlotHeight);
+            }
             return;
         }
 
         double requiredHeight = 220 + visibleRows * 51 + debuffSlotHeight;
-        if (Height < requiredHeight)
+        if (!_hasCustomExpandedSize && Height < requiredHeight)
         {
-            Height = Math.Min(MaxHeight, requiredHeight);
+            ApplyWindowSize(Width, Math.Min(MaxHeight, requiredHeight));
         }
     }
 
@@ -395,11 +476,120 @@ public partial class MainWindow : Window
         DetailedLayout.Visibility = Visibility.Visible;
         MinWidth = 520;
         MinHeight = 430;
-        Width = Math.Max(520, _expandedWidth);
-        Height = Math.Max(430, _expandedHeight);
         _isCompact = false;
-        UpdateMeterHeight();
+        ApplyWindowSize(Math.Max(520, _expandedWidth), Math.Max(430, _expandedHeight));
+        if (!_hasCustomExpandedSize)
+        {
+            UpdateMeterHeight();
+        }
+        QueueSettingsSave();
     }
+
+    private void UpdateOpacityIcons()
+    {
+        string level = (_opacityLevelIndex + 1).ToString();
+        var icon = (Brush)FindResource($"DmOpacity{level}");
+        OpacityIcon.Background = icon;
+        CompactOpacityIcon.Background = icon;
+    }
+
+    private void ApplyWindowSize(double width, double height)
+    {
+        _isApplyingSize = true;
+        int version = ++_sizeApplyVersion;
+        Width = width;
+        Height = height;
+        if (_isCompact)
+        {
+            _compactWidth = width;
+            _compactHeight = height;
+        }
+        else
+        {
+            _expandedWidth = width;
+            _expandedHeight = height;
+        }
+
+        Dispatcher.BeginInvoke(() =>
+        {
+            if (version == _sizeApplyVersion)
+            {
+                _isApplyingSize = false;
+            }
+        }, DispatcherPriority.Loaded);
+    }
+
+    private void RestoreWindowPosition(double left, double top)
+    {
+        if (!double.IsFinite(left) || !double.IsFinite(top))
+        {
+            return;
+        }
+
+        double visibleLeft = SystemParameters.VirtualScreenLeft - Width + 80;
+        double visibleRight = SystemParameters.VirtualScreenLeft + SystemParameters.VirtualScreenWidth - 80;
+        double visibleTop = SystemParameters.VirtualScreenTop - Height + 50;
+        double visibleBottom = SystemParameters.VirtualScreenTop + SystemParameters.VirtualScreenHeight - 50;
+        WindowStartupLocation = WindowStartupLocation.Manual;
+        Left = Math.Clamp(left, visibleLeft, visibleRight);
+        Top = Math.Clamp(top, visibleTop, visibleBottom);
+    }
+
+    private void QueueSettingsSave()
+    {
+        if (!_settingsReady)
+        {
+            return;
+        }
+
+        _settingsSaveTimer.Stop();
+        _settingsSaveTimer.Start();
+    }
+
+    private void SaveSettings()
+    {
+        if (!_settingsReady)
+        {
+            return;
+        }
+
+        if (WindowState == WindowState.Normal)
+        {
+            if (_isCompact)
+            {
+                _compactWidth = ActualWidth;
+                _compactHeight = ActualHeight;
+            }
+            else
+            {
+                _expandedWidth = ActualWidth;
+                _expandedHeight = ActualHeight;
+            }
+        }
+
+        _settingsStore.Save(new MeterSettings
+        {
+            Left = RestoreBounds.Left,
+            Top = RestoreBounds.Top,
+            Width = ActualWidth,
+            Height = ActualHeight,
+            IsCompact = _isCompact,
+            CompactWidth = _compactWidth,
+            CompactHeight = _compactHeight,
+            ExpandedWidth = _expandedWidth,
+            ExpandedHeight = _expandedHeight,
+            HasCustomCompactSize = _hasCustomCompactSize,
+            HasCustomExpandedSize = _hasCustomExpandedSize,
+            OpacityLevel = _opacityLevelIndex,
+            BossOnly = _viewModel.BossOnly,
+            ShowPartyMembers = _viewModel.ShowPartyMembers,
+            ShowTargetDebuffs = _viewModel.ShowTargetDebuffs,
+            DisplayMode = _viewModel.DisplayMode
+        });
+    }
+
+    private static double Clamp(double value, double minimum, double maximum, double fallback) =>
+        double.IsFinite(value) ? Math.Clamp(value, minimum, maximum) : fallback;
 
     private void CloseButton_Click(object sender, RoutedEventArgs e) => Close();
 }

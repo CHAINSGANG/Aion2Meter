@@ -730,15 +730,16 @@ public sealed class MeterRuntime : IDisposable
         int targetId = 0;
         if (mode == MeterDisplayMode.Damage)
         {
-            // Combat packets sometimes contain damage-like support effects on a
-            // party member.  Never let such a friendly entity replace the actual
-            // encounter target in the header/HP bar.  Prefer the calculator's
-            // contribution target because it represents the fight being shown.
+            // Follow the target the local player is actually fighting before the
+            // calculator's accumulated encounter target. Short player debuffs can
+            // otherwise spend most of their lifetime attached to a new mob while
+            // the header still shows the previous one. FirstHostileTarget still
+            // rejects party members hit by damage-like support effects.
             targetId = FirstHostileTarget(
-                snapshot.ContributionTargetId,
-                _calculator.GetCurrentTargetId(),
                 Volatile.Read(ref _selectedTargetId),
-                Volatile.Read(ref _lastCombatTargetId));
+                Volatile.Read(ref _lastCombatTargetId),
+                snapshot.ContributionTargetId,
+                _calculator.GetCurrentTargetId());
         }
         Volatile.Write(ref _displayTargetId, targetId);
 

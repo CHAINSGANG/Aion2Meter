@@ -67,7 +67,7 @@ dotnet run --project .\src\Aion2Meter\Aion2Meter.csproj -- --demo --compact --to
 
 ```powershell
 $iscc = .\scripts\prepare-inno.ps1
-.\scripts\publish.ps1 -Version 0.2.1 -InnoCompiler $iscc
+.\scripts\publish.ps1 -Version 0.2.2 -InnoCompiler $iscc
 ```
 
 Результат появится в `artifacts\release`: готовый `Setup.exe`, его SHA-256 и переносной ZIP как запасной вариант.
