@@ -225,6 +225,7 @@ public sealed class MeterRuntime : IDisposable
 
         try
         {
+            NpcapServiceLifecycle.TryStart(diagnostics);
             capture.Start();
             diagnostics.Write(
                 "CAPTURE",

@@ -414,7 +414,9 @@ public sealed class DpsPacketParser : IDpsPacketParser
 
 	public event EventHandler<(int PlayerEntityId, int TargetEntityId)>? PlayerTargetChanged;
 
+	#pragma warning disable CS0067 // Kept for the parser contract; this protocol revision does not emit mob names here.
 	public event EventHandler<(int TargetId, string Name)>? MobNameDiscovered;
+	#pragma warning restore CS0067
 
 	public event EventHandler<(int EntityId, int TemplateCode)>? NpcTemplateDiscovered;
 

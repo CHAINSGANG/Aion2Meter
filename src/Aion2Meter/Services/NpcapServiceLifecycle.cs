@@ -6,9 +6,15 @@ namespace Aion2Meter.Services;
 
 internal static class NpcapServiceLifecycle
 {
-    private const int StopTimeoutMilliseconds = 5000;
+    private const int ControlTimeoutMilliseconds = 5000;
 
-    public static void TryStop(DiagnosticLog diagnostics)
+    public static void TryStart(DiagnosticLog diagnostics) =>
+        TryControl("start", diagnostics);
+
+    public static void TryStop(DiagnosticLog diagnostics) =>
+        TryControl("stop", diagnostics);
+
+    private static void TryControl(string command, DiagnosticLog diagnostics)
     {
         try
         {
@@ -21,19 +27,19 @@ internal static class NpcapServiceLifecycle
                 RedirectStandardOutput = true,
                 RedirectStandardError = true
             };
-            startInfo.ArgumentList.Add("stop");
+            startInfo.ArgumentList.Add(command);
             startInfo.ArgumentList.Add("npcap");
 
             using Process? process = Process.Start(startInfo);
             if (process is null)
             {
-                diagnostics.Write("NPCAP", "service stop could not be started");
+                diagnostics.Write("NPCAP", $"service {command} could not be started");
                 return;
             }
 
-            if (!process.WaitForExit(StopTimeoutMilliseconds))
+            if (!process.WaitForExit(ControlTimeoutMilliseconds))
             {
-                diagnostics.Write("NPCAP", "service stop timed out; Windows will finish the pending stop");
+                diagnostics.Write("NPCAP", $"service {command} timed out; Windows will finish the pending operation");
                 return;
             }
 
@@ -43,12 +49,12 @@ internal static class NpcapServiceLifecycle
             diagnostics.Write(
                 "NPCAP",
                 process.ExitCode == 0
-                    ? "service stop requested successfully"
-                    : $"service stop returned {process.ExitCode}: {detail}");
+                    ? $"service {command} requested successfully"
+                    : $"service {command} returned {process.ExitCode}: {detail}");
         }
         catch (Exception ex)
         {
-            diagnostics.Write("NPCAP", $"service stop failed: {ex.Message}");
+            diagnostics.Write("NPCAP", $"service {command} failed: {ex.Message}");
         }
     }
 }
