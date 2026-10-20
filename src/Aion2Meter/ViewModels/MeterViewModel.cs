@@ -64,15 +64,14 @@ public sealed class MeterViewModel : BindableBase, IDisposable
     private bool _hasEventTimers;
     private bool _hasTargetDebuffs;
     private bool _showTargetDebuffs = true;
+    private bool _isPvpMode;
+    private bool _overlayVisible = true;
+    private bool _keepNotificationsWhenHidden;
     private bool _isInCombat;
     private bool _enrageVisible;
     private string _enrageText = string.Empty;
     private Brush _enrageBackground = MakeGradient("#CC3A4256", 0.16, 0.34);
     private Brush _enrageBorder = MakeBrush("#00FFFFFF");
-    private bool _eventNotificationVisible;
-    private string _eventNotificationText = string.Empty;
-    private Brush _eventNotificationBackground = MakeGradient("#CC3A4256", 0.16, 0.34);
-    private Brush _eventNotificationBorder = MakeBrush("#00FFFFFF");
     private Brush _targetBarBrush = MakeGradient("#F0314C", 0.12, 0.30);
 
     public MeterViewModel()
@@ -88,18 +87,25 @@ public sealed class MeterViewModel : BindableBase, IDisposable
         ToggleModeCommand = new RelayCommand(ToggleMode);
         ToggleParticipantsCommand = new RelayCommand(ToggleParticipants);
         ToggleDebuffsCommand = new RelayCommand(ToggleDebuffs);
+        TogglePvpCommand = new RelayCommand(TogglePvp);
         ShowSelfCommand = new RelayCommand(ShowSelf);
         ShowPartyCommand = new RelayCommand(ShowParty);
         ShowDamageCommand = new RelayCommand(() => SetDisplayMode(MeterDisplayMode.Damage));
         ShowHealingCommand = new RelayCommand(() => SetDisplayMode(MeterDisplayMode.Healing));
         ShowDamageTakenCommand = new RelayCommand(() => SetDisplayMode(MeterDisplayMode.DamageTaken));
         EventTimers.CollectionChanged += (_, _) => OnPropertyChanged(nameof(EventTimerCountText));
+        EventAlerts.CollectionChanged += (_, _) =>
+        {
+            OnPropertyChanged(nameof(HasNotifications));
+            OnPropertyChanged(nameof(ShowNotificationPopup));
+        };
     }
 
     public ObservableCollection<PlayerRowViewModel> Players { get; } = new();
     public ObservableCollection<MeterPetSnapshot> Pets { get; } = new();
     public ObservableCollection<PartyMemberRowViewModel> PartyMembers { get; } = new();
     public ObservableCollection<EventTimerRowViewModel> EventTimers { get; } = new();
+    public ObservableCollection<EventAlertRowViewModel> EventAlerts { get; } = new();
     public ObservableCollection<DebuffTimerViewModel> TargetDebuffs { get; } = new();
 
     public MeterNavigationPosition? GetNavigationPosition() => _runtime?.GetNavigationPosition();
@@ -109,6 +115,7 @@ public sealed class MeterViewModel : BindableBase, IDisposable
     public ICommand ToggleModeCommand { get; }
     public ICommand ToggleParticipantsCommand { get; }
     public ICommand ToggleDebuffsCommand { get; }
+    public ICommand TogglePvpCommand { get; }
     public ICommand ShowSelfCommand { get; }
     public ICommand ShowPartyCommand { get; }
     public ICommand ShowDamageCommand { get; }
@@ -162,7 +169,15 @@ public sealed class MeterViewModel : BindableBase, IDisposable
     public bool HasPets { get => _hasPets; private set => SetProperty(ref _hasPets, value); }
     public bool HasParty { get => _hasParty; private set => SetProperty(ref _hasParty, value); }
     public bool HasEventTimers { get => _hasEventTimers; private set => SetProperty(ref _hasEventTimers, value); }
-    public bool HasTargetDebuffs { get => _hasTargetDebuffs; private set => SetProperty(ref _hasTargetDebuffs, value); }
+    public bool HasTargetDebuffs
+    {
+        get => _hasTargetDebuffs;
+        private set
+        {
+            if (SetProperty(ref _hasTargetDebuffs, value))
+                OnPropertyChanged(nameof(ShowDebuffIcons));
+        }
+    }
     public bool ShowTargetDebuffs
     {
         get => _showTargetDebuffs;
@@ -171,9 +186,48 @@ public sealed class MeterViewModel : BindableBase, IDisposable
             if (SetProperty(ref _showTargetDebuffs, value))
             {
                 OnPropertyChanged(nameof(DebuffToggleTooltip));
+                OnPropertyChanged(nameof(ShowDebuffIcons));
             }
         }
     }
+    public bool ShowDebuffIcons => _overlayVisible && ShowTargetDebuffs && HasTargetDebuffs && IsDamageMode;
+    public bool KeepNotificationsWhenHidden
+    {
+        get => _keepNotificationsWhenHidden;
+        set
+        {
+            if (SetProperty(ref _keepNotificationsWhenHidden, value))
+                OnPropertyChanged(nameof(ShowNotificationPopup));
+        }
+    }
+    public bool ShowNotificationPopup => HasNotifications && (_overlayVisible || KeepNotificationsWhenHidden);
+
+    public void SetOverlayVisible(bool visible)
+    {
+        if (_overlayVisible == visible) return;
+        _overlayVisible = visible;
+        OnPropertyChanged(nameof(ShowDebuffIcons));
+        OnPropertyChanged(nameof(ShowNotificationPopup));
+    }
+    public bool IsPvpMode
+    {
+        get => _isPvpMode;
+        private set
+        {
+            if (!SetProperty(ref _isPvpMode, value)) return;
+            OnPropertyChanged(nameof(IsPveMode));
+            OnPropertyChanged(nameof(CanToggleBossFilter));
+            OnPropertyChanged(nameof(PvpModeTooltip));
+            OnPropertyChanged(nameof(TargetSectionLabel));
+            OnPropertyChanged(nameof(EmptyStateText));
+            NotifyMetricLabelsChanged();
+        }
+    }
+    public bool IsPveMode => !IsPvpMode;
+    public bool CanToggleBossFilter => IsDamageMode && IsPveMode;
+    public string PvpModeTooltip => IsPvpMode
+        ? T("PvP: damage to enemy players · click for PvE", "PvP: урон по игрокам · нажмите для PvE")
+        : T("PvE: damage to monsters · click for PvP", "PvE: урон по мобам · нажмите для PvP");
     public bool IsInCombat { get => _isInCombat; private set => SetProperty(ref _isInCombat, value); }
     public bool EnrageVisible
     {
@@ -183,27 +237,14 @@ public sealed class MeterViewModel : BindableBase, IDisposable
             if (SetProperty(ref _enrageVisible, value))
             {
                 OnPropertyChanged(nameof(HasNotifications));
+                OnPropertyChanged(nameof(ShowNotificationPopup));
             }
         }
     }
     public string EnrageText { get => _enrageText; private set => SetProperty(ref _enrageText, value); }
     public Brush EnrageBackground { get => _enrageBackground; private set => SetProperty(ref _enrageBackground, value); }
     public Brush EnrageBorder { get => _enrageBorder; private set => SetProperty(ref _enrageBorder, value); }
-    public bool EventNotificationVisible
-    {
-        get => _eventNotificationVisible;
-        private set
-        {
-            if (SetProperty(ref _eventNotificationVisible, value))
-            {
-                OnPropertyChanged(nameof(HasNotifications));
-            }
-        }
-    }
-    public string EventNotificationText { get => _eventNotificationText; private set => SetProperty(ref _eventNotificationText, value); }
-    public Brush EventNotificationBackground { get => _eventNotificationBackground; private set => SetProperty(ref _eventNotificationBackground, value); }
-    public Brush EventNotificationBorder { get => _eventNotificationBorder; private set => SetProperty(ref _eventNotificationBorder, value); }
-    public bool HasNotifications => EnrageVisible || EventNotificationVisible;
+    public bool HasNotifications => EnrageVisible || EventAlerts.Count > 0;
     public Brush TargetBarBrush { get => _targetBarBrush; private set => SetProperty(ref _targetBarBrush, value); }
     public bool IsDemo { get => _isDemo; private set => SetProperty(ref _isDemo, value); }
     public bool NeedsRelog
@@ -230,7 +271,9 @@ public sealed class MeterViewModel : BindableBase, IDisposable
         MeterDisplayMode.DamageTaken => T("DAMAGE TAKEN", "ПОЛУЧЕННЫЙ УРОН"),
         _ => T("DAMAGE", "УРОН")
     };
-    public string TargetSectionLabel => DisplayMode == MeterDisplayMode.Damage ? T("CURRENT TARGET", "ТЕКУЩАЯ ЦЕЛЬ") : T("MODE", "РЕЖИМ");
+    public string TargetSectionLabel => DisplayMode == MeterDisplayMode.Damage
+        ? IsPvpMode ? T("PLAYER TARGET", "ИГРОК-ЦЕЛЬ") : T("CURRENT TARGET", "ТЕКУЩАЯ ЦЕЛЬ")
+        : T("MODE", "РЕЖИМ");
     public string ParticipantsHeader => DisplayMode == MeterDisplayMode.DamageTaken
         ? T("SOURCE", "ИСТОЧНИК")
         : ShowPartyMembers ? T("PARTY", "ГРУППА") : T("PLAYER", "ПЕРСОНАЖ");
@@ -260,7 +303,7 @@ public sealed class MeterViewModel : BindableBase, IDisposable
         {
             MeterDisplayMode.Healing => T("NO HEALING DATA", "НЕТ ДАННЫХ ЛЕЧЕНИЯ"),
             MeterDisplayMode.DamageTaken => T("NO DAMAGE TAKEN", "НЕТ ПОЛУЧЕННОГО УРОНА"),
-            _ => T("WAITING FOR COMBAT", "ОЖИДАНИЕ БОЯ")
+            _ => IsPvpMode ? T("WAITING FOR PVP", "ОЖИДАНИЕ PVP") : T("WAITING FOR COMBAT", "ОЖИДАНИЕ БОЯ")
         };
 
     public MeterDisplayMode DisplayMode
@@ -279,6 +322,8 @@ public sealed class MeterViewModel : BindableBase, IDisposable
             }
 
             OnPropertyChanged(nameof(IsDamageMode));
+            OnPropertyChanged(nameof(CanToggleBossFilter));
+            OnPropertyChanged(nameof(ShowDebuffIcons));
             OnPropertyChanged(nameof(IsHealingMode));
             OnPropertyChanged(nameof(IsDamageTakenMode));
             OnPropertyChanged(nameof(CanFilterParticipants));
@@ -359,12 +404,16 @@ public sealed class MeterViewModel : BindableBase, IDisposable
         bool bossOnly,
         bool showPartyMembers,
         bool showTargetDebuffs,
-        MeterDisplayMode displayMode)
+        MeterDisplayMode displayMode,
+        bool pvpMode = false,
+        bool keepNotificationsWhenHidden = false)
     {
         BossOnly = bossOnly;
         DisplayMode = displayMode;
         ShowPartyMembers = displayMode == MeterDisplayMode.DamageTaken || showPartyMembers;
         ShowTargetDebuffs = showTargetDebuffs;
+        IsPvpMode = pvpMode && displayMode == MeterDisplayMode.Damage;
+        KeepNotificationsWhenHidden = keepNotificationsWhenHidden;
     }
 
     public void RefreshLanguage()
@@ -376,6 +425,7 @@ public sealed class MeterViewModel : BindableBase, IDisposable
         OnPropertyChanged(nameof(ModeTooltip));
         OnPropertyChanged(nameof(ParticipantsModeTooltip));
         OnPropertyChanged(nameof(DebuffToggleTooltip));
+        OnPropertyChanged(nameof(PvpModeTooltip));
         OnPropertyChanged(nameof(PauseText));
         OnPropertyChanged(nameof(EmptyStateText));
         OnPropertyChanged(nameof(EventTimerCountText));
@@ -453,7 +503,7 @@ public sealed class MeterViewModel : BindableBase, IDisposable
 
         try
         {
-            _latestSnapshot = IsDemo ? BuildDemoSnapshot() : _runtime?.GetSnapshot(DisplayMode);
+            _latestSnapshot = IsDemo ? BuildDemoSnapshot() : _runtime?.GetSnapshot(DisplayMode, IsPvpMode);
             if (_latestSnapshot is null)
             {
                 return;
@@ -476,7 +526,7 @@ public sealed class MeterViewModel : BindableBase, IDisposable
         NeedsRelog = !IsDemo &&
             (!snapshot.LocalPlayerId.HasValue || string.IsNullOrWhiteSpace(snapshot.LocalPlayerName));
         TargetName = string.IsNullOrWhiteSpace(snapshot.TargetName)
-            ? (BossOnly ? T("Target not detected", "Цель не определена") : T("All targets", "Все цели"))
+            ? (IsPvpMode ? T("Player target not detected", "Игрок-цель не найден") : BossOnly ? T("Target not detected", "Цель не определена") : T("All targets", "Все цели"))
             : snapshot.TargetName;
         TargetFrame = snapshot.TargetFrame;
         if (DisplayMode == MeterDisplayMode.Damage)
@@ -691,19 +741,22 @@ public sealed class MeterViewModel : BindableBase, IDisposable
         IReadOnlyList<MeterEventTimerSnapshot> timers =
         [
             new("demo-rift", "РИФТ", "Разлом", "Пространственный разлом", riftAt, riftUntil, false, "#FF6196FF"),
-            new("demo-shugo", "ФЕСТИВАЛЬ", "Фестиваль шуго", "Открыта регистрация на событие", now.AddMinutes(18), TimeSpan.FromMinutes(18), false, "#FF4EDACB"),
+            new("demo-shugo", "ФЕСТИВАЛЬ", "Фестиваль шуго", "Открыта регистрация на событие", riftAt, riftUntil, false, "#FF4EDACB"),
             new("demo-invasion", "ВТОРЖЕНИЕ", "Пространственное вторжение", "Глобальное событие", now.AddMinutes(48), TimeSpan.FromMinutes(48), false, "#FFFFA04D")
         ];
-        MeterEventAlertSnapshot? alert = riftUntil <= TimeSpan.FromMinutes(10)
-            ? new MeterEventAlertSnapshot("Разлом через", EventScheduleService.Countdown(riftUntil), "Пространственный разлом", "#E63D68C9", "#FF6F9EFF")
-            : null;
+        IReadOnlyList<MeterEventAlertSnapshot> alerts = riftUntil <= TimeSpan.FromMinutes(10)
+            ? [
+                new MeterEventAlertSnapshot("demo-rift", "Разлом через", EventScheduleService.Countdown(riftUntil), "Пространственный разлом", "#E63D68C9", "#FF6F9EFF"),
+                new MeterEventAlertSnapshot("demo-shugo", "Фестиваль шуго через", EventScheduleService.Countdown(riftUntil), "Фестиваль шуго", "#E60F766E", "#FF4EDACB")
+              ]
+            : [];
         return new MeterEventScheduleSnapshot(
             true,
             "Global · Europe",
             "Europe/Berlin · игровое время",
             $"Ближайшее: Разлом · {EventScheduleService.Countdown(riftUntil)}",
             timers,
-            alert);
+            alerts);
     }
 
     private static void SyncCollection<T>(ObservableCollection<T> target, IReadOnlyList<T> source)
@@ -919,6 +972,24 @@ public sealed class MeterViewModel : BindableBase, IDisposable
 
     private void ToggleDebuffs() => ShowTargetDebuffs = !ShowTargetDebuffs;
 
+    private void TogglePvp()
+    {
+        IsPvpMode = !IsPvpMode;
+        if (IsPvpMode && DisplayMode != MeterDisplayMode.Damage)
+            DisplayMode = MeterDisplayMode.Damage;
+        Players.Clear();
+        TargetDebuffs.Clear();
+        HasPlayers = false;
+        HasTargetDebuffs = false;
+        _latestSnapshot = null;
+        _latestEnrageTimer = EnrageTimerView.Hidden;
+        EnrageVisible = false;
+        TargetName = IsPvpMode
+            ? T("Player target not detected", "Игрок-цель не найден")
+            : BossOnly ? T("Target not detected", "Цель не определена") : T("All targets", "Все цели");
+        Refresh();
+    }
+
     private void SetDisplayMode(MeterDisplayMode mode)
     {
         if (DisplayMode == mode)
@@ -927,6 +998,8 @@ public sealed class MeterViewModel : BindableBase, IDisposable
         }
 
         DisplayMode = mode;
+        if (mode != MeterDisplayMode.Damage && IsPvpMode)
+            IsPvpMode = false;
         Players.Clear();
         TargetDebuffs.Clear();
         HasPlayers = false;
@@ -945,6 +1018,7 @@ public sealed class MeterViewModel : BindableBase, IDisposable
 
     private void ToggleMode()
     {
+        if (IsPvpMode) return;
         BossOnly = !BossOnly;
         _runtime?.SetBossOnlyMode(BossOnly);
         Refresh();
@@ -1041,14 +1115,16 @@ public sealed class MeterViewModel : BindableBase, IDisposable
         }).ToArray();
 
         bool damageMode = DisplayMode == MeterDisplayMode.Damage;
+        bool bossDemo = damageMode && !IsPvpMode;
         return new MeterSnapshot(
             DisplayMode switch
             {
                 MeterDisplayMode.Healing => "Лечение группы",
                 MeterDisplayMode.DamageTaken => "Полученный урон",
+                _ when IsPvpMode => "Противник",
                 _ => "Эфирный Страж"
             },
-            damageMode ? TargetFrameKind.Legend : TargetFrameKind.Normal,
+            bossDemo ? TargetFrameKind.Legend : TargetFrameKind.Normal,
             damageMode ? 72 : null,
             damageMode ? 7_200_000 : null,
             damageMode ? 10_000_000 : null,
@@ -1062,7 +1138,7 @@ public sealed class MeterViewModel : BindableBase, IDisposable
             101,
             "Veloria",
             JobClass.Assassin,
-            damageMode
+            bossDemo
                 ? new EnrageTimerView(true, false, "Enrage 03:14 · kill ~02:08", EnrageTimerTone.OnTrack)
                 : EnrageTimerView.Hidden);
     }
@@ -1091,19 +1167,25 @@ public sealed class MeterViewModel : BindableBase, IDisposable
     private void ApplyNotification()
     {
         ApplyEnrageTimer(_latestEnrageTimer);
-
-        MeterEventAlertSnapshot? alert = _eventScheduleSnapshot?.Alert;
-        if (alert is null)
+        IReadOnlyList<MeterEventAlertSnapshot> alerts = _eventScheduleSnapshot?.Alerts ?? [];
+        Dictionary<string, EventAlertRowViewModel> existing = EventAlerts.ToDictionary(row => row.Key);
+        for (int index = 0; index < alerts.Count; index++)
         {
-            EventNotificationVisible = false;
-            EventNotificationText = string.Empty;
-            return;
+            MeterEventAlertSnapshot alert = alerts[index];
+            if (!existing.TryGetValue(alert.Key, out EventAlertRowViewModel? row))
+            {
+                row = new EventAlertRowViewModel { Key = alert.Key };
+                EventAlerts.Insert(Math.Min(index, EventAlerts.Count), row);
+            }
+            int oldIndex = EventAlerts.IndexOf(row);
+            if (oldIndex != index) EventAlerts.Move(oldIndex, index);
+            row.Update(alert);
         }
-
-        EventNotificationVisible = true;
-        EventNotificationText = $"{alert.Title}  {alert.Countdown}";
-        EventNotificationBackground = MakeGradient(alert.BackgroundColor, 0.18, 0.42);
-        EventNotificationBorder = MakeBrush(alert.BorderColor);
+        HashSet<string> keys = alerts.Select(alert => alert.Key).ToHashSet(StringComparer.Ordinal);
+        for (int index = EventAlerts.Count - 1; index >= 0; index--)
+        {
+            if (!keys.Contains(EventAlerts[index].Key)) EventAlerts.RemoveAt(index);
+        }
     }
 
     private static string FormatDuration(long milliseconds)

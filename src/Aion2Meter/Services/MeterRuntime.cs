@@ -132,6 +132,8 @@ public sealed class MeterRuntime : IDisposable
     private string _lastHealthTrace = string.Empty;
     private string _lastDebuffTrace = string.Empty;
     private string _lastEventTrace = string.Empty;
+    private long _lastPvpEventVersion = -1;
+    private DpsSnapshot _cachedPvpSnapshot = new();
     private int _currentZoneId;
     private MeterNavigationPosition? _navigationPosition;
     private bool _disposed;
@@ -390,6 +392,7 @@ public sealed class MeterRuntime : IDisposable
             {
                 _partyRoster = party.Roster;
             }
+            Interlocked.Exchange(ref _lastPvpEventVersion, -1);
         };
 
         _parser.DamageEventParsed += (_, damageEvent) =>
@@ -440,6 +443,7 @@ public sealed class MeterRuntime : IDisposable
         _parser.NicknameDiscovered += (_, player) =>
         {
             _dataRepository.SetNickname(player.PlayerId, player.Nickname, player.IsConfirmedPlayer);
+            Interlocked.Exchange(ref _lastPvpEventVersion, -1);
             TryRebindRecoveredLocalPlayer(player.PlayerId, player.Nickname, player.ServerId);
             _diagnostics.Write(
                 "PLAYER",
@@ -613,7 +617,7 @@ public sealed class MeterRuntime : IDisposable
         MeterEventScheduleSnapshot snapshot = _eventSchedule.GetSnapshot(maximum);
         string trace =
             $"ready={snapshot.IsReady} region='{snapshot.RegionText}' clock='{snapshot.ClockText}' " +
-            $"timers={snapshot.Timers.Count} alert='{snapshot.Alert?.Title ?? "-"}' countdown='{snapshot.Alert?.Countdown ?? "-"}'";
+            $"timers={snapshot.Timers.Count} alerts={snapshot.Alerts.Count} titles='{string.Join(" | ", snapshot.Alerts.Select(alert => alert.Title))}'";
         if (!string.Equals(trace, _lastEventTrace, StringComparison.Ordinal))
         {
             _lastEventTrace = trace;
@@ -625,6 +629,8 @@ public sealed class MeterRuntime : IDisposable
     public void Reset()
     {
         _calculator.Reset();
+        _cachedPvpSnapshot = new DpsSnapshot();
+        Interlocked.Exchange(ref _lastPvpEventVersion, -1);
         _hpTracker.ResetAll();
         _mitigationTracker.Clear();
         _debuffTracker.Clear();
@@ -714,9 +720,122 @@ public sealed class MeterRuntime : IDisposable
         _diagnostics.Write("DEBUFFS", trace);
     }
 
-    public MeterSnapshot GetSnapshot(MeterDisplayMode mode = MeterDisplayMode.Damage)
+    private DpsSnapshot BuildPvpSnapshot()
     {
-        DpsSnapshot snapshot = mode switch
+        long version = _dataRepository.GetEventVersion();
+        if (version == Volatile.Read(ref _lastPvpEventVersion))
+            return _cachedPvpSnapshot;
+
+        var snapshot = new DpsSnapshot();
+        int? localId = _dataRepository.GetLocalPlayerEntityId()
+            ?? _dataRepository.GetLastBoundLocalPlayerEntityId()
+            ?? PositiveOrNull(Volatile.Read(ref _inferredLocalPlayerId));
+        if (!localId.HasValue)
+        {
+            _cachedPvpSnapshot = snapshot;
+            Volatile.Write(ref _lastPvpEventVersion, version);
+            return snapshot;
+        }
+
+        HashSet<string> partyNames = GetPartyNames();
+        var targetDamage = new Dictionary<int, long>();
+        long firstHit = long.MaxValue;
+        long lastHit = long.MinValue;
+        foreach (int targetId in _dataRepository.GetAllTargetIds())
+        {
+            if (!IsPvpTargetCandidate(targetId, localId.Value, partyNames))
+                continue;
+
+            foreach (DamageEvent hit in _dataRepository.GetDamageEventsByTarget(targetId))
+            {
+                if (hit.IsHeal || hit.IsDefenseEvent || hit.TotalDamage <= 0)
+                    continue;
+
+                int ownerId = _dataRepository.GetSummonerAt(hit.ActorId, hit.Timestamp)
+                    ?? _dataRepository.GetSummoner(hit.ActorId)
+                    ?? hit.ActorId;
+                string? ownerName = _dataRepository.GetNickname(ownerId);
+                if (ownerId != localId.Value &&
+                    (string.IsNullOrWhiteSpace(ownerName) || !partyNames.Contains(ownerName)))
+                    continue;
+
+                if (!snapshot.PlayerStats.TryGetValue(ownerId, out PlayerStatistics? player))
+                {
+                    player = new PlayerStatistics(ownerId,
+                        ownerName ?? _dataRepository.GetNicknameWithLocalPlayerFallback(ownerId) ?? ownerId.ToString())
+                    {
+                        Job = _dataRepository.GetJobClass(ownerId)
+                    };
+                    snapshot.PlayerStats.Add(ownerId, player);
+                }
+
+                player.ProcessDamageEvent(hit, _skillRepository.GetSkillName(hit.SkillCode));
+                targetDamage[targetId] = targetDamage.GetValueOrDefault(targetId) + hit.TotalDamage;
+                firstHit = Math.Min(firstHit, hit.Timestamp);
+                lastHit = Math.Max(lastHit, hit.Timestamp);
+            }
+        }
+
+        if (firstHit != long.MaxValue)
+        {
+            snapshot.BattleTimeMs = Math.Max(1000, lastHit - firstHit);
+            snapshot.ContributionTargetId = targetDamage.MaxBy(pair => pair.Value).Key;
+            snapshot.TargetName = _dataRepository.GetNickname(snapshot.ContributionTargetId) ?? string.Empty;
+            long totalDamage = snapshot.TotalDamage;
+            foreach (PlayerStatistics player in snapshot.PlayerStats.Values)
+            {
+                long activeTime = player.ResolveActiveTimeMs(lastHit, snapshot.BattleTimeMs);
+                player.CalculateDps(activeTime);
+                player.CalculateSkillContributions(activeTime);
+                player.CalculateContribution(totalDamage, totalDamage);
+            }
+        }
+
+        _cachedPvpSnapshot = snapshot;
+        Volatile.Write(ref _lastPvpEventVersion, version);
+        return snapshot;
+    }
+
+    private HashSet<string> GetPartyNames()
+    {
+        lock (_featureStateLock)
+        {
+            return _partyRoster?.Members
+                .Select(member => member.Name)
+                .Where(name => !string.IsNullOrWhiteSpace(name))
+                .ToHashSet(StringComparer.OrdinalIgnoreCase)
+                ?? new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        }
+    }
+
+    private bool IsPvpTargetCandidate(int targetId, int localId, HashSet<string> partyNames)
+    {
+        if (targetId <= 0 || targetId == localId ||
+            _dataRepository.GetEntityNpcId(targetId) > 0 ||
+            !string.IsNullOrWhiteSpace(_dataRepository.GetMobName(targetId)))
+            return false;
+
+        string? name = _dataRepository.GetNickname(targetId);
+        return _dataRepository.IsConfirmedPlayer(targetId) &&
+            !string.IsNullOrWhiteSpace(name) &&
+            !partyNames.Contains(name);
+    }
+
+    private int FirstPvpTarget(params int[] candidates)
+    {
+        int? localId = _dataRepository.GetLocalPlayerEntityId()
+            ?? _dataRepository.GetLastBoundLocalPlayerEntityId()
+            ?? PositiveOrNull(Volatile.Read(ref _inferredLocalPlayerId));
+        if (!localId.HasValue) return 0;
+        HashSet<string> partyNames = GetPartyNames();
+        return candidates.FirstOrDefault(candidate =>
+            IsPvpTargetCandidate(candidate, localId.Value, partyNames));
+    }
+
+    public MeterSnapshot GetSnapshot(MeterDisplayMode mode = MeterDisplayMode.Damage, bool pvpMode = false)
+    {
+        bool usePvp = pvpMode && mode == MeterDisplayMode.Damage;
+        DpsSnapshot snapshot = usePvp ? BuildPvpSnapshot() : mode switch
         {
             MeterDisplayMode.Healing => _calculator.CalculateHealing(HealingFightWindow.Unbounded),
             MeterDisplayMode.DamageTaken => _calculator.CalculateDamageTaken(),
@@ -774,11 +893,13 @@ public sealed class MeterRuntime : IDisposable
             // otherwise spend most of their lifetime attached to a new mob while
             // the header still shows the previous one. FirstHostileTarget still
             // rejects party members hit by damage-like support effects.
-            targetId = FirstHostileTarget(
-                Volatile.Read(ref _selectedTargetId),
-                Volatile.Read(ref _lastCombatTargetId),
-                snapshot.ContributionTargetId,
-                _calculator.GetCurrentTargetId());
+            targetId = usePvp
+                ? FirstPvpTarget(Volatile.Read(ref _selectedTargetId), snapshot.ContributionTargetId)
+                : FirstHostileTarget(
+                    Volatile.Read(ref _selectedTargetId),
+                    Volatile.Read(ref _lastCombatTargetId),
+                    snapshot.ContributionTargetId,
+                    _calculator.GetCurrentTargetId());
         }
         Volatile.Write(ref _displayTargetId, targetId);
 
@@ -808,7 +929,7 @@ public sealed class MeterRuntime : IDisposable
             _diagnostics.Write("BAR", $"{healthTrace} packets={received} dropped={dropped}");
         }
 
-        EnrageTimerView enrageTimer = mode == MeterDisplayMode.Damage
+        EnrageTimerView enrageTimer = mode == MeterDisplayMode.Damage && !usePvp
             ? BuildEnrageTimer(targetId, targetCurrentHp)
             : EnrageTimerView.Hidden;
 
@@ -816,12 +937,12 @@ public sealed class MeterRuntime : IDisposable
         {
             MeterDisplayMode.Healing => "Лечение группы",
             MeterDisplayMode.DamageTaken => "Полученный урон",
-            _ => ResolveTargetName(targetId, snapshot.TargetName)
+            _ => usePvp ? (targetId > 0 ? _dataRepository.GetNickname(targetId) ?? snapshot.TargetName : snapshot.TargetName) : ResolveTargetName(targetId, snapshot.TargetName)
         };
         int targetNpcId = targetId > 0 ? _dataRepository.GetEntityNpcId(targetId) : 0;
         string? targetRole = targetNpcId > 0 ? _mobRepository.GetMobRole(targetNpcId) : null;
         targetRole ??= _mobRepository.GetMobRoleByName(targetName);
-        TargetFrameKind targetFrame = mode == MeterDisplayMode.Damage
+        TargetFrameKind targetFrame = mode == MeterDisplayMode.Damage && !usePvp
             ? ResolveTargetFrame(targetRole, targetMaxHp)
             : TargetFrameKind.Normal;
 

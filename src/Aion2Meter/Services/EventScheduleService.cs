@@ -21,6 +21,7 @@ public sealed record MeterEventTimerSnapshot(
     string AccentColor);
 
 public sealed record MeterEventAlertSnapshot(
+    string Key,
     string Title,
     string Countdown,
     string Detail,
@@ -33,7 +34,7 @@ public sealed record MeterEventScheduleSnapshot(
     string ClockText,
     string StatusText,
     IReadOnlyList<MeterEventTimerSnapshot> Timers,
-    MeterEventAlertSnapshot? Alert);
+    IReadOnlyList<MeterEventAlertSnapshot> Alerts);
 
 /// <summary>
 /// Local Aion 2 event calendar. Schedule rows come from the game data tables
@@ -77,7 +78,7 @@ public sealed class EventScheduleService
                 T("Waiting for server clock", "Часы сервера ожидаются"),
                 T("Log in to a character — the calendar synchronizes from a game packet", "Войдите на персонажа — календарь синхронизируется по игровому пакету"),
                 [],
-                null);
+                []);
         }
 
         string service = region.ServiceOf();
@@ -89,7 +90,7 @@ public sealed class EventScheduleService
                 clock.Label,
                 T("No local calendar is available for this region", "Для этого региона нет локального календаря"),
                 [],
-                null);
+                []);
         }
 
         List<MeterEventTimerSnapshot> timers = BuildTimers(schedule, clock.Zone, utcNow)
@@ -99,12 +100,13 @@ public sealed class EventScheduleService
             .Take(Math.Max(1, maximum))
             .ToList();
 
-        MeterEventTimerSnapshot? alertTimer = timers
+        MeterEventAlertSnapshot[] alerts = timers
             .Where(timer => timer.IsActive || timer.TimeUntil <= AlertLead)
             .OrderBy(timer => timer.IsActive ? 0 : 1)
             .ThenBy(timer => timer.TimeUntil)
-            .FirstOrDefault();
-        MeterEventAlertSnapshot? alert = alertTimer is null ? null : CreateAlert(alertTimer);
+            .Take(6)
+            .Select(CreateAlert)
+            .ToArray();
         string status = timers.Count == 0
             ? T("No events in the next 24 hours", "На ближайшие сутки событий нет")
             : timers[0].IsActive
@@ -117,7 +119,7 @@ public sealed class EventScheduleService
             T($"{clock.Label} · game time", $"{clock.Label} · игровое время"),
             status,
             timers,
-            alert);
+            alerts);
     }
 
     private bool TryGetClock(DateTimeOffset utcNow, out GameRegion region, out ServerClockZone? clock)
@@ -234,6 +236,7 @@ public sealed class EventScheduleService
             _ => ("#E63A4256", "#FF738399")
         };
         return new MeterEventAlertSnapshot(
+            timer.Key,
             timer.IsActive
                 ? T($"{timer.Title} is open", $"{timer.Title} открыт")
                 : T($"{timer.Title} in", $"{timer.Title} через"),

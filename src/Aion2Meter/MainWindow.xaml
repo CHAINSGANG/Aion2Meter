@@ -28,6 +28,7 @@
         LocationChanged="Window_LocationChanged"
         SizeChanged="Window_SizeChanged"
         StateChanged="Window_StateChanged"
+        IsVisibleChanged="Window_IsVisibleChanged"
         Closed="Window_Closed">
     <shell:WindowChrome.WindowChrome>
         <shell:WindowChrome CaptionHeight="0" ResizeBorderThickness="6" CornerRadius="0" GlassFrameThickness="0" UseAeroCaptionButtons="False" />
@@ -77,6 +78,29 @@
                 </DrawingGroup>
             </DrawingBrush.Drawing>
         </DrawingBrush>
+        <DrawingBrush x:Key="AionPvpToggle" Stretch="Uniform">
+            <DrawingBrush.Drawing>
+                <DrawingGroup>
+                    <GeometryDrawing Geometry="M 6,5 L 25,26 M 25,5 L 6,26 M 5,4 L 9,4 9,8 M 26,4 L 22,4 22,8 M 4,25 L 8,25 8,29 M 27,25 L 23,25 23,29">
+                        <GeometryDrawing.Pen><Pen Brush="#FFE8E3D6" Thickness="2" StartLineCap="Round" EndLineCap="Round" /></GeometryDrawing.Pen>
+                    </GeometryDrawing>
+                    <GeometryDrawing Brush="#FFD8AD68" Geometry="M 13,13 L 19,13 19,19 13,19 Z" />
+                </DrawingGroup>
+            </DrawingBrush.Drawing>
+        </DrawingBrush>
+        <DrawingBrush x:Key="AionPartyCheck" Stretch="Uniform">
+            <DrawingBrush.Drawing>
+                <DrawingGroup>
+                    <GeometryDrawing Brush="#FFE8E3D6" Geometry="M 13,7 A 3,3 0 1 0 19,7 A 3,3 0 1 0 13,7 M 4,11 A 2,2 0 1 0 8,11 A 2,2 0 1 0 4,11 M 24,11 A 2,2 0 1 0 28,11 A 2,2 0 1 0 24,11" />
+                    <GeometryDrawing Geometry="M 10,23 C 10,17 12,14 16,14 C 20,14 22,17 22,23 M 2,20 C 2,17 3,15 7,15 M 30,20 C 30,17 29,15 25,15">
+                        <GeometryDrawing.Pen><Pen Brush="#FFE8E3D6" Thickness="1.8" StartLineCap="Round" /></GeometryDrawing.Pen>
+                    </GeometryDrawing>
+                    <GeometryDrawing Geometry="M 20,25 L 23,28 29,21">
+                        <GeometryDrawing.Pen><Pen Brush="#FFD8AD68" Thickness="2.2" StartLineCap="Round" EndLineCap="Round" /></GeometryDrawing.Pen>
+                    </GeometryDrawing>
+                </DrawingGroup>
+            </DrawingBrush.Drawing>
+        </DrawingBrush>
         <!-- Native AION 2 HUD defence shield. -->
         <ImageBrush x:Key="AionMitigationShield" ImageSource="/Aion2Meter;component/Assets/Textures/HudAtlas.png" ViewboxUnits="Absolute" Viewbox="248,295,40,40" Stretch="Uniform" />
         <BitmapImage x:Key="TargetHpFrameBitmap" UriSource="/Aion2Meter;component/Assets/Textures/TargetHpFrame.png" />
@@ -95,14 +119,14 @@
             <GradientStop Color="#28E1A06B" Offset="1" />
         </LinearGradientBrush>
 
-        <DataTemplate x:Key="DebuffTimerTemplate">
-            <Border Width="60"
-                    Height="26"
-                    Margin="2,1"
+        <DataTemplate x:Key="DebuffIconTemplate">
+            <Border Width="40"
+                    Height="40"
+                    Margin="2"
                     Background="{StaticResource DebuffChipBackground}"
                     BorderBrush="#A9C58C69"
                     BorderThickness="1"
-                    CornerRadius="4"
+                    CornerRadius="3"
                     ToolTip="{Binding Name}">
                 <Border.Effect>
                     <DropShadowEffect Color="#FFD16E4C" BlurRadius="4" ShadowDepth="0" Opacity="0.18" />
@@ -113,33 +137,14 @@
                                                 AnimatedValue="{Binding RemainingPercent}"
                                                 Foreground="{StaticResource DebuffProgressBrush}"
                                                 Style="{DynamicResource RowProgressStyle}" />
-                    <Grid Margin="4,2,4,2">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="22" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-                        <Grid Width="20" Height="20" VerticalAlignment="Center">
-                            <Image Source="{Binding IconPath}" Stretch="UniformToFill" />
-                            <TextBlock Text="{Binding StacksText}"
-                                       HorizontalAlignment="Right"
-                                       VerticalAlignment="Bottom"
-                                       Margin="0,0,1,-1"
-                                       FontSize="8"
-                                       FontWeight="Bold"
-                                       Foreground="White">
-                                <TextBlock.Effect><DropShadowEffect Color="Black" BlurRadius="2" ShadowDepth="1" /></TextBlock.Effect>
-                            </TextBlock>
-                        </Grid>
-                        <TextBlock Grid.Column="1"
-                                   Text="{Binding RemainingText}"
-                                   HorizontalAlignment="Right"
-                                   VerticalAlignment="Center"
-                                   TextAlignment="Right"
-                                   FontFamily="{StaticResource AionFont}"
-                                   FontSize="10"
-                                   FontWeight="Bold"
-                                   Foreground="#FFFFC49A" />
-                    </Grid>
+                    <Image Source="{Binding IconPath}" Margin="2" Stretch="UniformToFill" />
+                    <Border VerticalAlignment="Bottom" Background="#DA12191E" Padding="1,0">
+                        <TextBlock Text="{Binding RemainingText}" HorizontalAlignment="Center"
+                                   FontFamily="{StaticResource AionFont}" FontSize="9" FontWeight="Bold"
+                                   Foreground="#FFFFD0AA" />
+                    </Border>
+                    <TextBlock Text="{Binding StacksText}" HorizontalAlignment="Right" VerticalAlignment="Top"
+                               Margin="0,0,2,0" FontSize="9" FontWeight="Bold" Foreground="White" />
                 </Grid>
             </Border>
         </DataTemplate>
@@ -338,12 +343,10 @@
                 </Border>
 
                 <Grid Grid.Row="1" Margin="13,7,12,7" MinHeight="46">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="43" /><ColumnDefinition Width="43" /><ColumnDefinition Width="43" /><ColumnDefinition Width="43" /><ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="43" /><ColumnDefinition Width="43" /><ColumnDefinition Width="43" />
+                        <ColumnDefinition Width="43" /><ColumnDefinition Width="43" /><ColumnDefinition Width="43" />
+                        <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
                     <Button Grid.Column="0" Command="{Binding ToggleParticipantsCommand}" ToolTip="{Binding ParticipantsModeTooltip}" IsEnabled="{Binding CanFilterParticipants}">
                         <Button.Style>
@@ -362,7 +365,7 @@
                             <Border Background="{StaticResource DmAll}" Visibility="{Binding IsPartyView, Converter={StaticResource BoolToVisibility}}" />
                         </Grid>
                     </Button>
-                    <Button Grid.Column="1" Margin="3,0,0,0" Command="{Binding ToggleModeCommand}" ToolTip="{Binding ModeTooltip}" IsEnabled="{Binding IsDamageMode}">
+                    <Button Grid.Column="1" Margin="3,0,0,0" Command="{Binding ToggleModeCommand}" ToolTip="{Binding ModeTooltip}" IsEnabled="{Binding CanToggleBossFilter}">
                         <Button.Style>
                             <Style TargetType="Button" BasedOn="{StaticResource ModeIconButtonStyle}">
                                 <Style.Triggers>
@@ -395,13 +398,28 @@
                         </Button.Style>
                         <Border Width="29" Height="29" Background="{StaticResource AionDebuffToggle}" />
                     </Button>
-                    <Button Grid.Column="3" Margin="3,0,0,0" Style="{StaticResource ModeIconButtonStyle}" ToolTip="{services:LocalizedText ResetCombatTooltip}" Command="{Binding ResetCommand}">
+                    <Button Grid.Column="3" Margin="3,0,0,0" Command="{Binding TogglePvpCommand}" ToolTip="{Binding PvpModeTooltip}">
+                        <Button.Style>
+                            <Style TargetType="Button" BasedOn="{StaticResource ModeIconButtonStyle}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsPvpMode}" Value="True">
+                                        <Setter Property="Effect"><Setter.Value><DropShadowEffect Color="#FFFFC95C" BlurRadius="10" ShadowDepth="0" Opacity="0.95" /></Setter.Value></Setter>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                        <Border Width="29" Height="29" Background="{StaticResource AionPvpToggle}" />
+                    </Button>
+                    <Button Grid.Column="4" Margin="3,0,0,0" Style="{StaticResource ModeIconButtonStyle}" ToolTip="{services:LocalizedText PartyCheck}" Click="OpenPartyCheck_Click">
+                        <Border Width="29" Height="29" Background="{StaticResource AionPartyCheck}" />
+                    </Button>
+                    <Button Grid.Column="5" Margin="3,0,0,0" Style="{StaticResource ModeIconButtonStyle}" ToolTip="{services:LocalizedText ResetCombatTooltip}" Command="{Binding ResetCommand}">
                         <Border Width="29" Height="29" Background="{StaticResource AionRefresh}" />
                     </Button>
-                    <StackPanel Grid.Column="4" Margin="14,0,0,0" VerticalAlignment="Center">
+                    <StackPanel Grid.Column="6" Margin="14,0,0,0" VerticalAlignment="Center">
                         <TextBlock Text="{Binding TargetSectionLabel}" FontSize="8" FontWeight="Bold" Foreground="#FF9CA5AA" />
                         <TextBlock Text="{Binding TargetName}" Margin="0,2,0,0" FontSize="12" FontWeight="SemiBold" Foreground="#FFF2E7CB" TextTrimming="CharacterEllipsis" />
-                        <Grid Height="16" MaxWidth="570" Margin="0,2,0,0" HorizontalAlignment="Left">
+                        <Grid x:Name="DetailedTargetHpAnchor" Height="16" MaxWidth="570" Margin="0,2,0,0" HorizontalAlignment="Left">
                             <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="43" /></Grid.ColumnDefinitions>
                             <Grid Height="16">
                                 <Grid Visibility="{Binding TargetUsesNormalFrame, Converter={StaticResource BoolToVisibility}}">
@@ -433,35 +451,6 @@
                             <TextBlock Grid.Column="1" Text="{Binding TargetHpText}" Margin="5,0,0,0" FontSize="8" FontWeight="Bold" Foreground="#FFFFBCC0" VerticalAlignment="Center" />
                         </Grid>
                     </StackPanel>
-                    <Border Grid.Row="1"
-                            Grid.ColumnSpan="5"
-                            Height="30"
-                            Margin="0,3,0,0"
-                            Background="Transparent">
-                        <Border.Style>
-                            <Style TargetType="Border">
-                                <Setter Property="Visibility" Value="Collapsed" />
-                                <Style.Triggers>
-                                    <MultiDataTrigger>
-                                        <MultiDataTrigger.Conditions>
-                                            <Condition Binding="{Binding ShowTargetDebuffs}" Value="True" />
-                                            <Condition Binding="{Binding IsDamageMode}" Value="True" />
-                                        </MultiDataTrigger.Conditions>
-                                        <Setter Property="Visibility" Value="Visible" />
-                                    </MultiDataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </Border.Style>
-                        <ScrollViewer HorizontalScrollBarVisibility="Hidden"
-                                      VerticalScrollBarVisibility="Disabled"
-                                      HorizontalContentAlignment="Center">
-                            <ItemsControl HorizontalAlignment="Center" ItemsSource="{Binding TargetDebuffs}" ItemTemplate="{StaticResource DebuffTimerTemplate}">
-                                <ItemsControl.ItemsPanel>
-                                    <ItemsPanelTemplate><StackPanel Orientation="Horizontal" /></ItemsPanelTemplate>
-                                </ItemsControl.ItemsPanel>
-                            </ItemsControl>
-                        </ScrollViewer>
-                    </Border>
                 </Grid>
 
                 <Border Grid.Row="2" Background="{StaticResource DarkStrip}" BorderBrush="#FF242B30" BorderThickness="0,1,0,1">
@@ -633,7 +622,7 @@
                 </Border>
 
                 <Grid Grid.Row="1" Margin="13,4,12,4">
-                    <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="42" /><ColumnDefinition Width="42" /><ColumnDefinition Width="42" /><ColumnDefinition Width="42" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="42" /><ColumnDefinition Width="42" /><ColumnDefinition Width="42" /><ColumnDefinition Width="42" /><ColumnDefinition Width="42" /><ColumnDefinition Width="42" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
                     <Button Grid.Column="1" Command="{Binding ToggleParticipantsCommand}" ToolTip="{Binding ParticipantsModeTooltip}" IsEnabled="{Binding CanFilterParticipants}">
                         <Button.Style>
                             <Style TargetType="Button" BasedOn="{StaticResource ModeIconButtonStyle}">
@@ -651,7 +640,7 @@
                             <Border Background="{StaticResource DmAll}" Visibility="{Binding IsPartyView, Converter={StaticResource BoolToVisibility}}" />
                         </Grid>
                     </Button>
-                    <Button Grid.Column="2" Margin="2,0,0,0" Command="{Binding ToggleModeCommand}" ToolTip="{Binding ModeTooltip}" IsEnabled="{Binding IsDamageMode}">
+                    <Button Grid.Column="2" Margin="2,0,0,0" Command="{Binding ToggleModeCommand}" ToolTip="{Binding ModeTooltip}" IsEnabled="{Binding CanToggleBossFilter}">
                         <Button.Style>
                             <Style TargetType="Button" BasedOn="{StaticResource ModeIconButtonStyle}">
                                 <Style.Triggers>
@@ -684,7 +673,22 @@
                         </Button.Style>
                         <Border Width="29" Height="29" Background="{StaticResource AionDebuffToggle}" />
                     </Button>
-                    <Button Grid.Column="4" Margin="2,0,0,0" Style="{StaticResource ModeIconButtonStyle}" ToolTip="{services:LocalizedText ResetCombatTooltip}" Command="{Binding ResetCommand}">
+                    <Button Grid.Column="4" Margin="2,0,0,0" Command="{Binding TogglePvpCommand}" ToolTip="{Binding PvpModeTooltip}">
+                        <Button.Style>
+                            <Style TargetType="Button" BasedOn="{StaticResource ModeIconButtonStyle}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsPvpMode}" Value="True">
+                                        <Setter Property="Effect"><Setter.Value><DropShadowEffect Color="#FFFFC95C" BlurRadius="10" ShadowDepth="0" Opacity="0.95" /></Setter.Value></Setter>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                        <Border Width="29" Height="29" Background="{StaticResource AionPvpToggle}" />
+                    </Button>
+                    <Button Grid.Column="5" Margin="2,0,0,0" Style="{StaticResource ModeIconButtonStyle}" ToolTip="{services:LocalizedText PartyCheck}" Click="OpenPartyCheck_Click">
+                        <Border Width="29" Height="29" Background="{StaticResource AionPartyCheck}" />
+                    </Button>
+                    <Button Grid.Column="6" Margin="2,0,0,0" Style="{StaticResource ModeIconButtonStyle}" ToolTip="{services:LocalizedText ResetCombatTooltip}" Command="{Binding ResetCommand}">
                         <Border Width="29" Height="29" Background="{StaticResource AionRefresh}" />
                     </Button>
                 </Grid>
@@ -693,9 +697,9 @@
                     <Grid Margin="13,4,12,5">
                         <Grid.RowDefinitions><RowDefinition Height="24" /><RowDefinition Height="35" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
 
-                        <!-- Имя цели всегда визуально центрируется; таймер лежит поверх справа. -->
+                        <!-- Таймер боя остаётся в данных и копируемой сводке, но не занимает место в оверлее. -->
                         <Grid>
-                            <Border x:Name="CompactTargetMarquee" Margin="58,0" ClipToBounds="True" SizeChanged="CompactTargetMarquee_SizeChanged" ToolTip="{Binding TargetName}">
+                            <Border x:Name="CompactTargetMarquee" ClipToBounds="True" SizeChanged="CompactTargetMarquee_SizeChanged" ToolTip="{Binding TargetName}">
                                 <Grid>
                                     <TextBlock x:Name="CompactTargetNameText"
                                                Text="{Binding TargetName}"
@@ -713,13 +717,10 @@
                                     </TextBlock>
                                 </Grid>
                             </Border>
-                            <Border HorizontalAlignment="Right" Padding="5,1" Background="#B31A232C">
-                                <TextBlock Text="{Binding BattleTime}" FontFamily="{StaticResource AionFont}" FontSize="12" FontWeight="Bold" Foreground="#FFF2E7CB" VerticalAlignment="Center" />
-                            </Border>
                         </Grid>
 
                         <!-- Рамка режется на три части: декоративные края не деформируются. -->
-                        <Grid Grid.Row="1" Height="30" MaxWidth="570" HorizontalAlignment="Stretch" VerticalAlignment="Center" ToolTip="{services:LocalizedText TargetHealth}">
+                        <Grid x:Name="CompactTargetHpAnchor" Grid.Row="1" Height="30" MaxWidth="570" HorizontalAlignment="Stretch" VerticalAlignment="Center" ToolTip="{services:LocalizedText TargetHealth}">
                             <Grid Visibility="{Binding TargetUsesNormalFrame, Converter={StaticResource BoolToVisibility}}">
                                 <Grid.ColumnDefinitions><ColumnDefinition Width="30" /><ColumnDefinition Width="*" /><ColumnDefinition Width="30" /></Grid.ColumnDefinitions>
                                 <Image Grid.Column="0" Stretch="Fill"><Image.Source><CroppedBitmap Source="{StaticResource TargetHpFrameBitmap}" SourceRect="0,0,64,64" /></Image.Source></Image>
@@ -757,35 +758,6 @@
                                 </TextBlock.Effect>
                             </TextBlock>
                         </Grid>
-
-                        <Border Grid.Row="2"
-                                Height="30"
-                                Margin="0,3,0,0"
-                                Background="Transparent">
-                            <Border.Style>
-                                <Style TargetType="Border">
-                                    <Setter Property="Visibility" Value="Collapsed" />
-                                    <Style.Triggers>
-                                        <MultiDataTrigger>
-                                            <MultiDataTrigger.Conditions>
-                                                <Condition Binding="{Binding ShowTargetDebuffs}" Value="True" />
-                                                <Condition Binding="{Binding IsDamageMode}" Value="True" />
-                                            </MultiDataTrigger.Conditions>
-                                            <Setter Property="Visibility" Value="Visible" />
-                                        </MultiDataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </Border.Style>
-                            <ScrollViewer HorizontalScrollBarVisibility="Hidden"
-                                          VerticalScrollBarVisibility="Disabled"
-                                          HorizontalContentAlignment="Center">
-                                <ItemsControl HorizontalAlignment="Center" ItemsSource="{Binding TargetDebuffs}" ItemTemplate="{StaticResource DebuffTimerTemplate}">
-                                    <ItemsControl.ItemsPanel>
-                                        <ItemsPanelTemplate><StackPanel Orientation="Horizontal" /></ItemsPanelTemplate>
-                                    </ItemsControl.ItemsPanel>
-                                </ItemsControl>
-                            </ScrollViewer>
-                        </Border>
 
                     </Grid>
                 </Border>
@@ -872,6 +844,22 @@
         </Grid>
     </Border>
 
+    <primitives:Popup x:Name="DebuffPopup"
+                      PlacementTarget="{Binding ElementName=RootFrame}"
+                      Placement="Right"
+                      HorizontalOffset="6"
+                      AllowsTransparency="True"
+                      PopupAnimation="Fade"
+                      StaysOpen="True"
+                      Opened="DebuffPopup_Opened"
+                      IsOpen="{Binding ShowDebuffIcons, Mode=OneWay}">
+        <ItemsControl Width="88" ItemsSource="{Binding TargetDebuffs}" ItemTemplate="{StaticResource DebuffIconTemplate}">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate><WrapPanel Width="88" /></ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+        </ItemsControl>
+    </primitives:Popup>
+
     <!-- Визуально отдельный список, жёстко пристыкованный к основному окну. -->
     <primitives:Popup x:Name="NotificationPopup"
                       PlacementTarget="{Binding ElementName=RootFrame}"
@@ -882,7 +870,7 @@
                       StaysOpen="True"
                       IsHitTestVisible="False"
                       Opened="NotificationPopup_Opened"
-                      IsOpen="{Binding HasNotifications, Mode=OneWay}">
+                      IsOpen="{Binding ShowNotificationPopup, Mode=OneWay}">
         <StackPanel Width="{Binding ActualWidth, ElementName=RootFrame}">
             <Border MinHeight="32"
                     Margin="0,0,0,4"
@@ -898,19 +886,22 @@
                     <TextBlock Grid.Column="1" Text="{Binding EnrageText}" FontSize="11" FontWeight="Bold" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" Foreground="White" />
                 </Grid>
             </Border>
-            <Border MinHeight="32"
-                    Padding="10,6"
-                    Background="{Binding EventNotificationBackground}"
-                    BorderBrush="{Binding EventNotificationBorder}"
-                    BorderThickness="1"
-                    CornerRadius="3"
-                    Visibility="{Binding EventNotificationVisible, Converter={StaticResource BoolToVisibility}}">
-                <Grid>
-                    <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
-                    <Border Width="17" Height="17" Margin="0,0,7,0" Background="{StaticResource AionNotificationClock}" VerticalAlignment="Center" />
-                    <TextBlock Grid.Column="1" Text="{Binding EventNotificationText}" FontSize="11" FontWeight="Bold" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" Foreground="White" />
-                </Grid>
-            </Border>
+            <ItemsControl ItemsSource="{Binding EventAlerts}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border MinHeight="32" Margin="0,0,0,4" Padding="10,6"
+                                Background="{Binding Background}" BorderBrush="{Binding Border}"
+                                BorderThickness="1" CornerRadius="3">
+                            <Grid>
+                                <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                                <Border Width="17" Height="17" Margin="0,0,7,0" Background="{StaticResource AionNotificationClock}" VerticalAlignment="Center" />
+                                <TextBlock Grid.Column="1" Text="{Binding Title}" FontSize="11" FontWeight="Bold" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" Foreground="White" />
+                                <TextBlock Grid.Column="2" Margin="8,0,0,0" Text="{Binding Countdown}" FontFamily="{StaticResource AionFont}" FontSize="11" FontWeight="Bold" VerticalAlignment="Center" Foreground="White" />
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
         </StackPanel>
     </primitives:Popup>
     </Grid>

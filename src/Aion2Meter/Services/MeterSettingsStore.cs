@@ -7,7 +7,7 @@ namespace Aion2Meter.Services;
 
 internal sealed class MeterSettings
 {
-    public int Version { get; set; } = 4;
+    public int Version { get; set; } = 5;
     public string Language { get; set; } = "en";
     public double Left { get; set; } = double.NaN;
     public double Top { get; set; } = double.NaN;
@@ -15,9 +15,9 @@ internal sealed class MeterSettings
     public double Height { get; set; } = 510;
     public bool IsCompact { get; set; } = true;
     public double CompactWidth { get; set; } = 560;
-    public double CompactHeight { get; set; } = 248;
+    public double CompactHeight { get; set; } = 218;
     public double ExpandedWidth { get; set; } = 600;
-    public double ExpandedHeight { get; set; } = 510;
+    public double ExpandedHeight { get; set; } = 476;
     public bool HasCustomCompactSize { get; set; }
     public bool HasCustomExpandedSize { get; set; }
     public int OpacityLevel { get; set; }
@@ -26,6 +26,8 @@ internal sealed class MeterSettings
     public bool BossOnly { get; set; } = true;
     public bool ShowPartyMembers { get; set; }
     public bool ShowTargetDebuffs { get; set; } = true;
+    public bool PvpMode { get; set; }
+    public bool KeepNotificationsWhenHidden { get; set; }
     public MeterDisplayMode DisplayMode { get; set; } = MeterDisplayMode.Damage;
 }
 
@@ -84,6 +86,13 @@ internal sealed class MeterSettingsStore
                 settings.WindowOpacity = oldLevels[Math.Clamp(settings.OpacityLevel, 0, oldLevels.Length - 1)];
                 settings.TextOpacity = 1;
                 settings.Version = 4;
+            }
+
+            if (settings.Version < 5)
+            {
+                if (!settings.HasCustomCompactSize) settings.CompactHeight = 218;
+                if (!settings.HasCustomExpandedSize) settings.ExpandedHeight = 476;
+                settings.Version = 5;
             }
 
             settings.Language = string.Equals(settings.Language, "ru", StringComparison.OrdinalIgnoreCase)

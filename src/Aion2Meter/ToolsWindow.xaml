@@ -199,6 +199,17 @@
                         </Button>
                     </WrapPanel>
 
+                    <TextBlock Style="{StaticResource SectionTitle}" Text="{services:LocalizedText Notifications}" />
+                    <Border Style="{StaticResource AuditRow}" Margin="0,0,9,2">
+                        <StackPanel>
+                            <CheckBox IsChecked="{Binding KeepNotificationsWhenHidden, Mode=TwoWay}"
+                                      Content="{services:LocalizedText KeepNotificationsWhenHidden}"
+                                      FontSize="12" FontWeight="Bold" Foreground="#FFF1F2F2" />
+                            <TextBlock Text="{services:LocalizedText KeepNotificationsWhenHiddenHint}"
+                                       Margin="23,5,0,0" FontSize="9" Foreground="#FF9DA7AC" TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Border>
+
                     <TextBlock Style="{StaticResource SectionTitle}" Text="{services:LocalizedText Updates}" />
                     <WrapPanel>
                         <Button Style="{StaticResource ToolCard}" Click="CheckUpdates_Click">

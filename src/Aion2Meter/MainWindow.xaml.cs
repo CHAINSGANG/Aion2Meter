@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
@@ -19,7 +20,6 @@ public partial class MainWindow : Window
 {
     private const double DefaultCompactWidth = 560;
     private const double MinimumCompactWidth = 340;
-    private const int DebuffSlotHeight = 34;
     private static readonly double[] OpacityLevels = [1.0, 0.72, 0.46];
     private readonly MeterViewModel _viewModel;
     private readonly MeterSettingsStore _settingsStore = new();
@@ -39,16 +39,14 @@ public partial class MainWindow : Window
     private bool _heightUpdateQueued;
     private int _lastCompactVisibleRows = 1;
     private int _lastExpandedVisibleRows = 1;
-    private int _lastCompactDebuffSlotHeight = DebuffSlotHeight;
-    private int _lastExpandedDebuffSlotHeight = DebuffSlotHeight;
     private bool _hasCustomCompactSize;
     private bool _hasCustomExpandedSize;
     private double _compactWidth = DefaultCompactWidth;
-    private double _compactHeight = 248;
-    private double _compactPreferredHeight = 248;
+    private double _compactHeight = 218;
+    private double _compactPreferredHeight = 218;
     private double _expandedWidth = 600;
-    private double _expandedHeight = 510;
-    private double _expandedPreferredHeight = 510;
+    private double _expandedHeight = 476;
+    private double _expandedPreferredHeight = 476;
     private ToolsWindow? _toolsWindow;
     private PetsWindow? _petsWindow;
     private PartyCheckWindow? _partyCheckWindow;
@@ -74,9 +72,9 @@ public partial class MainWindow : Window
             settings.BossOnly,
             settings.ShowPartyMembers,
             settings.ShowTargetDebuffs,
-            settings.DisplayMode);
-        _lastCompactDebuffSlotHeight = _lastExpandedDebuffSlotHeight =
-            _viewModel.ShowTargetDebuffs && _viewModel.IsDamageMode ? DebuffSlotHeight : 0;
+            settings.DisplayMode,
+            settings.PvpMode,
+            settings.KeepNotificationsWhenHidden);
 
         _settingsSaveTimer = new DispatcherTimer(DispatcherPriority.Background)
         {
@@ -94,10 +92,10 @@ public partial class MainWindow : Window
         _textOpacity = Math.Clamp(settings.TextOpacity, 0.25, 1);
         UpdateOpacityIcons();
         _compactWidth = Clamp(settings.CompactWidth, MinimumCompactWidth, 1800, DefaultCompactWidth);
-        _compactHeight = Clamp(settings.CompactHeight, 210, MaxHeight, 248);
+        _compactHeight = Clamp(settings.CompactHeight, 180, MaxHeight, 218);
         _compactPreferredHeight = _compactHeight;
         _expandedWidth = Clamp(settings.ExpandedWidth, 520, 1800, 600);
-        _expandedHeight = Clamp(settings.ExpandedHeight, 430, MaxHeight, 510);
+        _expandedHeight = Clamp(settings.ExpandedHeight, 430, MaxHeight, 476);
         _expandedPreferredHeight = _expandedHeight;
         _hasCustomCompactSize = settings.HasCustomCompactSize;
         _hasCustomExpandedSize = settings.HasCustomExpandedSize;
@@ -137,10 +135,12 @@ public partial class MainWindow : Window
             () => Dispatcher.Invoke(ExitApplication));
         _gameWindowAttachment = new GameWindowAttachment(this);
         _gameWindowAttachment.Start();
+        _viewModel.SetOverlayVisible(IsVisible && WindowState != WindowState.Minimized);
         ApplyWindowFillOpacityToOpenWindows();
         ApplyTextOpacityToOpenWindows();
         await _viewModel.InitializeAsync();
         RefreshNotificationPopupPlacement();
+        RefreshDebuffPopupPlacement();
         QueueCompactTargetMarquee();
         if (_openToolsOnLoad)
         {
@@ -172,12 +172,14 @@ public partial class MainWindow : Window
     private void Window_LocationChanged(object? sender, EventArgs e)
     {
         RefreshNotificationPopupPlacement();
+        RefreshDebuffPopupPlacement();
         QueueSettingsSave();
     }
 
     private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
     {
         RefreshNotificationPopupPlacement();
+        RefreshDebuffPopupPlacement();
         if (!_settingsReady || _isApplyingSize || WindowState != WindowState.Normal)
         {
             return;
@@ -200,11 +202,40 @@ public partial class MainWindow : Window
         QueueSettingsSave();
     }
 
-    private void Window_StateChanged(object? sender, EventArgs e) =>
+    private void Window_StateChanged(object? sender, EventArgs e)
+    {
+        _viewModel.SetOverlayVisible(IsVisible && WindowState != WindowState.Minimized);
         RefreshNotificationPopupPlacement();
+        RefreshDebuffPopupPlacement();
+    }
+
+    private void Window_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e) =>
+        _viewModel.SetOverlayVisible(IsVisible && WindowState != WindowState.Minimized);
 
     private void NotificationPopup_Opened(object? sender, EventArgs e) =>
         RefreshNotificationPopupPlacement();
+
+    private void DebuffPopup_Opened(object? sender, EventArgs e)
+    {
+        RefreshDebuffPopupPlacement();
+        if (DebuffPopup.Child is { } child) ApplyTextOpacity(child);
+    }
+
+    private void RefreshDebuffPopupPlacement()
+    {
+        if (!IsLoaded || !DebuffPopup.IsOpen || WindowState == WindowState.Minimized)
+            return;
+
+        double middle = SystemParameters.VirtualScreenLeft + SystemParameters.VirtualScreenWidth / 2;
+        bool meterOnLeft = Left + ActualWidth / 2 < middle;
+        DebuffPopup.Placement = meterOnLeft ? PlacementMode.Right : PlacementMode.Left;
+        double offset = meterOnLeft ? 6 : -6;
+        DebuffPopup.HorizontalOffset = offset + 0.01;
+        DebuffPopup.HorizontalOffset = offset;
+        FrameworkElement anchor = _isCompact ? CompactTargetHpAnchor : DetailedTargetHpAnchor;
+        if (anchor.IsVisible)
+            DebuffPopup.VerticalOffset = anchor.TranslatePoint(new Point(0, 0), RootFrame).Y;
+    }
 
     private void RefreshNotificationPopupPlacement()
     {
@@ -252,10 +283,15 @@ public partial class MainWindow : Window
             QueueCompactTargetMarquee();
         }
         else if (e.PropertyName == nameof(MeterViewModel.ShowPartyMembers) ||
-                 e.PropertyName == nameof(MeterViewModel.ShowTargetDebuffs) ||
                  e.PropertyName == nameof(MeterViewModel.DisplayMode))
         {
             QueueMeterHeightUpdate();
+            QueueSettingsSave();
+        }
+        else if (e.PropertyName == nameof(MeterViewModel.ShowTargetDebuffs) ||
+                 e.PropertyName == nameof(MeterViewModel.IsPvpMode) ||
+                 e.PropertyName == nameof(MeterViewModel.KeepNotificationsWhenHidden))
+        {
             QueueSettingsSave();
         }
         else if (e.PropertyName == nameof(MeterViewModel.BossOnly))
@@ -334,6 +370,8 @@ public partial class MainWindow : Window
     }
 
     private void OpenTools_Click(object sender, RoutedEventArgs e) => OpenTools();
+
+    private void OpenPartyCheck_Click(object sender, RoutedEventArgs e) => OpenPartyCheck();
 
     private void PlayerRow_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {
@@ -568,6 +606,7 @@ public partial class MainWindow : Window
     private void ApplyTextOpacityToOpenWindows()
     {
         ApplyTextOpacity(this);
+        if (DebuffPopup.Child is { } debuffs) ApplyTextOpacity(debuffs);
         if (_toolsWindow is not null) ApplyTextOpacity(_toolsWindow);
         if (_petsWindow is not null) ApplyTextOpacity(_petsWindow);
         if (_partyCheckWindow is not null) ApplyTextOpacity(_partyCheckWindow);
@@ -635,10 +674,11 @@ public partial class MainWindow : Window
         DetailedLayout.Visibility = Visibility.Collapsed;
         CompactLayout.Visibility = Visibility.Visible;
         MinWidth = MinimumCompactWidth;
-        MinHeight = 210;
+        MinHeight = 180;
         _isCompact = true;
         ApplyWindowSize(_compactWidth, _compactHeight);
         UpdateMeterHeight(force: !_hasCustomCompactSize);
+        Dispatcher.BeginInvoke(RefreshDebuffPopupPlacement, DispatcherPriority.Loaded);
         QueueCompactTargetMarquee();
         QueueSettingsSave();
     }
@@ -646,16 +686,13 @@ public partial class MainWindow : Window
     private void UpdateMeterHeight(bool force = false)
     {
         int visibleRows = Math.Clamp(_viewModel.Players.Count, 1, 10);
-        int debuffSlotHeight = _viewModel.ShowTargetDebuffs && _viewModel.IsDamageMode ? DebuffSlotHeight : 0;
         if (_isCompact)
         {
-            bool contentChanged = visibleRows != _lastCompactVisibleRows ||
-                                  debuffSlotHeight != _lastCompactDebuffSlotHeight;
+            bool contentChanged = visibleRows != _lastCompactVisibleRows;
             _lastCompactVisibleRows = visibleRows;
-            _lastCompactDebuffSlotHeight = debuffSlotHeight;
             if (force || contentChanged)
             {
-                double compactRequiredHeight = 174 + visibleRows * 40 + debuffSlotHeight;
+                double compactRequiredHeight = 174 + visibleRows * 40;
                 double desiredHeight = Math.Max(_compactPreferredHeight, compactRequiredHeight);
                 if (Math.Abs(Height - desiredHeight) > 0.5)
                 {
@@ -665,11 +702,9 @@ public partial class MainWindow : Window
             return;
         }
 
-        bool expandedContentChanged = visibleRows != _lastExpandedVisibleRows ||
-                                      debuffSlotHeight != _lastExpandedDebuffSlotHeight;
+        bool expandedContentChanged = visibleRows != _lastExpandedVisibleRows;
         _lastExpandedVisibleRows = visibleRows;
-        _lastExpandedDebuffSlotHeight = debuffSlotHeight;
-        double requiredHeight = 220 + visibleRows * 51 + debuffSlotHeight;
+        double requiredHeight = 220 + visibleRows * 51;
         double expandedDesiredHeight = Math.Min(MaxHeight, Math.Max(_expandedPreferredHeight, requiredHeight));
         if ((force || expandedContentChanged) && Math.Abs(Height - expandedDesiredHeight) > 0.5)
         {
@@ -686,6 +721,7 @@ public partial class MainWindow : Window
         _isCompact = false;
         ApplyWindowSize(Math.Max(520, _expandedWidth), Math.Max(430, _expandedHeight));
         UpdateMeterHeight(force: !_hasCustomExpandedSize);
+        Dispatcher.BeginInvoke(RefreshDebuffPopupPlacement, DispatcherPriority.Loaded);
         QueueSettingsSave();
     }
 
@@ -791,6 +827,8 @@ public partial class MainWindow : Window
             BossOnly = _viewModel.BossOnly,
             ShowPartyMembers = _viewModel.ShowPartyMembers,
             ShowTargetDebuffs = _viewModel.ShowTargetDebuffs,
+            PvpMode = _viewModel.IsPvpMode,
+            KeepNotificationsWhenHidden = _viewModel.KeepNotificationsWhenHidden,
             DisplayMode = _viewModel.DisplayMode
         });
     }
