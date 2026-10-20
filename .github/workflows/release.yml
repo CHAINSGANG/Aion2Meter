@@ -26,7 +26,7 @@ jobs:
       - name: Package self-contained release
         shell: pwsh
         run: |
-          $version = if ($env:GITHUB_REF_TYPE -eq 'tag') { $env:GITHUB_REF_NAME.TrimStart('v') } else { '0.2.7' }
+          $version = if ($env:GITHUB_REF_TYPE -eq 'tag') { $env:GITHUB_REF_NAME.TrimStart('v') } else { '0.2.8' }
           $iscc = .\scripts\prepare-inno.ps1
           .\scripts\publish.ps1 -Version $version -InnoCompiler $iscc
 
