@@ -33,7 +33,16 @@ public sealed class PlayerRowViewModel : BindableBase
     public int Rank { get => _rank; set => SetProperty(ref _rank, value); }
     public string Nickname { get => _nickname; set => SetProperty(ref _nickname, value); }
     public string ClassName { get => _className; set => SetProperty(ref _className, value); }
-    public string? IconPath { get => _iconPath; set => SetProperty(ref _iconPath, value); }
+    public string? IconPath
+    {
+        get => _iconPath;
+        set
+        {
+            if (SetProperty(ref _iconPath, value))
+                OnPropertyChanged(nameof(HasClassIcon));
+        }
+    }
+    public bool HasClassIcon => !string.IsNullOrWhiteSpace(IconPath);
     public string DpsText { get => _dpsText; set => SetProperty(ref _dpsText, value); }
     public string DamageText { get => _damageText; set => SetProperty(ref _damageText, value); }
     public string ShareText { get => _shareText; set => SetProperty(ref _shareText, value); }

@@ -4,7 +4,7 @@
     <TargetFramework>net10.0-windows</TargetFramework>
     <UseWPF>true</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>
-    <Version>0.2.8</Version>
+    <Version>0.2.9</Version>
     <AssemblyName>Aion2Meter</AssemblyName>
     <RootNamespace>Aion2Meter</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
@@ -15,6 +15,10 @@
     <ProjectReference Include="..\AionFlex.Core\AionFlex.Core.csproj" />
     <ProjectReference Include="..\AionFlex.Application\AionFlex.Application.csproj" />
     <ProjectReference Include="..\AionFlex.Infrastructure\AionFlex.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Aion2Meter.Smoke" />
   </ItemGroup>
 
   <ItemGroup>

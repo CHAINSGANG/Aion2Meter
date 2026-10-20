@@ -5,7 +5,7 @@
   #define AppVersion "0.0.0"
 #endif
 
-#define AppName "Aion II Meter"
+#define AppName "Aion 2 DPS"
 #define AppExeName "Aion2Meter.exe"
 #define NpcapVersion "1.89"
 #define NpcapInstallerName "npcap-1.89.exe"
@@ -41,7 +41,7 @@ RestartApplications=no
 SetupLogging=yes
 VersionInfoVersion={#AppVersion}.0
 VersionInfoCompany=CHAINSGANG
-VersionInfoDescription=Aion II Meter Installer
+VersionInfoDescription=Aion 2 DPS Installer
 VersionInfoProductName={#AppName}
 VersionInfoProductVersion={#AppVersion}
 
@@ -88,6 +88,6 @@ procedure CurPageChanged(CurPageID: Integer);
 begin
   if (CurPageID = wpFinished) and (not IsNpcapInstalled) then
     WizardForm.FinishedLabel.Caption :=
-      'Aion II Meter установлен, но установка Npcap не была завершена. ' +
+      'Aion 2 DPS установлен, но установка Npcap не была завершена. ' +
       'Запустите этот установщик ещё раз и завершите мастер Npcap — без драйвера захват трафика не работает.';
 end;

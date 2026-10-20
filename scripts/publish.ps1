@@ -1,8 +1,10 @@
 param(
     [ValidateSet('Debug', 'Release')]
     [string]$Configuration = 'Release',
+    [ValidatePattern('^[a-z0-9-]+$')]
     [string]$Runtime = 'win-x64',
-    [string]$Version = '0.2.8',
+    [ValidatePattern('^\d+\.\d+\.\d+$')]
+    [string]$Version = '0.2.9',
     [string]$InnoCompiler
 )
 
@@ -19,6 +21,22 @@ $archivePath = Join-Path $releaseRoot "$packageName.zip"
 $checksumPath = "$archivePath.sha256"
 $setupScript = Join-Path $repositoryRoot 'packaging\Aion2Meter.iss'
 
+$releaseRootFull = [IO.Path]::GetFullPath($releaseRoot).TrimEnd('\', '/') + [IO.Path]::DirectorySeparatorChar
+foreach ($target in @($stagePath, $archivePath)) {
+    $targetFull = [IO.Path]::GetFullPath($target)
+    if (-not $targetFull.StartsWith($releaseRootFull, [StringComparison]::OrdinalIgnoreCase)) {
+        throw "Release target is outside artifacts\release: $targetFull"
+    }
+}
+foreach ($directory in @((Join-Path $repositoryRoot 'artifacts'), $releaseRoot, $stagePath)) {
+    if (Test-Path -LiteralPath $directory) {
+        $item = Get-Item -LiteralPath $directory -Force
+        if ($item.Attributes -band [IO.FileAttributes]::ReparsePoint) {
+            throw "Release directory is a link or junction: $directory"
+        }
+    }
+}
+
 New-Item -ItemType Directory -Path $releaseRoot -Force | Out-Null
 if (Test-Path -LiteralPath $stagePath) {
     Remove-Item -LiteralPath $stagePath -Recurse -Force
@@ -30,6 +48,7 @@ dotnet publish $projectPath `
     --runtime $Runtime `
     --self-contained true `
     --output $appPath `
+    "-p:Version=$Version" `
     --nologo
 
 if ($LASTEXITCODE -ne 0) {

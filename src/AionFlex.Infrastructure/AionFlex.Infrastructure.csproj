@@ -10,10 +10,15 @@
   <ItemGroup>
     <Compile Include="AionFlex\Infrastructure\PacketCapture\CaptureWatchdog.cs" />
     <Compile Include="AionFlex\Infrastructure\PacketCapture\NpcapCaptureService.cs" />
+    <Compile Include="AionFlex\Infrastructure\PacketCapture\TcpPayloadSequencePolicy.cs" />
     <Compile Include="AionFlex\Infrastructure\PacketParsing\GameStreamReassembler.cs" />
     <Compile Include="AionFlex\Infrastructure\PacketParsing\Diagnostics\**\*.cs" />
     <Compile Include="AionFlex\Infrastructure\PacketParsing\Dps\**\*.cs" />
     <Compile Include="AionFlex\Infrastructure\PacketParsing\Features\Pet\PetPacketParser.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Aion2Meter.Smoke" />
   </ItemGroup>
 
   <ItemGroup>

@@ -44,8 +44,8 @@
         <!-- Exact monster target HP tint from HUD_TargetInfo.P_Prg_HpBar. -->
         <SolidColorBrush x:Key="TargetHpFill" Color="#FFF0314C" />
         <ImageBrush x:Key="DmBossAuto" ImageSource="/Aion2Meter;component/Assets/Textures/DamageMeterAtlas.png" ViewboxUnits="Absolute" Viewbox="106,118,50,50" Stretch="Uniform" />
-        <ImageBrush x:Key="DmTarget" ImageSource="/Aion2Meter;component/Assets/Textures/DamageMeterAtlas.png" ViewboxUnits="Absolute" Viewbox="60,106,40,40" Stretch="Uniform" />
-        <ImageBrush x:Key="DmAll" ImageSource="/Aion2Meter;component/Assets/Textures/DamageMeterAtlas.png" ViewboxUnits="Absolute" Viewbox="160,118,40,40" Stretch="Uniform" />
+        <ImageBrush x:Key="DmTarget" ImageSource="/Aion2Meter;component/Assets/Textures/DamageMeterAtlas.png" ViewboxUnits="Absolute" Viewbox="67,110,27,32" Stretch="Uniform" />
+        <ImageBrush x:Key="DmAll" ImageSource="/Aion2Meter;component/Assets/Textures/DamageMeterAtlas.png" ViewboxUnits="Absolute" Viewbox="163,120,34,34" Stretch="Uniform" />
         <ImageBrush x:Key="DmOpacity1" ImageSource="/Aion2Meter;component/Assets/Textures/DamageMeterAtlas.png" ViewboxUnits="Absolute" Viewbox="106,60,54,54" Stretch="Uniform" />
         <ImageBrush x:Key="DmOpacity2" ImageSource="/Aion2Meter;component/Assets/Textures/DamageMeterAtlas.png" ViewboxUnits="Absolute" Viewbox="164,2,54,54" Stretch="Uniform" />
         <ImageBrush x:Key="DmOpacity3" ImageSource="/Aion2Meter;component/Assets/Textures/DamageMeterAtlas.png" ViewboxUnits="Absolute" Viewbox="106,2,54,54" Stretch="Uniform" />
@@ -57,8 +57,6 @@
         <!-- Native AION 2 common-window icons. -->
         <!-- Common refresh: the original double-arrow reset icon. -->
         <ImageBrush x:Key="AionRefresh" ImageSource="/Aion2Meter;component/Assets/Textures/CommonAtlas.png" ViewboxUnits="Absolute" Viewbox="540,194,50,50" Stretch="Uniform" />
-        <!-- Damage-meter history clock, used by the timed notification strip. -->
-        <ImageBrush x:Key="AionNotificationClock" ImageSource="/Aion2Meter;component/Assets/Textures/DamageMeterAtlas.png" ViewboxUnits="Absolute" Viewbox="164,60,54,54" Stretch="Uniform" />
         <ImageBrush x:Key="AionSettings" ImageSource="/Aion2Meter;component/Assets/Textures/CommonAtlas.png" ViewboxUnits="Absolute" Viewbox="486,194,50,50" Stretch="Uniform" />
         <ImageBrush x:Key="AionClose" ImageSource="/Aion2Meter;component/Assets/Textures/CommonAtlas.png" ViewboxUnits="Absolute" Viewbox="372,194,54,54" Stretch="Uniform" />
         <!-- Status-effect toggle drawn in the same pale, line-art language as the native HUD controls. -->
@@ -78,16 +76,18 @@
                 </DrawingGroup>
             </DrawingBrush.Drawing>
         </DrawingBrush>
-        <DrawingBrush x:Key="AionPvpToggle" Stretch="Uniform">
-            <DrawingBrush.Drawing>
-                <DrawingGroup>
-                    <GeometryDrawing Geometry="M 6,5 L 25,26 M 25,5 L 6,26 M 5,4 L 9,4 9,8 M 26,4 L 22,4 22,8 M 4,25 L 8,25 8,29 M 27,25 L 23,25 23,29">
-                        <GeometryDrawing.Pen><Pen Brush="#FFE8E3D6" Thickness="2" StartLineCap="Round" EndLineCap="Round" /></GeometryDrawing.Pen>
-                    </GeometryDrawing>
-                    <GeometryDrawing Brush="#FFD8AD68" Geometry="M 13,13 L 19,13 19,19 13,19 Z" />
-                </DrawingGroup>
-            </DrawingBrush.Drawing>
-        </DrawingBrush>
+        <!-- Native crossed swords from the game HUD; the small badge reflects the active mode. -->
+        <ImageBrush x:Key="AionCombatSwords" ImageSource="/Aion2Meter;component/Assets/Textures/HudAtlas.png"
+                    ViewboxUnits="Absolute" Viewbox="916,149,40,40" Stretch="Uniform" />
+        <ControlTemplate x:Key="CombatModeIconTemplate" TargetType="Control">
+            <Grid Width="30" Height="32">
+                <Border Width="25" Height="25" VerticalAlignment="Top" Background="{StaticResource AionCombatSwords}" />
+                <Border Width="27" Height="10" VerticalAlignment="Bottom" CornerRadius="2" Background="#D912171B">
+                    <TextBlock Text="{Binding CombatModeBadge}" HorizontalAlignment="Center" VerticalAlignment="Center"
+                               FontFamily="{StaticResource AionFont}" FontSize="8" FontWeight="Bold" Foreground="#FFF7F3E8" />
+                </Border>
+            </Grid>
+        </ControlTemplate>
         <DrawingBrush x:Key="AionPartyCheck" Stretch="Uniform">
             <DrawingBrush.Drawing>
                 <DrawingGroup>
@@ -101,6 +101,28 @@
                 </DrawingGroup>
             </DrawingBrush.Drawing>
         </DrawingBrush>
+        <Style x:Key="PartyClassIconStyle" TargetType="Image">
+            <Setter Property="Visibility" Value="{Binding HasClassIcon, Converter={StaticResource BoolToVisibility}}" />
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect Color="#FF05090D" BlurRadius="3" ShadowDepth="0" Opacity="0.95" />
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsLocalPlayer}" Value="True">
+                    <Setter Property="Effect">
+                        <Setter.Value>
+                            <DropShadowEffect Color="#FFF7ECCC" BlurRadius="8" ShadowDepth="0" Opacity="0.9" />
+                        </Setter.Value>
+                    </Setter>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+        <RadialGradientBrush x:Key="ClassIconBackdrop" GradientOrigin="0.5,0.5">
+            <GradientStop Color="#DD101820" Offset="0" />
+            <GradientStop Color="#B3101820" Offset="0.62" />
+            <GradientStop Color="#00101820" Offset="1" />
+        </RadialGradientBrush>
         <!-- Native AION 2 HUD defence shield. -->
         <ImageBrush x:Key="AionMitigationShield" ImageSource="/Aion2Meter;component/Assets/Textures/HudAtlas.png" ViewboxUnits="Absolute" Viewbox="248,295,40,40" Stretch="Uniform" />
         <BitmapImage x:Key="TargetHpFrameBitmap" UriSource="/Aion2Meter;component/Assets/Textures/TargetHpFrame.png" />
@@ -109,42 +131,32 @@
         <BitmapImage x:Key="BossHpFrameBitmap" UriSource="/Aion2Meter;component/Assets/Textures/BossHpFrame.png" />
         <BitmapImage x:Key="DebuffIconBitmap" UriSource="/Aion2Meter;component/Assets/Textures/DebuffDefenseDown.png" />
 
-        <LinearGradientBrush x:Key="DebuffChipBackground" StartPoint="0,0" EndPoint="1,0">
-            <GradientStop Color="#F0372828" Offset="0" />
-            <GradientStop Color="#F023252B" Offset="0.48" />
-            <GradientStop Color="#F018222A" Offset="1" />
-        </LinearGradientBrush>
         <LinearGradientBrush x:Key="DebuffProgressBrush" StartPoint="0,0" EndPoint="1,0">
-            <GradientStop Color="#48F06449" Offset="0" />
-            <GradientStop Color="#28E1A06B" Offset="1" />
+            <GradientStop Color="#FFE3C58A" Offset="0" />
+            <GradientStop Color="#FFB98D51" Offset="1" />
         </LinearGradientBrush>
 
         <DataTemplate x:Key="DebuffIconTemplate">
-            <Border Width="40"
-                    Height="40"
+            <Border Width="36"
+                    Height="36"
                     Margin="2"
-                    Background="{StaticResource DebuffChipBackground}"
-                    BorderBrush="#A9C58C69"
-                    BorderThickness="1"
-                    CornerRadius="3"
+                    Background="#CF1B2227"
                     ToolTip="{Binding Name}">
-                <Border.Effect>
-                    <DropShadowEffect Color="#FFD16E4C" BlurRadius="4" ShadowDepth="0" Opacity="0.18" />
-                </Border.Effect>
                 <Grid ClipToBounds="True">
+                    <Image Source="{Binding IconPath}" Margin="1" Stretch="UniformToFill" />
+                    <Border VerticalAlignment="Bottom" Background="#DC171D22" Height="12">
+                        <TextBlock Text="{Binding RemainingText}" HorizontalAlignment="Center"
+                                   FontFamily="{StaticResource AionFont}" FontSize="9" FontWeight="Bold" Foreground="#FFF4E8D1" />
+                    </Border>
+                    <TextBlock Text="{Binding StacksText}" HorizontalAlignment="Right" VerticalAlignment="Top"
+                               Margin="0,0,2,0" FontSize="9" FontWeight="Bold" Foreground="#FFF4E8D1" />
                     <controls:SmoothProgressBar Minimum="0"
                                                 Maximum="100"
                                                 AnimatedValue="{Binding RemainingPercent}"
+                                                Height="2"
+                                                VerticalAlignment="Bottom"
                                                 Foreground="{StaticResource DebuffProgressBrush}"
                                                 Style="{DynamicResource RowProgressStyle}" />
-                    <Image Source="{Binding IconPath}" Margin="2" Stretch="UniformToFill" />
-                    <Border VerticalAlignment="Bottom" Background="#DA12191E" Padding="1,0">
-                        <TextBlock Text="{Binding RemainingText}" HorizontalAlignment="Center"
-                                   FontFamily="{StaticResource AionFont}" FontSize="9" FontWeight="Bold"
-                                   Foreground="#FFFFD0AA" />
-                    </Border>
-                    <TextBlock Text="{Binding StacksText}" HorizontalAlignment="Right" VerticalAlignment="Top"
-                               Margin="0,0,2,0" FontSize="9" FontWeight="Bold" Foreground="White" />
                 </Grid>
             </Border>
         </DataTemplate>
@@ -249,6 +261,52 @@
                 </Setter.Value>
             </Setter>
         </Style>
+
+        <Style x:Key="CompactTargetFillStyle" TargetType="ProgressBar" BasedOn="{StaticResource RowProgressStyle}">
+            <Setter Property="Height" Value="8" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <!-- 64px native cap maps to 32px: its dark HP channel starts at x≈50/2. -->
+            <Setter Property="Margin" Value="25,0,25,0" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding TargetUsesHeroFrame}" Value="True">
+                    <Setter Property="Margin" Value="20,0,20,0" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding TargetUsesLegendFrame}" Value="True">
+                    <!-- Boss cap is 128px; its channel is only ~22px high in the source. -->
+                    <Setter Property="Margin" Value="20,0,20,0" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="DetailedTargetFillStyle" TargetType="ProgressBar" BasedOn="{StaticResource RowProgressStyle}">
+            <Setter Property="Height" Value="5" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Margin" Value="15,0,15,0" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding TargetUsesHeroFrame}" Value="True">
+                    <Setter Property="Margin" Value="12,0,12,0" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding TargetUsesLegendFrame}" Value="True">
+                    <Setter Property="Margin" Value="12,0,12,0" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Two native-style phase ticks divide the boss health into thirds. -->
+        <DrawingBrush x:Key="BossHpDivider" Stretch="Fill">
+            <DrawingBrush.Drawing>
+                <DrawingGroup>
+                    <GeometryDrawing Brush="#FF33291E" Geometry="M 4,0 L 8,4 4,8 0,4 Z M 4,16 L 8,20 4,24 0,20 Z" />
+                    <GeometryDrawing Brush="#FFF0DBA5" Geometry="M 4,1 L 7,4 4,7 1,4 Z M 4,17 L 7,20 4,23 1,20 Z" />
+                    <GeometryDrawing Geometry="M 4,6 L 4,18">
+                        <GeometryDrawing.Pen><Pen Brush="#FF2A2119" Thickness="2.5" StartLineCap="Round" EndLineCap="Round" /></GeometryDrawing.Pen>
+                    </GeometryDrawing>
+                    <GeometryDrawing Geometry="M 4,6 L 4,18">
+                        <GeometryDrawing.Pen><Pen Brush="#FFF4E2B8" Thickness="1" StartLineCap="Round" EndLineCap="Round" /></GeometryDrawing.Pen>
+                    </GeometryDrawing>
+                </DrawingGroup>
+            </DrawingBrush.Drawing>
+        </DrawingBrush>
 
         <Style x:Key="HeaderIconButton" TargetType="Button" BasedOn="{StaticResource IconButtonStyle}">
             <Setter Property="Width" Value="42" />
@@ -360,7 +418,7 @@
                                 </Style.Triggers>
                             </Style>
                         </Button.Style>
-                        <Grid Width="29" Height="29">
+                        <Grid Width="28" Height="28">
                             <Border Background="{StaticResource DmTarget}" Visibility="{Binding IsSelfView, Converter={StaticResource BoolToVisibility}}" />
                             <Border Background="{StaticResource DmAll}" Visibility="{Binding IsPartyView, Converter={StaticResource BoolToVisibility}}" />
                         </Grid>
@@ -377,7 +435,7 @@
                                 </Style.Triggers>
                             </Style>
                         </Button.Style>
-                        <Grid Width="29" Height="29">
+                        <Grid Width="28" Height="28">
                             <Border Background="{StaticResource DmBossAuto}" Visibility="{Binding BossOnly, Converter={StaticResource BoolToVisibility}}" />
                             <Border Background="{StaticResource DmAll}" Visibility="{Binding BossOnly, Converter={StaticResource InverseBoolToVisibility}}" />
                         </Grid>
@@ -396,7 +454,7 @@
                                 </Style.Triggers>
                             </Style>
                         </Button.Style>
-                        <Border Width="29" Height="29" Background="{StaticResource AionDebuffToggle}" />
+                        <Border Width="27" Height="27" Background="{StaticResource AionDebuffToggle}" />
                     </Button>
                     <Button Grid.Column="3" Margin="3,0,0,0" Command="{Binding TogglePvpCommand}" ToolTip="{Binding PvpModeTooltip}">
                         <Button.Style>
@@ -408,49 +466,73 @@
                                 </Style.Triggers>
                             </Style>
                         </Button.Style>
-                        <Border Width="29" Height="29" Background="{StaticResource AionPvpToggle}" />
+                        <Control Width="30" Height="32" Template="{StaticResource CombatModeIconTemplate}" IsHitTestVisible="False" />
                     </Button>
                     <Button Grid.Column="4" Margin="3,0,0,0" Style="{StaticResource ModeIconButtonStyle}" ToolTip="{services:LocalizedText PartyCheck}" Click="OpenPartyCheck_Click">
-                        <Border Width="29" Height="29" Background="{StaticResource AionPartyCheck}" />
+                        <Border Width="27" Height="27" Background="{StaticResource AionPartyCheck}" />
                     </Button>
                     <Button Grid.Column="5" Margin="3,0,0,0" Style="{StaticResource ModeIconButtonStyle}" ToolTip="{services:LocalizedText ResetCombatTooltip}" Command="{Binding ResetCommand}">
-                        <Border Width="29" Height="29" Background="{StaticResource AionRefresh}" />
+                        <Border Width="27" Height="27" Background="{StaticResource AionRefresh}" />
                     </Button>
-                    <StackPanel Grid.Column="6" Margin="14,0,0,0" VerticalAlignment="Center">
-                        <TextBlock Text="{Binding TargetSectionLabel}" FontSize="8" FontWeight="Bold" Foreground="#FF9CA5AA" />
-                        <TextBlock Text="{Binding TargetName}" Margin="0,2,0,0" FontSize="12" FontWeight="SemiBold" Foreground="#FFF2E7CB" TextTrimming="CharacterEllipsis" />
-                        <Grid x:Name="DetailedTargetHpAnchor" Height="16" MaxWidth="570" Margin="0,2,0,0" HorizontalAlignment="Left">
-                            <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="43" /></Grid.ColumnDefinitions>
-                            <Grid Height="16">
+                    <Grid Grid.Column="6" Height="46" Margin="14,0,0,0" VerticalAlignment="Center">
+                        <Grid.RowDefinitions><RowDefinition Height="17" /><RowDefinition Height="19" /><RowDefinition Height="10" /></Grid.RowDefinitions>
+                        <TextBlock Grid.Row="0" Text="{Binding TargetName}" FontSize="12" FontWeight="SemiBold"
+                                   Foreground="#FFF2E7CB" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                        <Grid x:Name="DetailedTargetHpAnchor" Grid.Row="1" Height="19" MaxWidth="570" HorizontalAlignment="Stretch">
+                            <Grid Height="19">
                                 <Grid Visibility="{Binding TargetUsesNormalFrame, Converter={StaticResource BoolToVisibility}}">
-                                    <Grid.ColumnDefinitions><ColumnDefinition Width="16" /><ColumnDefinition Width="*" /><ColumnDefinition Width="16" /></Grid.ColumnDefinitions>
+                                    <Grid.ColumnDefinitions><ColumnDefinition Width="19" /><ColumnDefinition Width="*" /><ColumnDefinition Width="19" /></Grid.ColumnDefinitions>
                                     <Image Grid.Column="0" Stretch="Fill"><Image.Source><CroppedBitmap Source="{StaticResource TargetHpFrameBitmap}" SourceRect="0,0,64,64" /></Image.Source></Image>
                                     <Image Grid.Column="1" Stretch="Fill"><Image.Source><CroppedBitmap Source="{StaticResource TargetHpFrameBitmap}" SourceRect="64,0,128,64" /></Image.Source></Image>
                                     <Image Grid.Column="2" Stretch="Fill"><Image.Source><CroppedBitmap Source="{StaticResource TargetHpFrameBitmap}" SourceRect="192,0,64,64" /></Image.Source></Image>
                                 </Grid>
                                 <Grid Visibility="{Binding TargetUsesEliteFrame, Converter={StaticResource BoolToVisibility}}">
-                                    <Grid.ColumnDefinitions><ColumnDefinition Width="16" /><ColumnDefinition Width="*" /><ColumnDefinition Width="16" /></Grid.ColumnDefinitions>
+                                    <Grid.ColumnDefinitions><ColumnDefinition Width="19" /><ColumnDefinition Width="*" /><ColumnDefinition Width="19" /></Grid.ColumnDefinitions>
                                     <Image Grid.Column="0" Stretch="Fill"><Image.Source><CroppedBitmap Source="{StaticResource EliteHpFrameBitmap}" SourceRect="0,0,64,64" /></Image.Source></Image>
                                     <Image Grid.Column="1" Stretch="Fill"><Image.Source><CroppedBitmap Source="{StaticResource EliteHpFrameBitmap}" SourceRect="64,0,128,64" /></Image.Source></Image>
                                     <Image Grid.Column="2" Stretch="Fill"><Image.Source><CroppedBitmap Source="{StaticResource EliteHpFrameBitmap}" SourceRect="192,0,64,64" /></Image.Source></Image>
                                 </Grid>
                                 <Grid Visibility="{Binding TargetUsesHeroFrame, Converter={StaticResource BoolToVisibility}}">
-                                    <Grid.ColumnDefinitions><ColumnDefinition Width="16" /><ColumnDefinition Width="*" /><ColumnDefinition Width="16" /></Grid.ColumnDefinitions>
+                                    <Grid.ColumnDefinitions><ColumnDefinition Width="19" /><ColumnDefinition Width="*" /><ColumnDefinition Width="19" /></Grid.ColumnDefinitions>
                                     <Image Grid.Column="0" Stretch="Fill"><Image.Source><CroppedBitmap Source="{StaticResource HeroHpFrameBitmap}" SourceRect="0,0,128,128" /></Image.Source></Image>
                                     <Image Grid.Column="1" Stretch="Fill"><Image.Source><CroppedBitmap Source="{StaticResource HeroHpFrameBitmap}" SourceRect="128,0,256,128" /></Image.Source></Image>
                                     <Image Grid.Column="2" Stretch="Fill"><Image.Source><CroppedBitmap Source="{StaticResource HeroHpFrameBitmap}" SourceRect="384,0,128,128" /></Image.Source></Image>
                                 </Grid>
                                 <Grid Visibility="{Binding TargetUsesLegendFrame, Converter={StaticResource BoolToVisibility}}">
-                                    <Grid.ColumnDefinitions><ColumnDefinition Width="16" /><ColumnDefinition Width="*" /><ColumnDefinition Width="16" /></Grid.ColumnDefinitions>
-                                    <Image Grid.Column="0" Stretch="Fill"><Image.Source><CroppedBitmap Source="{StaticResource BossHpFrameBitmap}" SourceRect="0,0,128,128" /></Image.Source></Image>
-                                    <Image Grid.Column="1" Stretch="Fill"><Image.Source><CroppedBitmap Source="{StaticResource BossHpFrameBitmap}" SourceRect="128,0,256,128" /></Image.Source></Image>
-                                    <Image Grid.Column="2" Stretch="Fill"><Image.Source><CroppedBitmap Source="{StaticResource BossHpFrameBitmap}" SourceRect="384,0,128,128" /></Image.Source></Image>
+                                    <Grid.ColumnDefinitions><ColumnDefinition Width="19" /><ColumnDefinition Width="*" /><ColumnDefinition Width="19" /></Grid.ColumnDefinitions>
+                                    <Image Grid.Column="0" Stretch="Fill"><Image.Source><CroppedBitmap Source="{StaticResource BossHpFrameBitmap}" SourceRect="0,24,128,88" /></Image.Source></Image>
+                                    <Image Grid.Column="1" Stretch="Fill"><Image.Source><CroppedBitmap Source="{StaticResource BossHpFrameBitmap}" SourceRect="128,24,256,88" /></Image.Source></Image>
+                                    <Image Grid.Column="2" Stretch="Fill"><Image.Source><CroppedBitmap Source="{StaticResource BossHpFrameBitmap}" SourceRect="384,24,128,88" /></Image.Source></Image>
                                 </Grid>
-                                <controls:SmoothProgressBar Margin="16,5,16,5" Minimum="0" Maximum="100" AnimatedValue="{Binding TargetHpPercent, Mode=OneWay}" Foreground="{Binding TargetBarBrush}" Style="{StaticResource RowProgressStyle}" />
+                                <!-- The native boss bitmap contains a red strip at source y=83..87,
+                                     below the HP channel. Cover only that strip, not its metal rims. -->
+                                <Border Height="1.3" Margin="20,12.7,20,0" VerticalAlignment="Top"
+                                        Background="#FF161718" IsHitTestVisible="False"
+                                        Visibility="{Binding TargetUsesLegendFrame, Converter={StaticResource BoolToVisibility}}" />
+                                <controls:SmoothProgressBar Minimum="0" Maximum="100" AnimatedValue="{Binding TargetHpPercent, Mode=OneWay}"
+                                                            Foreground="{Binding TargetBarBrush}" Style="{StaticResource DetailedTargetFillStyle}" />
+                                <Grid Height="15" Margin="19,0,19,0" VerticalAlignment="Center"
+                                      Visibility="{Binding TargetUsesLegendFrame, Converter={StaticResource BoolToVisibility}}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" /><ColumnDefinition Width="6" /><ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="6" /><ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <Border Grid.Column="1" Background="{StaticResource BossHpDivider}" />
+                                    <Border Grid.Column="3" Background="{StaticResource BossHpDivider}" />
+                                </Grid>
+                                <TextBlock Text="{Binding TargetHpText}" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                           FontFamily="{StaticResource AionFont}" FontSize="8" FontWeight="Bold" Foreground="White">
+                                    <TextBlock.Effect><DropShadowEffect Color="Black" BlurRadius="2" ShadowDepth="1" Opacity="0.95" /></TextBlock.Effect>
+                                </TextBlock>
                             </Grid>
-                            <TextBlock Grid.Column="1" Text="{Binding TargetHpText}" Margin="5,0,0,0" FontSize="8" FontWeight="Bold" Foreground="#FFFFBCC0" VerticalAlignment="Center" />
                         </Grid>
-                    </StackPanel>
+                        <Border Grid.Row="2" Height="10" MaxWidth="570" HorizontalAlignment="Center"
+                                Background="{Binding EnrageBackground}"
+                                Visibility="{Binding EnrageVisible, Converter={StaticResource BoolToVisibility}}">
+                            <TextBlock Text="{Binding EnrageText}" Margin="4,0,4,0" FontSize="8" FontWeight="SemiBold"
+                                       Foreground="{Binding EnrageForeground}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                        </Border>
+                    </Grid>
                 </Grid>
 
                 <Border Grid.Row="2" Background="{StaticResource DarkStrip}" BorderBrush="#FF242B30" BorderThickness="0,1,0,1">
@@ -486,7 +568,6 @@
                 </Grid>
 
                 <Grid Grid.Row="4" Margin="9,0,9,0">
-                    <ScrollViewer VerticalScrollBarVisibility="Hidden" HorizontalScrollBarVisibility="Disabled" PanningMode="VerticalOnly">
                         <ItemsControl ItemsSource="{Binding Players}">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate><controls:SmoothStackPanel /></ItemsPanelTemplate>
@@ -520,9 +601,11 @@
                                                     <ColumnDefinition Width="74" /><ColumnDefinition Width="82" /><ColumnDefinition Width="92" /><ColumnDefinition Width="58" />
                                                 </Grid.ColumnDefinitions>
                                                 <TextBlock Grid.Column="0" Text="{Binding Rank}" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="12" Foreground="#FFB4BCC1" />
-                                                <Border Grid.Column="1" Width="27" Height="27" BorderBrush="#FF5E6A70" BorderThickness="1" VerticalAlignment="Center">
-                                                    <Image Source="{Binding IconPath}" Width="24" Height="24" Stretch="Uniform" />
-                                                </Border>
+                                                <Grid Grid.Column="1" Width="28" Height="28" VerticalAlignment="Center">
+                                                    <Ellipse Width="28" Height="28" Fill="{StaticResource ClassIconBackdrop}" />
+                                                    <Image Source="{Binding IconPath}" Width="25" Height="25" Stretch="Uniform"
+                                                           Style="{StaticResource PartyClassIconStyle}" />
+                                                </Grid>
                                                 <StackPanel Grid.Column="2" Margin="7,0" VerticalAlignment="Center">
                                                     <Grid Height="18" ToolTip="{Binding Nickname}">
                                                         <controls:MarqueeTextBlock Text="{Binding Nickname}" FontSize="13" FontWeight="Bold">
@@ -564,7 +647,6 @@
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
-                    </ScrollViewer>
 
                     <StackPanel Visibility="{Binding HasPlayers, Converter={StaticResource InverseBoolToVisibility}}" HorizontalAlignment="Center" VerticalAlignment="Center">
                         <TextBlock Text="{services:LocalizedText NoCombatData}" HorizontalAlignment="Center" FontSize="13" FontWeight="Bold" Foreground="#FF9AA2A7" />
@@ -635,7 +717,7 @@
                                 </Style.Triggers>
                             </Style>
                         </Button.Style>
-                        <Grid Width="29" Height="29">
+                        <Grid Width="28" Height="28">
                             <Border Background="{StaticResource DmTarget}" Visibility="{Binding IsSelfView, Converter={StaticResource BoolToVisibility}}" />
                             <Border Background="{StaticResource DmAll}" Visibility="{Binding IsPartyView, Converter={StaticResource BoolToVisibility}}" />
                         </Grid>
@@ -652,7 +734,7 @@
                                 </Style.Triggers>
                             </Style>
                         </Button.Style>
-                        <Grid Width="29" Height="29">
+                        <Grid Width="28" Height="28">
                             <Border Background="{StaticResource DmBossAuto}" Visibility="{Binding BossOnly, Converter={StaticResource BoolToVisibility}}" />
                             <Border Background="{StaticResource DmAll}" Visibility="{Binding BossOnly, Converter={StaticResource InverseBoolToVisibility}}" />
                         </Grid>
@@ -671,7 +753,7 @@
                                 </Style.Triggers>
                             </Style>
                         </Button.Style>
-                        <Border Width="29" Height="29" Background="{StaticResource AionDebuffToggle}" />
+                        <Border Width="27" Height="27" Background="{StaticResource AionDebuffToggle}" />
                     </Button>
                     <Button Grid.Column="4" Margin="2,0,0,0" Command="{Binding TogglePvpCommand}" ToolTip="{Binding PvpModeTooltip}">
                         <Button.Style>
@@ -683,18 +765,18 @@
                                 </Style.Triggers>
                             </Style>
                         </Button.Style>
-                        <Border Width="29" Height="29" Background="{StaticResource AionPvpToggle}" />
+                        <Control Width="30" Height="32" Template="{StaticResource CombatModeIconTemplate}" IsHitTestVisible="False" />
                     </Button>
                     <Button Grid.Column="5" Margin="2,0,0,0" Style="{StaticResource ModeIconButtonStyle}" ToolTip="{services:LocalizedText PartyCheck}" Click="OpenPartyCheck_Click">
-                        <Border Width="29" Height="29" Background="{StaticResource AionPartyCheck}" />
+                        <Border Width="27" Height="27" Background="{StaticResource AionPartyCheck}" />
                     </Button>
                     <Button Grid.Column="6" Margin="2,0,0,0" Style="{StaticResource ModeIconButtonStyle}" ToolTip="{services:LocalizedText ResetCombatTooltip}" Command="{Binding ResetCommand}">
-                        <Border Width="29" Height="29" Background="{StaticResource AionRefresh}" />
+                        <Border Width="27" Height="27" Background="{StaticResource AionRefresh}" />
                     </Button>
                 </Grid>
 
                 <Border Grid.Row="2" Background="{StaticResource PanelBackground}" BorderBrush="{StaticResource SoftLine}" BorderThickness="0,1,0,1">
-                    <Grid Margin="13,4,12,5">
+                    <Grid Margin="7,4,7,5">
                         <Grid.RowDefinitions><RowDefinition Height="24" /><RowDefinition Height="35" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
 
                         <!-- Таймер боя остаётся в данных и копируемой сводке, но не занимает место в оверлее. -->
@@ -720,37 +802,50 @@
                         </Grid>
 
                         <!-- Рамка режется на три части: декоративные края не деформируются. -->
-                        <Grid x:Name="CompactTargetHpAnchor" Grid.Row="1" Height="30" MaxWidth="570" HorizontalAlignment="Stretch" VerticalAlignment="Center" ToolTip="{services:LocalizedText TargetHealth}">
+                        <Grid x:Name="CompactTargetHpAnchor" Grid.Row="1" Height="32" MaxWidth="570" HorizontalAlignment="Stretch" VerticalAlignment="Top" ToolTip="{services:LocalizedText TargetHealth}">
                             <Grid Visibility="{Binding TargetUsesNormalFrame, Converter={StaticResource BoolToVisibility}}">
-                                <Grid.ColumnDefinitions><ColumnDefinition Width="30" /><ColumnDefinition Width="*" /><ColumnDefinition Width="30" /></Grid.ColumnDefinitions>
+                                <Grid.ColumnDefinitions><ColumnDefinition Width="32" /><ColumnDefinition Width="*" /><ColumnDefinition Width="32" /></Grid.ColumnDefinitions>
                                 <Image Grid.Column="0" Stretch="Fill"><Image.Source><CroppedBitmap Source="{StaticResource TargetHpFrameBitmap}" SourceRect="0,0,64,64" /></Image.Source></Image>
                                 <Image Grid.Column="1" Stretch="Fill"><Image.Source><CroppedBitmap Source="{StaticResource TargetHpFrameBitmap}" SourceRect="64,0,128,64" /></Image.Source></Image>
                                 <Image Grid.Column="2" Stretch="Fill"><Image.Source><CroppedBitmap Source="{StaticResource TargetHpFrameBitmap}" SourceRect="192,0,64,64" /></Image.Source></Image>
                             </Grid>
                             <Grid Visibility="{Binding TargetUsesEliteFrame, Converter={StaticResource BoolToVisibility}}">
-                                <Grid.ColumnDefinitions><ColumnDefinition Width="30" /><ColumnDefinition Width="*" /><ColumnDefinition Width="30" /></Grid.ColumnDefinitions>
+                                <Grid.ColumnDefinitions><ColumnDefinition Width="32" /><ColumnDefinition Width="*" /><ColumnDefinition Width="32" /></Grid.ColumnDefinitions>
                                 <Image Grid.Column="0" Stretch="Fill"><Image.Source><CroppedBitmap Source="{StaticResource EliteHpFrameBitmap}" SourceRect="0,0,64,64" /></Image.Source></Image>
                                 <Image Grid.Column="1" Stretch="Fill"><Image.Source><CroppedBitmap Source="{StaticResource EliteHpFrameBitmap}" SourceRect="64,0,128,64" /></Image.Source></Image>
                                 <Image Grid.Column="2" Stretch="Fill"><Image.Source><CroppedBitmap Source="{StaticResource EliteHpFrameBitmap}" SourceRect="192,0,64,64" /></Image.Source></Image>
                             </Grid>
                             <Grid Visibility="{Binding TargetUsesHeroFrame, Converter={StaticResource BoolToVisibility}}">
-                                <Grid.ColumnDefinitions><ColumnDefinition Width="30" /><ColumnDefinition Width="*" /><ColumnDefinition Width="30" /></Grid.ColumnDefinitions>
+                                <Grid.ColumnDefinitions><ColumnDefinition Width="32" /><ColumnDefinition Width="*" /><ColumnDefinition Width="32" /></Grid.ColumnDefinitions>
                                 <Image Grid.Column="0" Stretch="Fill"><Image.Source><CroppedBitmap Source="{StaticResource HeroHpFrameBitmap}" SourceRect="0,0,128,128" /></Image.Source></Image>
                                 <Image Grid.Column="1" Stretch="Fill"><Image.Source><CroppedBitmap Source="{StaticResource HeroHpFrameBitmap}" SourceRect="128,0,256,128" /></Image.Source></Image>
                                 <Image Grid.Column="2" Stretch="Fill"><Image.Source><CroppedBitmap Source="{StaticResource HeroHpFrameBitmap}" SourceRect="384,0,128,128" /></Image.Source></Image>
                             </Grid>
                             <Grid Visibility="{Binding TargetUsesLegendFrame, Converter={StaticResource BoolToVisibility}}">
-                                <Grid.ColumnDefinitions><ColumnDefinition Width="30" /><ColumnDefinition Width="*" /><ColumnDefinition Width="30" /></Grid.ColumnDefinitions>
-                                <Image Grid.Column="0" Stretch="Fill"><Image.Source><CroppedBitmap Source="{StaticResource BossHpFrameBitmap}" SourceRect="0,0,128,128" /></Image.Source></Image>
-                                <Image Grid.Column="1" Stretch="Fill"><Image.Source><CroppedBitmap Source="{StaticResource BossHpFrameBitmap}" SourceRect="128,0,256,128" /></Image.Source></Image>
-                                <Image Grid.Column="2" Stretch="Fill"><Image.Source><CroppedBitmap Source="{StaticResource BossHpFrameBitmap}" SourceRect="384,0,128,128" /></Image.Source></Image>
+                                <Grid.ColumnDefinitions><ColumnDefinition Width="32" /><ColumnDefinition Width="*" /><ColumnDefinition Width="32" /></Grid.ColumnDefinitions>
+                                    <Image Grid.Column="0" Stretch="Fill"><Image.Source><CroppedBitmap Source="{StaticResource BossHpFrameBitmap}" SourceRect="0,24,128,88" /></Image.Source></Image>
+                                    <Image Grid.Column="1" Stretch="Fill"><Image.Source><CroppedBitmap Source="{StaticResource BossHpFrameBitmap}" SourceRect="128,24,256,88" /></Image.Source></Image>
+                                    <Image Grid.Column="2" Stretch="Fill"><Image.Source><CroppedBitmap Source="{StaticResource BossHpFrameBitmap}" SourceRect="384,24,128,88" /></Image.Source></Image>
                             </Grid>
-                            <controls:SmoothProgressBar Margin="30,8,30,8" Minimum="0" Maximum="100" AnimatedValue="{Binding TargetHpPercent, Mode=OneWay}" Foreground="{Binding TargetBarBrush}" Style="{StaticResource RowProgressStyle}" />
+                            <Border Height="2.5" Margin="34,21,34,0" VerticalAlignment="Top"
+                                    Background="#FF161718" IsHitTestVisible="False"
+                                    Visibility="{Binding TargetUsesLegendFrame, Converter={StaticResource BoolToVisibility}}" />
+                            <controls:SmoothProgressBar Minimum="0" Maximum="100" AnimatedValue="{Binding TargetHpPercent, Mode=OneWay}"
+                                                        Foreground="{Binding TargetBarBrush}" Style="{StaticResource CompactTargetFillStyle}" />
+                                <Grid Height="24" Margin="32,0,32,0" VerticalAlignment="Center"
+                                      Visibility="{Binding TargetUsesLegendFrame, Converter={StaticResource BoolToVisibility}}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" /><ColumnDefinition Width="8" /><ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="8" /><ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <Border Grid.Column="1" Background="{StaticResource BossHpDivider}" />
+                                    <Border Grid.Column="3" Background="{StaticResource BossHpDivider}" />
+                                </Grid>
                             <TextBlock Text="{Binding TargetHpText}"
                                        HorizontalAlignment="Center"
                                        VerticalAlignment="Center"
                                        FontFamily="{StaticResource AionFont}"
-                                       FontSize="11"
+                                       FontSize="10"
                                        FontWeight="Bold"
                                        Foreground="#FFFFFFFF">
                                 <TextBlock.Effect>
@@ -759,11 +854,18 @@
                             </TextBlock>
                         </Grid>
 
+                        <Border Grid.Row="1" Height="11" MaxWidth="570" HorizontalAlignment="Center" VerticalAlignment="Bottom"
+                                Background="{Binding EnrageBackground}"
+                                Visibility="{Binding EnrageVisible, Converter={StaticResource BoolToVisibility}}">
+                            <TextBlock Text="{Binding EnrageText}" Margin="5,0,5,0" FontFamily="{StaticResource AionBodyFont}"
+                                       FontSize="9" FontWeight="SemiBold" Foreground="{Binding EnrageForeground}"
+                                       TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                        </Border>
+
                     </Grid>
                 </Border>
 
                 <Grid Grid.Row="3" Margin="6,0,6,0">
-                    <ScrollViewer VerticalScrollBarVisibility="Hidden" HorizontalScrollBarVisibility="Disabled" PanningMode="VerticalOnly">
                         <ItemsControl ItemsSource="{Binding Players}">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate><controls:SmoothStackPanel /></ItemsPanelTemplate>
@@ -797,7 +899,11 @@
                                                     <ColumnDefinition Width="66" /><ColumnDefinition Width="58" /><ColumnDefinition Width="66" /><ColumnDefinition Width="46" />
                                                 </Grid.ColumnDefinitions>
                                                 <TextBlock Grid.Column="0" Text="{Binding Rank}" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="11" Foreground="#FFBFC4C6" />
-                                                <Image Grid.Column="1" Source="{Binding IconPath}" Width="21" Height="21" VerticalAlignment="Center" Stretch="Uniform" />
+                                                <Grid Grid.Column="1" Width="27" Height="27" VerticalAlignment="Center">
+                                                    <Ellipse Width="27" Height="27" Fill="{StaticResource ClassIconBackdrop}" />
+                                                    <Image Source="{Binding IconPath}" Width="24" Height="24" Stretch="Uniform"
+                                                           Style="{StaticResource PartyClassIconStyle}" />
+                                                </Grid>
                                                 <Grid Grid.Column="2" Margin="5,0" ToolTip="{Binding Nickname}">
                                                     <controls:MarqueeTextBlock Text="{Binding Nickname}" FontSize="12" FontWeight="Bold">
                                                         <controls:MarqueeTextBlock.Style>
@@ -836,7 +942,6 @@
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
-                    </ScrollViewer>
                     <TextBlock Visibility="{Binding HasPlayers, Converter={StaticResource InverseBoolToVisibility}}" Text="{Binding EmptyStateText}" TextAlignment="Center" TextWrapping="Wrap" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="11" FontWeight="Bold" Foreground="#FFB7A66F" />
                 </Grid>
 
@@ -853,56 +958,26 @@
                       StaysOpen="True"
                       Opened="DebuffPopup_Opened"
                       IsOpen="{Binding ShowDebuffIcons, Mode=OneWay}">
-        <ItemsControl Width="88" ItemsSource="{Binding TargetDebuffs}" ItemTemplate="{StaticResource DebuffIconTemplate}">
+        <ItemsControl Width="80" ItemsSource="{Binding TargetDebuffs}" ItemTemplate="{StaticResource DebuffIconTemplate}">
             <ItemsControl.ItemsPanel>
-                <ItemsPanelTemplate><WrapPanel Width="88" /></ItemsPanelTemplate>
+                <ItemsPanelTemplate><WrapPanel Width="80" /></ItemsPanelTemplate>
             </ItemsControl.ItemsPanel>
         </ItemsControl>
     </primitives:Popup>
 
-    <!-- Визуально отдельный список, жёстко пристыкованный к основному окну. -->
+    <!-- Единая бегущая строка пристыкована к основному окну. -->
     <primitives:Popup x:Name="NotificationPopup"
                       PlacementTarget="{Binding ElementName=RootFrame}"
                       Placement="Bottom"
                       VerticalOffset="6"
                       AllowsTransparency="True"
-                      PopupAnimation="Fade"
                       StaysOpen="True"
                       IsHitTestVisible="False"
                       Opened="NotificationPopup_Opened"
+                      Closed="NotificationPopup_Closed"
                       IsOpen="{Binding ShowNotificationPopup, Mode=OneWay}">
-        <StackPanel Width="{Binding ActualWidth, ElementName=RootFrame}">
-            <Border MinHeight="32"
-                    Margin="0,0,0,4"
-                    Padding="10,6"
-                    Background="{Binding EnrageBackground}"
-                    BorderBrush="{Binding EnrageBorder}"
-                    BorderThickness="1"
-                    CornerRadius="3"
-                    Visibility="{Binding EnrageVisible, Converter={StaticResource BoolToVisibility}}">
-                <Grid>
-                    <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
-                    <Border Width="17" Height="17" Margin="0,0,7,0" Background="{StaticResource AionNotificationClock}" VerticalAlignment="Center" />
-                    <TextBlock Grid.Column="1" Text="{Binding EnrageText}" FontSize="11" FontWeight="Bold" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" Foreground="White" />
-                </Grid>
-            </Border>
-            <ItemsControl ItemsSource="{Binding EventAlerts}">
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <Border MinHeight="32" Margin="0,0,0,4" Padding="10,6"
-                                Background="{Binding Background}" BorderBrush="{Binding Border}"
-                                BorderThickness="1" CornerRadius="3">
-                            <Grid>
-                                <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
-                                <Border Width="17" Height="17" Margin="0,0,7,0" Background="{StaticResource AionNotificationClock}" VerticalAlignment="Center" />
-                                <TextBlock Grid.Column="1" Text="{Binding Title}" FontSize="11" FontWeight="Bold" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" Foreground="White" />
-                                <TextBlock Grid.Column="2" Margin="8,0,0,0" Text="{Binding Countdown}" FontFamily="{StaticResource AionFont}" FontSize="11" FontWeight="Bold" VerticalAlignment="Center" Foreground="White" />
-                            </Grid>
-                        </Border>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-        </StackPanel>
+        <controls:NotificationTicker x:Name="AttachedNotificationTicker"
+                                     Width="{Binding ActualWidth, ElementName=RootFrame}" />
     </primitives:Popup>
     </Grid>
 </Window>

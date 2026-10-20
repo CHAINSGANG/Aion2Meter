@@ -23,10 +23,13 @@ jobs:
       - name: Build
         run: dotnet build .\Aion2Meter.slnx --configuration Release --nologo
 
+      - name: Smoke checks
+        run: dotnet run --project .\tests\Aion2Meter.Smoke\Aion2Meter.Smoke.csproj --configuration Release --no-build
+
       - name: Package self-contained release
         shell: pwsh
         run: |
-          $version = if ($env:GITHUB_REF_TYPE -eq 'tag') { $env:GITHUB_REF_NAME.TrimStart('v') } else { '0.2.8' }
+          $version = if ($env:GITHUB_REF_TYPE -eq 'tag') { $env:GITHUB_REF_NAME.TrimStart('v') } else { '0.2.9' }
           $iscc = .\scripts\prepare-inno.ps1
           .\scripts\publish.ps1 -Version $version -InnoCompiler $iscc
 

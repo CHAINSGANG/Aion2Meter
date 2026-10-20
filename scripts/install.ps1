@@ -23,30 +23,30 @@ if (-not (Test-Path -LiteralPath (Join-Path $sourcePath 'Aion2Meter.exe'))) {
 }
 
 if (Get-Process -Name 'Aion2Meter' -ErrorAction SilentlyContinue) {
-    throw 'Сначала закройте Aion II Meter, затем повторите установку.'
+    throw 'Сначала закройте Aion 2 DPS, затем повторите установку.'
 }
 
 New-Item -ItemType Directory -Path $installPath -Force | Out-Null
 Copy-Item -Path (Join-Path $sourcePath '*') -Destination $installPath -Recurse -Force
 
 $shell = New-Object -ComObject WScript.Shell
-$desktopShortcut = $shell.CreateShortcut((Join-Path ([Environment]::GetFolderPath('DesktopDirectory')) 'Aion II Meter.lnk'))
+$desktopShortcut = $shell.CreateShortcut((Join-Path ([Environment]::GetFolderPath('DesktopDirectory')) 'Aion 2 DPS.lnk'))
 $desktopShortcut.TargetPath = $executablePath
 $desktopShortcut.WorkingDirectory = $installPath
 $desktopShortcut.IconLocation = "$executablePath,0"
 $desktopShortcut.Save()
 
-$startMenuDirectory = Join-Path ([Environment]::GetFolderPath('Programs')) 'Aion II Meter'
+$startMenuDirectory = Join-Path ([Environment]::GetFolderPath('Programs')) 'Aion 2 DPS'
 New-Item -ItemType Directory -Path $startMenuDirectory -Force | Out-Null
-$startMenuShortcut = $shell.CreateShortcut((Join-Path $startMenuDirectory 'Aion II Meter.lnk'))
+$startMenuShortcut = $shell.CreateShortcut((Join-Path $startMenuDirectory 'Aion 2 DPS.lnk'))
 $startMenuShortcut.TargetPath = $executablePath
 $startMenuShortcut.WorkingDirectory = $installPath
 $startMenuShortcut.IconLocation = "$executablePath,0"
 $startMenuShortcut.Save()
 
-Write-Host "Aion II Meter установлен: $installPath" -ForegroundColor Green
+Write-Host "Aion 2 DPS установлен: $installPath" -ForegroundColor Green
 if (-not (Test-NpcapInstalled)) {
-    $npcapTempDirectory = Join-Path ([IO.Path]::GetTempPath()) 'Aion2Meter'
+    $npcapTempDirectory = Join-Path ([IO.Path]::GetTempPath()) "Aion2Meter-$PID-$([guid]::NewGuid().ToString('N'))"
     $npcapInstaller = Join-Path $npcapTempDirectory "npcap-$npcapVersion.exe"
 
     New-Item -ItemType Directory -Path $npcapTempDirectory -Force | Out-Null
@@ -85,6 +85,7 @@ if (-not (Test-NpcapInstalled)) {
     }
     finally {
         Remove-Item -LiteralPath $npcapInstaller -Force -ErrorAction SilentlyContinue
+        Remove-Item -LiteralPath $npcapTempDirectory -Force -ErrorAction SilentlyContinue
     }
 }
 

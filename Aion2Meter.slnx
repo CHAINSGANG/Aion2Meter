@@ -5,4 +5,7 @@
     <Project Path="src/AionFlex.Core/AionFlex.Core.csproj" />
     <Project Path="src/AionFlex.Infrastructure/AionFlex.Infrastructure.csproj" />
   </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Aion2Meter.Smoke/Aion2Meter.Smoke.csproj" />
+  </Folder>
 </Solution>

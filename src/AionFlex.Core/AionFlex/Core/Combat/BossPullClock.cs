@@ -103,6 +103,8 @@ public sealed class BossPullClock
 		}
 	}
 
+	public void OnRemoved(int entityId) => OnNewLife(entityId);
+
 	public void OnEnrage(int entityId, long timestampMs)
 	{
 		if (entityId <= 0)

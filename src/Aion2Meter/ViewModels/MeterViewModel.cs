@@ -18,22 +18,46 @@ namespace Aion2Meter.ViewModels;
 
 public sealed class MeterViewModel : BindableBase, IDisposable
 {
-    private const int MaximumVisiblePartyRows = 10;
     private static CultureInfo UiCulture => CultureInfo.CurrentCulture;
     private static readonly Brush ReadyBrush = MakeBrush("#22D3EE");
     private static readonly Brush CombatBrush = MakeBrush("#34D399");
     private static readonly Brush DemoBrush = MakeBrush("#FBBF24");
     private static readonly Brush ErrorBrush = MakeBrush("#FB7185");
+    private static readonly Brush DamageTargetBarBrush = MakeTargetHpGradient();
+    private static readonly Brush HealingTargetBarBrush = MakeGradient("#55B889", 0.12, 0.30);
+    private static readonly Brush DamageTakenTargetBarBrush = MakeGradient("#D28B5E", 0.12, 0.30);
+    private static readonly (Brush Background, Brush Border, Brush Foreground) NeutralEnrageBrushes =
+        (MakeGradient("#66545A61", 0.08, 0.20), MakeBrush("#668E969A"), MakeBrush("#FFD8D0BD"));
+    private static readonly (Brush Background, Brush Border, Brush Foreground) OnTrackEnrageBrushes =
+        (MakeGradient("#66348C67", 0.08, 0.20), MakeBrush("#AA5CB986"), MakeBrush("#FFB7EDD0"));
+    private static readonly (Brush Background, Brush Border, Brush Foreground) BehindEnrageBrushes =
+        (MakeGradient("#668F3445", 0.08, 0.20), MakeBrush("#AAD9717D"), MakeBrush("#FFFFC0C8"));
+    private static readonly IReadOnlyDictionary<JobClass, Brush> ClassBrushes = new Dictionary<JobClass, Brush>
+    {
+        [JobClass.Gladiator] = MakeGradient("#D49362"),
+        [JobClass.Templar] = MakeGradient("#7EA6BC"),
+        [JobClass.Ranger] = MakeGradient("#76B48E"),
+        [JobClass.Assassin] = MakeGradient("#9788BA"),
+        [JobClass.Sorcerer] = MakeGradient("#5AA6AF"),
+        [JobClass.Cleric] = MakeGradient("#BEAA68"),
+        [JobClass.Elementalist] = MakeGradient("#A0819E"),
+        [JobClass.Chanter] = MakeGradient("#69A9A1"),
+        [JobClass.Fighter] = MakeGradient("#B97980")
+    };
+    private static readonly Brush UnknownClassBrush = MakeGradient("#89969C");
 
     private readonly DispatcherTimer _timer;
     private readonly SkillIconService _skillIconService = new();
     private MeterRuntime? _runtime;
     private MeterSnapshot? _latestSnapshot;
     private MeterEventScheduleSnapshot? _eventScheduleSnapshot;
+    private string _lastUiAlertTrace = string.Empty;
+    private string _lastRefreshError = string.Empty;
     private EnrageTimerView _latestEnrageTimer = EnrageTimerView.Hidden;
     private DateTime _nextEventRefreshUtc = DateTime.MinValue;
     private DateTime _demoStarted = DateTime.UtcNow;
     private bool _initialized;
+    private bool _disposed;
     private bool _isDemo;
     private bool _isPaused;
     private bool _bossOnly = true;
@@ -67,12 +91,15 @@ public sealed class MeterViewModel : BindableBase, IDisposable
     private bool _isPvpMode;
     private bool _overlayVisible = true;
     private bool _keepNotificationsWhenHidden;
+    private bool _notificationUpdateInProgress;
+    private int _notificationUpdateVersion;
     private bool _isInCombat;
     private bool _enrageVisible;
     private string _enrageText = string.Empty;
-    private Brush _enrageBackground = MakeGradient("#CC3A4256", 0.16, 0.34);
-    private Brush _enrageBorder = MakeBrush("#00FFFFFF");
-    private Brush _targetBarBrush = MakeGradient("#F0314C", 0.12, 0.30);
+    private Brush _enrageBackground = NeutralEnrageBrushes.Background;
+    private Brush _enrageBorder = NeutralEnrageBrushes.Border;
+    private Brush _enrageForeground = NeutralEnrageBrushes.Foreground;
+    private Brush _targetBarBrush = DamageTargetBarBrush;
 
     public MeterViewModel()
     {
@@ -96,8 +123,8 @@ public sealed class MeterViewModel : BindableBase, IDisposable
         EventTimers.CollectionChanged += (_, _) => OnPropertyChanged(nameof(EventTimerCountText));
         EventAlerts.CollectionChanged += (_, _) =>
         {
-            OnPropertyChanged(nameof(HasNotifications));
-            OnPropertyChanged(nameof(ShowNotificationPopup));
+            if (!_notificationUpdateInProgress)
+                NotifyNotificationVisibilityChanged();
         };
     }
 
@@ -106,6 +133,9 @@ public sealed class MeterViewModel : BindableBase, IDisposable
     public ObservableCollection<PartyMemberRowViewModel> PartyMembers { get; } = new();
     public ObservableCollection<EventTimerRowViewModel> EventTimers { get; } = new();
     public ObservableCollection<EventAlertRowViewModel> EventAlerts { get; } = new();
+
+    public void TraceUiAlertState(string state) => _runtime?.TraceUiAlertState(state);
+    public void TraceUiError(string area, Exception exception) => _runtime?.TraceUiError(area, exception);
     public ObservableCollection<DebuffTimerViewModel> TargetDebuffs { get; } = new();
 
     public MeterNavigationPosition? GetNavigationPosition() => _runtime?.GetNavigationPosition();
@@ -197,17 +227,27 @@ public sealed class MeterViewModel : BindableBase, IDisposable
         set
         {
             if (SetProperty(ref _keepNotificationsWhenHidden, value))
-                OnPropertyChanged(nameof(ShowNotificationPopup));
+                NotifyNotificationVisibilityChanged();
         }
     }
-    public bool ShowNotificationPopup => HasNotifications && (_overlayVisible || KeepNotificationsWhenHidden);
+    public bool ShowNotificationPopup =>
+        !_notificationUpdateInProgress && HasNotifications && _overlayVisible;
+    public bool ShowDetachedNotifications =>
+        !_notificationUpdateInProgress && HasNotifications && !_overlayVisible && KeepNotificationsWhenHidden;
+
+    private void NotifyNotificationVisibilityChanged()
+    {
+        OnPropertyChanged(nameof(HasNotifications));
+        OnPropertyChanged(nameof(ShowNotificationPopup));
+        OnPropertyChanged(nameof(ShowDetachedNotifications));
+    }
 
     public void SetOverlayVisible(bool visible)
     {
         if (_overlayVisible == visible) return;
         _overlayVisible = visible;
         OnPropertyChanged(nameof(ShowDebuffIcons));
-        OnPropertyChanged(nameof(ShowNotificationPopup));
+        NotifyNotificationVisibilityChanged();
     }
     public bool IsPvpMode
     {
@@ -218,12 +258,14 @@ public sealed class MeterViewModel : BindableBase, IDisposable
             OnPropertyChanged(nameof(IsPveMode));
             OnPropertyChanged(nameof(CanToggleBossFilter));
             OnPropertyChanged(nameof(PvpModeTooltip));
+            OnPropertyChanged(nameof(CombatModeBadge));
             OnPropertyChanged(nameof(TargetSectionLabel));
             OnPropertyChanged(nameof(EmptyStateText));
             NotifyMetricLabelsChanged();
         }
     }
     public bool IsPveMode => !IsPvpMode;
+    public string CombatModeBadge => IsPvpMode ? "PvP" : "PvE";
     public bool CanToggleBossFilter => IsDamageMode && IsPveMode;
     public string PvpModeTooltip => IsPvpMode
         ? T("PvP: damage to enemy players · click for PvE", "PvP: урон по игрокам · нажмите для PvE")
@@ -232,19 +274,13 @@ public sealed class MeterViewModel : BindableBase, IDisposable
     public bool EnrageVisible
     {
         get => _enrageVisible;
-        private set
-        {
-            if (SetProperty(ref _enrageVisible, value))
-            {
-                OnPropertyChanged(nameof(HasNotifications));
-                OnPropertyChanged(nameof(ShowNotificationPopup));
-            }
-        }
+        private set => SetProperty(ref _enrageVisible, value);
     }
     public string EnrageText { get => _enrageText; private set => SetProperty(ref _enrageText, value); }
     public Brush EnrageBackground { get => _enrageBackground; private set => SetProperty(ref _enrageBackground, value); }
     public Brush EnrageBorder { get => _enrageBorder; private set => SetProperty(ref _enrageBorder, value); }
-    public bool HasNotifications => EnrageVisible || EventAlerts.Count > 0;
+    public Brush EnrageForeground { get => _enrageForeground; private set => SetProperty(ref _enrageForeground, value); }
+    public bool HasNotifications => EventAlerts.Count > 0;
     public Brush TargetBarBrush { get => _targetBarBrush; private set => SetProperty(ref _targetBarBrush, value); }
     public bool IsDemo { get => _isDemo; private set => SetProperty(ref _isDemo, value); }
     public bool NeedsRelog
@@ -446,7 +482,7 @@ public sealed class MeterViewModel : BindableBase, IDisposable
 
     public async Task InitializeAsync()
     {
-        if (_initialized)
+        if (_initialized || _disposed)
         {
             return;
         }
@@ -468,7 +504,14 @@ public sealed class MeterViewModel : BindableBase, IDisposable
         StatusTooltip = T("Loading game data and starting Npcap", "Загрузка справочников и запуск Npcap");
         try
         {
-            _runtime = await MeterRuntime.StartAsync();
+            MeterRuntime runtime = await MeterRuntime.StartAsync();
+            if (_disposed)
+            {
+                runtime.Dispose();
+                return;
+            }
+
+            _runtime = runtime;
             _runtime.SetBossOnlyMode(BossOnly);
             StatusText = T("READY", "ГОТОВ");
             StatusBrush = ReadyBrush;
@@ -477,9 +520,17 @@ public sealed class MeterViewModel : BindableBase, IDisposable
         }
         catch (Exception exception)
         {
-            EnableDemo(exception.Message);
+            if (_disposed)
+                return;
+
+            StatusText = T("ERROR", "ОШИБКА");
+            StatusBrush = ErrorBrush;
+            StatusTooltip = exception.Message;
+            CaptureText = T("Capture failed; restart after resolving the error", "Ошибка захвата; после исправления перезапустите метр");
         }
 
+        if (_disposed)
+            return;
         _timer.Start();
         Refresh();
     }
@@ -496,7 +547,7 @@ public sealed class MeterViewModel : BindableBase, IDisposable
 
     private void Refresh()
     {
-        if (IsPaused)
+        if (_disposed || IsPaused)
         {
             return;
         }
@@ -511,16 +562,23 @@ public sealed class MeterViewModel : BindableBase, IDisposable
 
             ApplySnapshot(_latestSnapshot);
             RefreshFeatureData();
+            _lastRefreshError = string.Empty;
         }
         catch (Exception exception)
         {
+            string error = exception.ToString();
+            if (!string.Equals(error, _lastRefreshError, StringComparison.Ordinal))
+            {
+                _lastRefreshError = error;
+                _runtime?.TraceUiError("refresh", exception);
+            }
             StatusText = T("ERROR", "ОШИБКА");
             StatusBrush = ErrorBrush;
             StatusTooltip = exception.Message;
         }
     }
 
-    private void ApplySnapshot(MeterSnapshot snapshot)
+    internal void ApplySnapshot(MeterSnapshot snapshot)
     {
         IsInCombat = snapshot.IsInCombat;
         NeedsRelog = !IsDemo &&
@@ -535,13 +593,7 @@ public sealed class MeterViewModel : BindableBase, IDisposable
             TargetHpText = snapshot.TargetHpPercent.HasValue
                 ? $"HP {snapshot.TargetHpPercent.Value:0.#}%"
                 : "HP";
-            TargetBarBrush = snapshot.TargetFrame switch
-            {
-                TargetFrameKind.Legend => MakeGradient("#C71932", 0.20, 0.38),
-                TargetFrameKind.Hero => MakeGradient("#D94A2B", 0.18, 0.34),
-                TargetFrameKind.Elite => MakeGradient("#E26335", 0.15, 0.32),
-                _ => MakeGradient("#F0314C", 0.12, 0.30)
-            };
+            TargetBarBrush = DamageTargetBarBrush;
         }
         else
         {
@@ -550,8 +602,8 @@ public sealed class MeterViewModel : BindableBase, IDisposable
                 ? $"HPS {FormatCompact(snapshot.TotalDps)}"
                 : $"{T("INCOMING", "ВХОДЯЩИЙ")} {FormatCompact(snapshot.TotalDps)}/{T("s", "с")}";
             TargetBarBrush = DisplayMode == MeterDisplayMode.Healing
-                ? MakeGradient("#55B889", 0.12, 0.30)
-                : MakeGradient("#D28B5E", 0.12, 0.30);
+                ? HealingTargetBarBrush
+                : DamageTakenTargetBarBrush;
         }
         BattleTime = FormatDuration(snapshot.BattleTimeMs);
         _latestEnrageTimer = snapshot.EnrageTimer;
@@ -658,32 +710,13 @@ public sealed class MeterViewModel : BindableBase, IDisposable
 
     private void SyncDebuffs(IReadOnlyList<MeterDebuffSnapshot> snapshots)
     {
-        Dictionary<int, DebuffTimerViewModel> existing = TargetDebuffs.ToDictionary(item => item.SkillCode);
-        for (int index = 0; index < snapshots.Count; index++)
-        {
-            MeterDebuffSnapshot snapshot = snapshots[index];
-            if (!existing.TryGetValue(snapshot.SkillCode, out DebuffTimerViewModel? row))
-            {
-                row = new DebuffTimerViewModel { SkillCode = snapshot.SkillCode };
-                TargetDebuffs.Insert(Math.Min(index, TargetDebuffs.Count), row);
-            }
-
-            int oldIndex = TargetDebuffs.IndexOf(row);
-            if (oldIndex != index)
-            {
-                TargetDebuffs.Move(oldIndex, index);
-            }
-            row.Update(snapshot, _skillIconService.GetIconPath(snapshot.SkillCode));
-        }
-
-        HashSet<int> activeSkills = snapshots.Select(snapshot => snapshot.SkillCode).ToHashSet();
-        for (int index = TargetDebuffs.Count - 1; index >= 0; index--)
-        {
-            if (!activeSkills.Contains(TargetDebuffs[index].SkillCode))
-            {
-                TargetDebuffs.RemoveAt(index);
-            }
-        }
+        KeyedCollectionSynchronizer.Reconcile(
+            TargetDebuffs,
+            snapshots,
+            snapshot => snapshot.SkillCode,
+            row => row.SkillCode,
+            snapshot => new DebuffTimerViewModel { SkillCode = snapshot.SkillCode },
+            (row, snapshot) => row.Update(snapshot, _skillIconService.GetIconPath(snapshot.SkillCode)));
 
         HasTargetDebuffs = TargetDebuffs.Count > 0;
     }
@@ -704,32 +737,14 @@ public sealed class MeterViewModel : BindableBase, IDisposable
         EventClockText = snapshot.ClockText;
         EventScheduleStatus = snapshot.StatusText;
 
-        Dictionary<string, EventTimerRowViewModel> existing = EventTimers.ToDictionary(row => row.Key);
-        for (int index = 0; index < snapshot.Timers.Count; index++)
-        {
-            MeterEventTimerSnapshot timer = snapshot.Timers[index];
-            if (!existing.TryGetValue(timer.Key, out EventTimerRowViewModel? row))
-            {
-                row = new EventTimerRowViewModel { Key = timer.Key };
-                EventTimers.Insert(Math.Min(index, EventTimers.Count), row);
-            }
-
-            int oldIndex = EventTimers.IndexOf(row);
-            if (oldIndex != index)
-            {
-                EventTimers.Move(oldIndex, index);
-            }
-            row.Update(timer);
-        }
-
-        HashSet<string> activeKeys = snapshot.Timers.Select(timer => timer.Key).ToHashSet(StringComparer.Ordinal);
-        for (int index = EventTimers.Count - 1; index >= 0; index--)
-        {
-            if (!activeKeys.Contains(EventTimers[index].Key))
-            {
-                EventTimers.RemoveAt(index);
-            }
-        }
+        KeyedCollectionSynchronizer.Reconcile(
+            EventTimers,
+            snapshot.Timers,
+            timer => timer.Key,
+            row => row.Key,
+            timer => new EventTimerRowViewModel { Key = timer.Key },
+            (row, timer) => row.Update(timer),
+            StringComparer.Ordinal);
         HasEventTimers = EventTimers.Count > 0;
     }
 
@@ -746,8 +761,8 @@ public sealed class MeterViewModel : BindableBase, IDisposable
         ];
         IReadOnlyList<MeterEventAlertSnapshot> alerts = riftUntil <= TimeSpan.FromMinutes(10)
             ? [
-                new MeterEventAlertSnapshot("demo-rift", "Разлом через", EventScheduleService.Countdown(riftUntil), "Пространственный разлом", "#E63D68C9", "#FF6F9EFF"),
-                new MeterEventAlertSnapshot("demo-shugo", "Фестиваль шуго через", EventScheduleService.Countdown(riftUntil), "Фестиваль шуго", "#E60F766E", "#FF4EDACB")
+                new MeterEventAlertSnapshot("demo-rift", "Разлом через", EventScheduleService.Countdown(riftUntil), "Пространственный разлом", "#FF6196FF"),
+                new MeterEventAlertSnapshot("demo-shugo", "Фестиваль шуго через", EventScheduleService.Countdown(riftUntil), "Фестиваль шуго", "#FF4EDACB")
               ]
             : [];
         return new MeterEventScheduleSnapshot(
@@ -811,25 +826,11 @@ public sealed class MeterViewModel : BindableBase, IDisposable
                 allPlayers.Add(CreateLocalPlaceholder(_latestSnapshot));
             }
 
-            int localIndex = DisplayMode == MeterDisplayMode.DamageTaken
-                ? -1
-                : allPlayers.FindIndex(player => LocalPlayerRowPolicy.IsLocalPlayer(
-                    player.PlayerId,
-                    player.Nickname,
-                    _latestSnapshot.LocalPlayerId,
-                    _latestSnapshot.LocalPlayerName));
-            ordered = allPlayers
-                .Take(MaximumVisiblePartyRows)
-                .Select((player, index) => (player, index + 1))
-                .ToList();
-            if (localIndex >= MaximumVisiblePartyRows)
-            {
-                ordered = allPlayers
-                    .Take(MaximumVisiblePartyRows - 1)
-                    .Select((player, index) => (player, index + 1))
-                    .Append((allPlayers[localIndex], localIndex + 1))
-                    .ToList();
-            }
+            ordered = VisiblePartyRows.Select(
+                allPlayers,
+                _latestSnapshot.LocalPlayerId,
+                _latestSnapshot.LocalPlayerName,
+                pinLocalPlayer: DisplayMode != MeterDisplayMode.DamageTaken);
         }
         else
         {
@@ -846,68 +847,57 @@ public sealed class MeterViewModel : BindableBase, IDisposable
                     : [(CreateLocalPlaceholder(_latestSnapshot), allPlayers.Count + 1)];
         }
         double maximum = allPlayers.Count == 0 ? 1 : Math.Max(1, allPlayers[0].Dps);
-        Dictionary<int, PlayerRowViewModel> existing = Players.ToDictionary(row => row.PlayerId);
-
-        for (int index = 0; index < ordered.Count; index++)
-        {
-            (MeterPlayerSnapshot player, int trueRank) = ordered[index];
-            if (!existing.TryGetValue(player.PlayerId, out PlayerRowViewModel? row))
-            {
-                row = new PlayerRowViewModel { PlayerId = player.PlayerId };
-                Players.Insert(Math.Min(index, Players.Count), row);
-            }
-
-            int oldIndex = Players.IndexOf(row);
-            if (oldIndex != index)
-            {
-                Players.Move(oldIndex, index);
-            }
-
-            row.Rank = trueRank;
-            row.Nickname = player.Nickname;
-            row.ClassName = player.Job == JobClass.Unknown && DisplayMode == MeterDisplayMode.DamageTaken
-                ? T("Enemy", "Противник")
-                : ClassLabel(player.Job);
-            row.IconPath = ClassIcon(player.Job);
-            row.AccentBrush = ClassBrush(player.Job);
-            row.BarPercent = Math.Clamp(player.Dps / maximum * 100.0, 0, 100);
-            row.DpsText = FormatCompact(player.Dps) + "/" + T("s", "с");
-            row.DamageText = FormatCompact(player.Damage);
-            row.ShareText = player.Share.ToString("0.0", UiCulture) + "%";
-            row.Dps = player.Dps;
-            row.Damage = player.Damage;
-            row.Share = player.Share;
-            row.CritRate = player.CritRate;
-            row.Hits = player.Hits;
-            row.MitigationRate = player.MitigationRate;
-            row.MitigationText = $"Mit {player.MitigationRate.ToString("0", UiCulture)}%";
-            row.ShowMitigation = DisplayMode != MeterDisplayMode.DamageTaken;
-            row.IsLocalPlayer = DisplayMode != MeterDisplayMode.DamageTaken && LocalPlayerRowPolicy.IsLocalPlayer(
-                player.PlayerId,
-                player.Nickname,
-                _latestSnapshot.LocalPlayerId,
-                _latestSnapshot.LocalPlayerName);
-            row.Skills = player.Skills;
-            row.RateLabel = PerSecondColumnLabel;
-            row.AmountLabel = AmountColumnLabel;
-            row.EmptySkillsText = DisplayMode switch
-            {
-                MeterDisplayMode.Healing => T("Skills will appear after the first heal.", "Навыки появятся после первого лечения."),
-                MeterDisplayMode.DamageTaken => T("Attacks will appear after the first damage taken.", "Атаки появятся после первого полученного урона."),
-                _ => T("Skills will appear after the first damage dealt.", "Навыки появятся после первого нанесённого урона.")
-            };
-        }
-
-        HashSet<int> activeIds = ordered.Select(item => item.Player.PlayerId).ToHashSet();
-        for (int index = Players.Count - 1; index >= 0; index--)
-        {
-            if (!activeIds.Contains(Players[index].PlayerId))
-            {
-                Players.RemoveAt(index);
-            }
-        }
+        KeyedCollectionSynchronizer.Reconcile(
+            Players,
+            ordered,
+            entry => entry.Player.PlayerId,
+            row => row.PlayerId,
+            entry => new PlayerRowViewModel { PlayerId = entry.Player.PlayerId },
+            (row, entry) => UpdatePlayerRow(row, entry.Player, entry.Rank, maximum, _latestSnapshot));
 
         HasPlayers = Players.Count > 0;
+    }
+
+    private void UpdatePlayerRow(
+        PlayerRowViewModel row,
+        MeterPlayerSnapshot player,
+        int rank,
+        double maximum,
+        MeterSnapshot snapshot)
+    {
+        row.Rank = rank;
+        row.Nickname = player.Nickname;
+        row.ClassName = player.Job == JobClass.Unknown && DisplayMode == MeterDisplayMode.DamageTaken
+            ? T("Enemy", "Противник")
+            : ClassLabel(player.Job);
+        row.IconPath = ClassIcon(player.Job);
+        row.AccentBrush = ClassBrush(player.Job);
+        row.BarPercent = Math.Clamp(player.Dps / maximum * 100.0, 0, 100);
+        row.DpsText = FormatCompact(player.Dps) + "/" + T("s", "с");
+        row.DamageText = FormatCompact(player.Damage);
+        row.ShareText = player.Share.ToString("0.0", UiCulture) + "%";
+        row.Dps = player.Dps;
+        row.Damage = player.Damage;
+        row.Share = player.Share;
+        row.CritRate = player.CritRate;
+        row.Hits = player.Hits;
+        row.MitigationRate = player.MitigationRate;
+        row.MitigationText = $"Mit {player.MitigationRate.ToString("0", UiCulture)}%";
+        row.ShowMitigation = DisplayMode != MeterDisplayMode.DamageTaken;
+        row.IsLocalPlayer = DisplayMode != MeterDisplayMode.DamageTaken && LocalPlayerRowPolicy.IsLocalPlayer(
+            player.PlayerId,
+            player.Nickname,
+            snapshot.LocalPlayerId,
+            snapshot.LocalPlayerName);
+        row.Skills = player.Skills;
+        row.RateLabel = PerSecondColumnLabel;
+        row.AmountLabel = AmountColumnLabel;
+        row.EmptySkillsText = DisplayMode switch
+        {
+            MeterDisplayMode.Healing => T("Skills will appear after the first heal.", "Навыки появятся после первого лечения."),
+            MeterDisplayMode.DamageTaken => T("Attacks will appear after the first damage taken.", "Атаки появятся после первого полученного урона."),
+            _ => T("Skills will appear after the first damage dealt.", "Навыки появятся после первого нанесённого урона.")
+        };
     }
 
     private void RefreshSummary()
@@ -1154,37 +1144,67 @@ public sealed class MeterViewModel : BindableBase, IDisposable
                 .Replace(" · kill ", " · убийство ", StringComparison.Ordinal)
             : view.Text;
 
-        (EnrageBackground, EnrageBorder) = view.Tone switch
+        (EnrageBackground, EnrageBorder, EnrageForeground) = view.Tone switch
         {
-            EnrageTimerTone.OnTrack => (MakeGradient("#CC2F9E6E", 0.18, 0.42), MakeBrush("#506BD4A4")),
-            EnrageTimerTone.Tight => (MakeGradient("#CCD69A2D", 0.18, 0.42), MakeBrush("#70F0C36A")),
-            EnrageTimerTone.TooSlow => (MakeGradient("#CCE23B4E", 0.18, 0.42), MakeBrush("#80FF7185")),
-            EnrageTimerTone.Enraged => (MakeGradient("#E6B0102A", 0.18, 0.42), MakeBrush("#FFE23B4E")),
-            _ => (MakeGradient("#CC3A4256", 0.16, 0.34), MakeBrush("#00FFFFFF"))
+            EnrageTimerTone.OnTrack or EnrageTimerTone.Tight => OnTrackEnrageBrushes,
+            EnrageTimerTone.TooSlow or EnrageTimerTone.Enraged => BehindEnrageBrushes,
+            _ => NeutralEnrageBrushes
         };
     }
 
-    private void ApplyNotification()
+    private void ApplyNotification() =>
+        ApplyNotification(_eventScheduleSnapshot?.Alerts ?? [], _latestEnrageTimer);
+
+    internal void ApplyNotification(IReadOnlyList<MeterEventAlertSnapshot> alerts, EnrageTimerView enrageTimer)
     {
-        ApplyEnrageTimer(_latestEnrageTimer);
-        IReadOnlyList<MeterEventAlertSnapshot> alerts = _eventScheduleSnapshot?.Alerts ?? [];
-        Dictionary<string, EventAlertRowViewModel> existing = EventAlerts.ToDictionary(row => row.Key);
-        for (int index = 0; index < alerts.Count; index++)
+        bool structureChanged = _notificationUpdateInProgress ||
+            !EventAlerts.Select(row => row.Key).SequenceEqual(
+                alerts.Select(alert => alert.Key).Distinct(StringComparer.Ordinal),
+                StringComparer.Ordinal);
+        if (structureChanged)
         {
-            MeterEventAlertSnapshot alert = alerts[index];
-            if (!existing.TryGetValue(alert.Key, out EventAlertRowViewModel? row))
-            {
-                row = new EventAlertRowViewModel { Key = alert.Key };
-                EventAlerts.Insert(Math.Min(index, EventAlerts.Count), row);
-            }
-            int oldIndex = EventAlerts.IndexOf(row);
-            if (oldIndex != index) EventAlerts.Move(oldIndex, index);
-            row.Update(alert);
+            _notificationUpdateInProgress = true;
+            _notificationUpdateVersion++;
+            NotifyNotificationVisibilityChanged();
         }
-        HashSet<string> keys = alerts.Select(alert => alert.Key).ToHashSet(StringComparer.Ordinal);
-        for (int index = EventAlerts.Count - 1; index >= 0; index--)
+
+        bool completed = false;
+        try
         {
-            if (!keys.Contains(EventAlerts[index].Key)) EventAlerts.RemoveAt(index);
+            ApplyEnrageTimer(enrageTimer);
+            KeyedCollectionSynchronizer.Reconcile(
+                EventAlerts,
+                alerts,
+                alert => alert.Key,
+                row => row.Key,
+                alert => new EventAlertRowViewModel { Key = alert.Key },
+                (row, alert) => row.Update(alert),
+                StringComparer.Ordinal);
+            completed = true;
+        }
+        finally
+        {
+            if (structureChanged && completed)
+            {
+                int version = _notificationUpdateVersion;
+                _timer.Dispatcher.BeginInvoke(() =>
+                {
+                    if (_disposed || version != _notificationUpdateVersion)
+                        return;
+
+                    _notificationUpdateInProgress = false;
+                    NotifyNotificationVisibilityChanged();
+                }, DispatcherPriority.Loaded);
+            }
+        }
+
+        string trace = $"source={alerts.Count} rows={EventAlerts.Count} " +
+            $"sourceKeys=[{string.Join(',', alerts.Select(alert => alert.Key))}] " +
+            $"rowKeys=[{string.Join(',', EventAlerts.Select(row => row.Key))}]";
+        if (!string.Equals(trace, _lastUiAlertTrace, StringComparison.Ordinal))
+        {
+            _lastUiAlertTrace = trace;
+            TraceUiAlertState(trace);
         }
     }
 
@@ -1239,19 +1259,23 @@ public sealed class MeterViewModel : BindableBase, IDisposable
         return Path.Combine(AppContext.BaseDirectory, "data", "textures", "classes", job + ".png");
     }
 
-    private static Brush ClassBrush(JobClass job) => job switch
+    private static Brush ClassBrush(JobClass job) =>
+        ClassBrushes.TryGetValue(job, out Brush? brush) ? brush : UnknownClassBrush;
+
+    private static Brush MakeTargetHpGradient()
     {
-        JobClass.Gladiator => MakeGradient("#D49362"),
-        JobClass.Templar => MakeGradient("#7EA6BC"),
-        JobClass.Ranger => MakeGradient("#76B48E"),
-        JobClass.Assassin => MakeGradient("#9788BA"),
-        JobClass.Sorcerer => MakeGradient("#5AA6AF"),
-        JobClass.Cleric => MakeGradient("#BEAA68"),
-        JobClass.Elementalist => MakeGradient("#A0819E"),
-        JobClass.Chanter => MakeGradient("#69A9A1"),
-        JobClass.Fighter => MakeGradient("#B97980"),
-        _ => MakeGradient("#89969C")
-    };
+        var brush = new LinearGradientBrush
+        {
+            StartPoint = new Point(0, 0.5),
+            EndPoint = new Point(1, 0.5)
+        };
+        brush.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#FFDA030F"), 0));
+        brush.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#FFFF061C"), 0.52));
+        brush.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#FFFF0456"), 0.78));
+        brush.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#FFFF05BD"), 1));
+        brush.Freeze();
+        return brush;
+    }
 
     private static Brush MakeGradient(string color, double lighten = 0.16, double darken = 0.30)
     {
@@ -1287,6 +1311,10 @@ public sealed class MeterViewModel : BindableBase, IDisposable
 
     public void Dispose()
     {
+        if (_disposed)
+            return;
+
+        _disposed = true;
         _timer.Stop();
         _runtime?.Dispose();
         _runtime = null;

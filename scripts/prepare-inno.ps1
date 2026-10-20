@@ -1,4 +1,5 @@
 param(
+    [ValidatePattern('^\d+\.\d+\.\d+$')]
     [string]$Version = '7.1.0'
 )
 
@@ -24,8 +25,9 @@ if (-not (Test-Path -LiteralPath $installerPath)) {
 }
 
 $signature = Get-AuthenticodeSignature -LiteralPath $installerPath
-if ($signature.Status -ne 'Valid' -or $signature.SignerCertificate.Subject -notmatch 'Pyrsys B\.V\.') {
-    throw "Inno Setup signature validation failed: $($signature.Status), $($signature.SignerCertificate.Subject)"
+$signerSubject = if ($null -ne $signature.SignerCertificate) { $signature.SignerCertificate.Subject } else { '' }
+if ($signature.Status -ne 'Valid' -or $signerSubject -notmatch 'Pyrsys B\.V\.') {
+    throw "Inno Setup signature validation failed: $($signature.Status), $signerSubject"
 }
 
 $arguments = @(
@@ -36,7 +38,7 @@ $arguments = @(
     '/SUPPRESSMSGBOXES',
     "/DIR=`"$innoRoot`""
 )
-$process = Start-Process -FilePath $installerPath -ArgumentList $arguments -Wait -PassThru
+$process = Start-Process -FilePath $installerPath -ArgumentList $arguments -Wait -PassThru -WindowStyle Hidden
 if ($process.ExitCode -ne 0 -or -not (Test-Path -LiteralPath $compilerPath)) {
     throw "Inno Setup portable installation failed with exit code $($process.ExitCode)"
 }

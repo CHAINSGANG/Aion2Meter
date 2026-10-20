@@ -17,6 +17,7 @@ using AionFlex.Core.Models;
 using AionFlex.Infrastructure.PacketCapture;
 using AionFlex.Infrastructure.PacketParsing.Dps;
 using AionFlex.Infrastructure.PacketParsing.Features.Pet;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Aion2Meter.Services;
@@ -116,10 +117,12 @@ public sealed class MeterRuntime : IDisposable
     private readonly DiagnosticLog _diagnostics;
     private readonly PetCatalog _petCatalog;
     private readonly EventScheduleService _eventSchedule;
+    private readonly FieldBossTimerService _fieldBossTimer;
     private readonly MitigationTracker _mitigationTracker = new();
     private readonly DebuffTracker _debuffTracker = new();
     private readonly ConcurrentDictionary<int, int> _playerTargets = new();
     private readonly ConcurrentDictionary<int, string> _identityDisplayTrace = new();
+    private readonly ConcurrentDictionary<int, long> _defeatedTargetMaxHp = new();
     private readonly object _featureStateLock = new();
     private IReadOnlyList<(int PetId, int Level)> _petRoster = [];
     private PartyRoomRoster? _partyRoster;
@@ -136,6 +139,7 @@ public sealed class MeterRuntime : IDisposable
     private DpsSnapshot _cachedPvpSnapshot = new();
     private int _currentZoneId;
     private MeterNavigationPosition? _navigationPosition;
+    private bool _npcapStartedByMeter;
     private bool _disposed;
 
     private MeterRuntime(
@@ -149,7 +153,8 @@ public sealed class MeterRuntime : IDisposable
         HpTracker hpTracker,
         DiagnosticLog diagnostics,
         PetCatalog petCatalog,
-        EventScheduleService eventSchedule)
+        EventScheduleService eventSchedule,
+        FieldBossTimerService fieldBossTimer)
     {
         _dataRepository = dataRepository;
         _skillRepository = skillRepository;
@@ -162,87 +167,106 @@ public sealed class MeterRuntime : IDisposable
         _diagnostics = diagnostics;
         _petCatalog = petCatalog;
         _eventSchedule = eventSchedule;
+        _fieldBossTimer = fieldBossTimer;
     }
 
     public static async Task<MeterRuntime> StartAsync()
     {
         string dataDirectory = Path.Combine(AppContext.BaseDirectory, "data");
         string DataFile(string name) => Path.Combine(dataDirectory, name);
-
-        if (!File.Exists(DataFile("skills.json")) || !File.Exists(DataFile("mobs.json")))
-        {
-            throw new FileNotFoundException("Не найдены игровые справочники в папке data.");
-        }
-
-        var dataRepository = new DataRepository(NullLogger<DataRepository>.Instance);
-        var skillRepository = new SkillRepository(
-            NullLogger<SkillRepository>.Instance,
-            skillsFilePath: DataFile("skills.json"),
-            npcSkillsFilePath: DataFile("npc_skills.json"),
-            theostonesFilePath: DataFile("theostones.json"),
-            skillEffectTypesFilePath: DataFile("skill_effect_types.json"),
-            summonSkillsFilePath: DataFile("summon_skills.json"));
-        var mobRepository = new MobRepository(
-            NullLogger<MobRepository>.Instance,
-            mobsFilePath: DataFile("mobs.json"),
-            npcSummonsFilePath: DataFile("npc_summons.json"));
-
-        await Task.WhenAll(skillRepository.InitializeAsync(), mobRepository.ReloadAsync()).ConfigureAwait(false);
-
-        var capture = new NpcapCaptureService(NullLogger<NpcapCaptureService>.Instance);
-        var parser = new DpsPacketParser(
-            NullLogger<DpsPacketParser>.Instance,
-            dataRepository,
-            skillRepository,
-            capture);
-        var petParser = new PetPacketParser(NullLogger<PetPacketParser>.Instance);
-        var calculator = new DpsCalculator(
-            NullLogger<DpsCalculator>.Instance,
-            dataRepository,
-            skillRepository,
-            mobRepository);
-        var hpTracker = new HpTracker();
-        string logDirectory = Path.Combine(AppContext.BaseDirectory, "logs");
+        string logDirectory = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "Aion2Meter",
+            "logs");
         var diagnostics = new DiagnosticLog(logDirectory);
-        (int EntityId, string Name)? recoveredLocal = TryRecoverLocalPlayer(logDirectory);
-        if (recoveredLocal.HasValue)
-        {
-            dataRepository.SetLocalPlayerName(recoveredLocal.Value.Name);
-            dataRepository.SetNickname(
-                recoveredLocal.Value.EntityId,
-                recoveredLocal.Value.Name,
-                isConfirmedPlayer: true,
-                isAuthoritativeSource: true);
-            diagnostics.Write(
-                "PLAYER",
-                $"restored local id={recoveredLocal.Value.EntityId} name='{recoveredLocal.Value.Name}' from current game session");
-        }
-        hpTracker.Diagnostic += message => diagnostics.Write("HP-TRACKER", message);
-        calculator.SetMaxHpProvider(id => hpTracker.GetActorHpData(id)?.MaxHp ?? 0);
-        calculator.SetTrustedMaxHpProvider((id, firstDamageMs) => hpTracker.TryGetTrustedMaxHp(id, firstDamageMs));
-        calculator.SetHpProgressProvider(id => hpTracker.TryGetHpProgress(id));
-        var petCatalog = PetCatalog.Load(DataFile("pets.json"), DataFile("pet_stats.json"));
-        var eventSchedule = new EventScheduleService(dataRepository, DataFile("event_schedules.json"));
-
-        var runtime = new MeterRuntime(dataRepository, skillRepository, mobRepository, capture, parser, petParser, calculator, hpTracker, diagnostics, petCatalog, eventSchedule);
-        if (recoveredLocal.HasValue)
-        {
-            Volatile.Write(ref runtime._inferredLocalPlayerId, recoveredLocal.Value.EntityId);
-        }
-        runtime.WirePipeline();
+        NpcapCaptureService? capture = null;
+        MeterRuntime? runtime = null;
 
         try
         {
-            NpcapServiceLifecycle.TryStart(diagnostics);
+            if (!File.Exists(DataFile("skills.json")) || !File.Exists(DataFile("mobs.json")))
+            {
+                throw new FileNotFoundException("Не найдены игровые справочники в папке data.");
+            }
+
+            var dataRepository = new DataRepository(NullLogger<DataRepository>.Instance);
+            var skillRepository = new SkillRepository(
+                NullLogger<SkillRepository>.Instance,
+                skillsFilePath: DataFile("skills.json"),
+                npcSkillsFilePath: DataFile("npc_skills.json"),
+                theostonesFilePath: DataFile("theostones.json"),
+                skillEffectTypesFilePath: DataFile("skill_effect_types.json"),
+                summonSkillsFilePath: DataFile("summon_skills.json"));
+            var mobRepository = new MobRepository(
+                NullLogger<MobRepository>.Instance,
+                mobsFilePath: DataFile("mobs.json"),
+                npcSummonsFilePath: DataFile("npc_summons.json"));
+
+            await Task.WhenAll(skillRepository.InitializeAsync(), mobRepository.ReloadAsync()).ConfigureAwait(false);
+
+            capture = new NpcapCaptureService(
+                new DiagnosticLogger<NpcapCaptureService>(diagnostics, LogLevel.Warning));
+            var parser = new DpsPacketParser(
+                new DiagnosticLogger<DpsPacketParser>(diagnostics, LogLevel.Warning),
+                dataRepository,
+                skillRepository,
+                capture);
+            var petParser = new PetPacketParser(NullLogger<PetPacketParser>.Instance);
+            var calculator = new DpsCalculator(
+                NullLogger<DpsCalculator>.Instance,
+                dataRepository,
+                skillRepository,
+                mobRepository);
+            var hpTracker = new HpTracker();
+            (int EntityId, string Name)? recoveredLocal = TryRecoverLocalPlayer(logDirectory)
+                ?? TryRecoverLocalPlayer(Path.Combine(AppContext.BaseDirectory, "logs"));
+            if (recoveredLocal.HasValue)
+            {
+                dataRepository.SetLocalPlayerName(recoveredLocal.Value.Name);
+                dataRepository.SetNickname(
+                    recoveredLocal.Value.EntityId,
+                    recoveredLocal.Value.Name,
+                    isConfirmedPlayer: true,
+                    isAuthoritativeSource: true);
+                diagnostics.Write(
+                    "PLAYER",
+                    $"restored local id={recoveredLocal.Value.EntityId} name='{recoveredLocal.Value.Name}' from current game session");
+            }
+            hpTracker.Diagnostic += message => diagnostics.Write("HP-TRACKER", message);
+            calculator.SetMaxHpProvider(id => hpTracker.GetActorHpData(id)?.MaxHp ?? 0);
+            calculator.SetTrustedMaxHpProvider((id, firstDamageMs) => hpTracker.TryGetTrustedMaxHp(id, firstDamageMs));
+            calculator.SetHpProgressProvider(id => hpTracker.TryGetHpProgress(id));
+            var petCatalog = PetCatalog.Load(DataFile("pets.json"), DataFile("pet_stats.json"));
+            var eventSchedule = new EventScheduleService(dataRepository, DataFile("event_schedules.json"));
+            var fieldBossTimer = new FieldBossTimerService(Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "Aion2Meter",
+                "field_boss_timers.json"));
+
+            runtime = new MeterRuntime(dataRepository, skillRepository, mobRepository, capture, parser, petParser, calculator, hpTracker, diagnostics, petCatalog, eventSchedule, fieldBossTimer);
+            if (recoveredLocal.HasValue)
+            {
+                Volatile.Write(ref runtime._inferredLocalPlayerId, recoveredLocal.Value.EntityId);
+            }
+            runtime.WirePipeline();
+
+            runtime._npcapStartedByMeter = NpcapServiceLifecycle.TryStart(diagnostics);
             capture.Start();
             diagnostics.Write(
                 "CAPTURE",
                 $"started devices={capture.ActiveDeviceCount} mode={capture.CaptureMode} elevated={IsProcessElevated()}");
             return runtime;
         }
-        catch
+        catch (Exception exception)
         {
-            runtime.Dispose();
+            diagnostics.Write("STARTUP", exception.ToString());
+            if (runtime is not null)
+                runtime.Dispose();
+            else
+            {
+                capture?.Dispose();
+                diagnostics.Dispose();
+            }
             throw;
         }
     }
@@ -372,6 +396,13 @@ public sealed class MeterRuntime : IDisposable
 
     private void WirePipeline()
     {
+        _parser.FieldBossListParsed += (_, list) =>
+        {
+            int? serverId = _dataRepository.GetCurrentServerId();
+            if (_fieldBossTimer.Record(list, serverId))
+                _diagnostics.Write("FIELD-BOSS", $"Gartua map={list.MapId} server={serverId} due={list.Entries.First(entry => entry.RowId == FieldBossTimerService.GartuaRowId).TimeUtcMs}");
+        };
+
         _capture.PayloadCaptured += (_, payload) =>
         {
             _parser.ProcessPayload(payload);
@@ -435,11 +466,16 @@ public sealed class MeterRuntime : IDisposable
         _parser.AbnormalEventParsed += (_, abnormalEvent) =>
         {
             _debuffTracker.Record(abnormalEvent);
+            RememberClassFromSkill(abnormalEvent.CasterId, abnormalEvent.SourceSkillId);
             _diagnostics.Write(
                 "ABNORMAL",
                 $"target={abnormalEvent.TargetId} slot={abnormalEvent.Slot} abnormal={abnormalEvent.AbnormalId} duration={abnormalEvent.DurationMs} caster={abnormalEvent.CasterId} sourceSkill={abnormalEvent.SourceSkillId} refresh={abnormalEvent.IsRefresh} remove={abnormalEvent.IsRemove} ts={abnormalEvent.Timestamp}");
         };
-        _parser.HealTickParsed += (_, healEvent) => _dataRepository.AppendHealEvent(healEvent);
+        _parser.HealTickParsed += (_, healEvent) =>
+        {
+            _dataRepository.AppendHealEvent(healEvent);
+            RememberClassFromSkill(healEvent.ActorId, healEvent.SkillCode);
+        };
         _parser.NicknameDiscovered += (_, player) =>
         {
             _dataRepository.SetNickname(player.PlayerId, player.Nickname, player.IsConfirmedPlayer);
@@ -469,13 +505,32 @@ public sealed class MeterRuntime : IDisposable
             _diagnostics.Write("NAME", $"entity={mob.TargetId} name='{mob.Name}'");
         };
         _hpTracker.BossHpReset += (_, reset) =>
+        {
+            _defeatedTargetMaxHp.TryRemove(reset.EntityId, out long removedMaxHp);
             _bossPullClock.OnBackToFull(reset.EntityId, reset.TimestampMs);
+        };
         _parser.HpUpdateEventParsed += (_, hp) =>
         {
             _diagnostics.Write(
                 "HP-RAW",
                 $"actor={hp.ActorId} source={hp.Source} current={hp.CurrentHp} max={hp.MaxHp?.ToString() ?? "-"} framedMax={hp.FramedSpawnMaxHp?.ToString() ?? "-"} spawnNpc={hp.SpawnNpcId?.ToString() ?? "-"} ts={hp.Timestamp}");
             _hpTracker.ProcessHpUpdate(hp);
+            ActorHpData? actor = _hpTracker.GetActorHpData(hp.ActorId);
+            if (actor is not null)
+            {
+                lock (actor)
+                {
+                    if (actor.LastHpTimestamp == hp.Timestamp)
+                    {
+                        if (actor.LastHp == 0 &&
+                            (hp.ActorId == Volatile.Read(ref _displayTargetId) ||
+                             _mobRepository.IsBoss(_dataRepository.GetEntityNpcId(hp.ActorId))))
+                            _defeatedTargetMaxHp[hp.ActorId] = actor.MaxHp;
+                        else if (actor.LastHp > 0)
+                            _defeatedTargetMaxHp.TryRemove(hp.ActorId, out long removedMaxHp);
+                    }
+                }
+            }
         };
         _parser.NpcTemplateDiscovered += (_, npc) =>
         {
@@ -502,6 +557,7 @@ public sealed class MeterRuntime : IDisposable
             _diagnostics.Write(
                 "NPC",
                 $"appeared entity={npc.EntityId} npc={npc.NpcId} dispatch={npc.FromDispatch} ts={npc.TimestampMs}");
+            _defeatedTargetMaxHp.TryRemove(npc.EntityId, out long removedMaxHp);
             _bossPullClock.OnNewLife(npc.EntityId);
             _hpTracker.ResetActor(npc.EntityId);
             _dataRepository.StartEntityAppearance(npc.EntityId, npc.TimestampMs);
@@ -517,6 +573,7 @@ public sealed class MeterRuntime : IDisposable
         {
             _diagnostics.Write("NPC", $"removed entity={entity.EntityId} reason={entity.Reason} ts={entity.TimestampMs}");
             _dataRepository.EndSummonLife(entity.EntityId, entity.TimestampMs);
+            _bossPullClock.OnRemoved(entity.EntityId);
             _hpTracker.ResetActor(entity.EntityId);
             Interlocked.CompareExchange(ref _selectedTargetId, 0, entity.EntityId);
             Interlocked.CompareExchange(ref _lastCombatTargetId, 0, entity.EntityId);
@@ -526,6 +583,7 @@ public sealed class MeterRuntime : IDisposable
         _parser.LocalServerIdResolved += (_, serverId) => _dataRepository.SetCurrentServerId(serverId);
         _parser.ZoneChanged += (_, zoneId) =>
         {
+            _defeatedTargetMaxHp.Clear();
             lock (_featureStateLock)
             {
                 _currentZoneId = zoneId;
@@ -581,6 +639,16 @@ public sealed class MeterRuntime : IDisposable
         };
     }
 
+    private void RememberClassFromSkill(int casterId, int skillCode)
+    {
+        if (casterId <= 0 || skillCode <= 0)
+            return;
+
+        JobClass job = JobClassExtensions.FromSkillCode(skillCode);
+        if (job != JobClass.Unknown)
+            _dataRepository.SetJobClass(_dataRepository.GetSummoner(casterId) ?? casterId, job);
+    }
+
     public void SetBossOnlyMode(bool enabled) => _calculator.SetBossOnlyMode(enabled);
 
     public IReadOnlyList<MeterPetSnapshot> GetPets()
@@ -615,6 +683,20 @@ public sealed class MeterRuntime : IDisposable
     public MeterEventScheduleSnapshot GetEventSchedule(int maximum = 16)
     {
         MeterEventScheduleSnapshot snapshot = _eventSchedule.GetSnapshot(maximum);
+        var fieldBoss = _fieldBossTimer.GetSnapshot(_dataRepository.GetCurrentServerId());
+        if (fieldBoss.HasValue)
+        {
+            MeterEventTimerSnapshot[] timers = snapshot.Timers
+                .Append(fieldBoss.Value.Timer)
+                .OrderBy(timer => timer.IsActive ? 0 : 1)
+                .ThenBy(timer => timer.TimeUntil)
+                .Take(Math.Max(1, maximum))
+                .ToArray();
+            MeterEventAlertSnapshot[] alerts = fieldBoss.Value.Alert is { } alert
+                ? snapshot.Alerts.Prepend(alert).Take(6).ToArray()
+                : snapshot.Alerts.ToArray();
+            snapshot = snapshot with { Timers = timers, Alerts = alerts };
+        }
         string trace =
             $"ready={snapshot.IsReady} region='{snapshot.RegionText}' clock='{snapshot.ClockText}' " +
             $"timers={snapshot.Timers.Count} alerts={snapshot.Alerts.Count} titles='{string.Join(" | ", snapshot.Alerts.Select(alert => alert.Title))}'";
@@ -625,6 +707,11 @@ public sealed class MeterRuntime : IDisposable
         }
         return snapshot;
     }
+
+    public void TraceUiAlertState(string state) => _diagnostics.Write("UI-ALERT", state);
+
+    public void TraceUiError(string area, Exception exception) =>
+        _diagnostics.Write("UI-ERROR", $"{area}: {exception}");
 
     public void Reset()
     {
@@ -862,7 +949,7 @@ public sealed class MeterRuntime : IDisposable
                 return new MeterPlayerSnapshot(
                     player.PlayerId,
                     player.Nickname,
-                    player.Job,
+                    player.Job != JobClass.Unknown ? player.Job : _dataRepository.GetJobClass(player.PlayerId),
                     player.Dps,
                     player.TotalDamage,
                     player.PartyDamageShare,
@@ -873,7 +960,8 @@ public sealed class MeterRuntime : IDisposable
             })
             .ToArray();
         ResolveMissingPlayerNames(players);
-        (long received, long dropped) = _capture.GetCaptureStatistics();
+        (long received, long kernelDropped) = _capture.GetCaptureStatistics();
+        long dropped = kernelDropped + _capture.QueueDropped;
         int? localPlayerId = _dataRepository.GetLocalPlayerEntityId()
             ?? _dataRepository.GetLastBoundLocalPlayerEntityId()
             ?? PositiveOrNull(Volatile.Read(ref _inferredLocalPlayerId));
@@ -903,22 +991,10 @@ public sealed class MeterRuntime : IDisposable
         }
         Volatile.Write(ref _displayTargetId, targetId);
 
-        double? targetHpPercent = null;
-        long? targetCurrentHp = null;
-        long? targetMaxHp = null;
         ActorHpData? health = targetId > 0 ? _hpTracker.GetActorHpData(targetId) : null;
-        if (health is not null)
-        {
-            lock (health)
-            {
-                if (health.UpdateCount > 0 && health.MaxHp > 0)
-                {
-                    targetCurrentHp = health.LastHp;
-                    targetMaxHp = health.MaxHp;
-                    targetHpPercent = Math.Clamp(health.LastHp * 100d / health.MaxHp, 0d, 100d);
-                }
-            }
-        }
+        bool defeated = _defeatedTargetMaxHp.TryGetValue(targetId, out long defeatedMaxHp);
+        (long? targetCurrentHp, long? targetMaxHp, double? targetHpPercent) =
+            ResolveTargetHealth(health, defeated, defeatedMaxHp);
 
         string healthTrace =
             $"barTarget={targetId} selected={Volatile.Read(ref _selectedTargetId)} combat={Volatile.Read(ref _lastCombatTargetId)} contribution={snapshot.ContributionTargetId} calculator={_calculator.GetCurrentTargetId()} " +
@@ -1239,9 +1315,27 @@ public sealed class MeterRuntime : IDisposable
 
     private static int? PositiveOrNull(int value) => value > 0 ? value : null;
 
+    internal static (long? CurrentHp, long? MaxHp, double? Percent) ResolveTargetHealth(
+        ActorHpData? health, bool defeated, long defeatedMaxHp)
+    {
+        if (health is not null)
+        {
+            lock (health)
+            {
+                if (health.UpdateCount > 0 && health.MaxHp > 0)
+                    return (health.LastHp, health.MaxHp,
+                        Math.Clamp(health.LastHp * 100d / health.MaxHp, 0d, 100d));
+            }
+        }
+
+        return defeated
+            ? (0, defeatedMaxHp > 0 ? defeatedMaxHp : null, 0)
+            : (null, null, null);
+    }
+
     private EnrageTimerView BuildEnrageTimer(int targetId, long? targetCurrentHp)
     {
-        if (targetId <= 0)
+        if (targetId <= 0 || !HasLivingBossHealth(targetCurrentHp))
         {
             return EnrageTimerView.Hidden;
         }
@@ -1254,8 +1348,7 @@ public sealed class MeterRuntime : IDisposable
         }
 
         BossPullSnapshot pull = _bossPullClock.Snapshot(targetId, nowMs);
-        long currentHp = targetCurrentHp ?? 0;
-        bool bossDead = targetCurrentHp.HasValue && currentHp <= 0;
+        long currentHp = targetCurrentHp!.Value;
         int? berserkSeconds = npcId > 0 ? _mobRepository.GetBerserkSeconds(npcId) : null;
         bool isTrial = npcId > 0 &&
             EnrageTimerPolicy.IsTrialDifficulty(_mobRepository.GetMobDifficulty(npcId));
@@ -1265,12 +1358,14 @@ public sealed class MeterRuntime : IDisposable
             pull.PullFirstHitMs,
             nowMs,
             currentHp,
-            bossDead,
+            false,
             pull.PullDamage,
             pull.RecentDamage,
             pull.EnrageObservedAtMs));
         return EnrageTimerPresenter.Present(state, entitled: true);
     }
+
+    internal static bool HasLivingBossHealth(long? currentHp) => currentHp is > 0;
 
     public void Dispose()
     {
@@ -1281,9 +1376,20 @@ public sealed class MeterRuntime : IDisposable
 
         _disposed = true;
         _diagnostics.Write("STOP", "runtime dispose requested");
-        _capture.Stop();
-        _capture.Dispose();
-        NpcapServiceLifecycle.TryStop(_diagnostics);
-        _diagnostics.Dispose();
+        try
+        {
+            _capture.Dispose();
+        }
+        finally
+        {
+            try
+            {
+                NpcapServiceLifecycle.TryStop(_diagnostics, _npcapStartedByMeter);
+            }
+            finally
+            {
+                _diagnostics.Dispose();
+            }
+        }
     }
 }

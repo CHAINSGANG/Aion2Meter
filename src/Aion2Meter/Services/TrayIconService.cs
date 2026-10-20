@@ -7,6 +7,8 @@ namespace Aion2Meter.Services;
 internal sealed class TrayIconService : IDisposable
 {
     private readonly NotifyIcon _icon;
+    private readonly ContextMenuStrip _menu;
+    private readonly Icon _iconImage;
     private readonly ToolStripMenuItem _showItem;
     private readonly ToolStripMenuItem _hideItem;
     private readonly ToolStripMenuItem _updateItem;
@@ -24,13 +26,16 @@ internal sealed class TrayIconService : IDisposable
         _updateItem.Click += (_, _) => checkUpdates();
         _exitItem.Click += (_, _) => exit();
 
-        var menu = new ContextMenuStrip();
-        menu.Items.AddRange([_showItem, _hideItem, new ToolStripSeparator(), _updateItem, new ToolStripSeparator(), _exitItem]);
+        _menu = new ContextMenuStrip();
+        _menu.Items.AddRange([_showItem, _hideItem, new ToolStripSeparator(), _updateItem, new ToolStripSeparator(), _exitItem]);
+        string? processPath = Environment.ProcessPath;
+        _iconImage = (string.IsNullOrWhiteSpace(processPath) ? null : Icon.ExtractAssociatedIcon(processPath))
+            ?? (Icon)SystemIcons.Application.Clone();
         _icon = new NotifyIcon
         {
             Text = UiLanguageService.Text("TrayText"),
-            Icon = Icon.ExtractAssociatedIcon(Environment.ProcessPath ?? string.Empty) ?? SystemIcons.Application,
-            ContextMenuStrip = menu,
+            Icon = _iconImage,
+            ContextMenuStrip = _menu,
             Visible = true
         };
         _icon.DoubleClick += (_, _) => show();
@@ -60,5 +65,7 @@ internal sealed class TrayIconService : IDisposable
         UiLanguageService.LanguageChanged -= LanguageChanged;
         _icon.Visible = false;
         _icon.Dispose();
+        _menu.Dispose();
+        _iconImage.Dispose();
     }
 }

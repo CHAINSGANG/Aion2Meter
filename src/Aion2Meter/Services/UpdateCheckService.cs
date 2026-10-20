@@ -1,6 +1,5 @@
 using System;
 using System.Diagnostics;
-using System.Globalization;
 using System.Net.Http;
 using System.Reflection;
 using System.Text.Json;
@@ -36,6 +35,8 @@ internal static class UpdateCheckService
             string? url = document.RootElement.TryGetProperty("html_url", out JsonElement urlElement)
                 ? urlElement.GetString()
                 : null;
+            if (!IsTrustedReleaseUrl(url))
+                url = null;
             if (!TryParseVersion(tag, out Version? latest))
             {
                 return new UpdateCheckResult(false, false, current, null, url, "Invalid release version");
@@ -51,12 +52,26 @@ internal static class UpdateCheckService
 
     public static void OpenRelease(string? url)
     {
-        if (string.IsNullOrWhiteSpace(url))
-        {
+        if (!IsTrustedReleaseUrl(url))
             return;
+
+        try
+        {
+            Process.Start(new ProcessStartInfo(url!) { UseShellExecute = true });
         }
-        Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
+        catch
+        {
+            // A missing browser must not terminate the meter from a tray event.
+        }
     }
+
+    internal static bool IsTrustedReleaseUrl(string? url) =>
+        Uri.TryCreate(url, UriKind.Absolute, out Uri? uri) &&
+        uri.Scheme == Uri.UriSchemeHttps &&
+        uri.IsDefaultPort &&
+        string.IsNullOrEmpty(uri.UserInfo) &&
+        string.Equals(uri.Host, "github.com", StringComparison.OrdinalIgnoreCase) &&
+        uri.AbsolutePath.StartsWith("/CHAINSGANG/Aion2Meter/releases/", StringComparison.OrdinalIgnoreCase);
 
     private static bool TryParseVersion(string? tag, out Version? version)
     {

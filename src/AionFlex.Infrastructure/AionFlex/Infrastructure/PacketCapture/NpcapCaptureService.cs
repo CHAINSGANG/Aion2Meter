@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Reflection;
 using System.Runtime.Versioning;
 using System.Threading;
@@ -27,11 +28,11 @@ public sealed class NpcapCaptureService : IPacketCaptureService, IDisposable
 
 	private CancellationTokenSource? _cts;
 
-	private bool _isRunning;
+	private volatile bool _isRunning;
 
 	private bool _disposed;
 
-	private readonly ConcurrentDictionary<(ushort SrcPort, ushort DstPort), uint> _nextExpectedSeq = new ConcurrentDictionary<(ushort, ushort), uint>();
+	private readonly ConcurrentDictionary<(IPAddress Src, ushort SrcPort, IPAddress Dst, ushort DstPort), uint> _nextExpectedSeq = new();
 
 	private long _tcpRetransmissions;
 
@@ -53,13 +54,9 @@ public sealed class NpcapCaptureService : IPacketCaptureService, IDisposable
 
 	private string _captureMode = "none";
 
-	private readonly Channel<CapturedPayload> _payloadChannel = Channel.CreateUnbounded<CapturedPayload>(new UnboundedChannelOptions
-	{
-		SingleWriter = false,
-		SingleReader = true
-	});
+	private Channel<CapturedPayload>? _payloadChannel;
 
-	private readonly ConcurrentDictionary<(ushort, ushort), bool> _clientToServerPairs = new ConcurrentDictionary<(ushort, ushort), bool>();
+	private readonly ConcurrentDictionary<(IPAddress Src, ushort SrcPort, IPAddress Dst, ushort DstPort), bool> _clientToServerPairs = new();
 
 	public bool IsRunning => _isRunning;
 
@@ -95,15 +92,25 @@ public sealed class NpcapCaptureService : IPacketCaptureService, IDisposable
 	{
 		lock (_lock)
 		{
+			ObjectDisposedException.ThrowIf(_disposed, this);
 			if (_isRunning)
 			{
 				return;
 			}
+			_nextExpectedSeq.Clear();
+			_clientToServerPairs.Clear();
 			_cts = new CancellationTokenSource();
+			_payloadChannel = Channel.CreateBounded<CapturedPayload>(new BoundedChannelOptions(16384)
+			{
+				SingleWriter = false,
+				SingleReader = true,
+				FullMode = BoundedChannelFullMode.Wait
+			});
 			List<LibPcapLiveDevice> captureDevices = GetCaptureDevices();
 			if (captureDevices.Count == 0)
 			{
 				_logger.LogError("No Npcap capture devices found. Is Npcap installed?");
+				CleanupFailedStart();
 				throw new InvalidOperationException("No Npcap capture devices found. Please install Npcap.");
 			}
 			foreach (LibPcapLiveDevice item in captureDevices)
@@ -113,12 +120,14 @@ public sealed class NpcapCaptureService : IPacketCaptureService, IDisposable
 			if (_activeDevices.Count == 0)
 			{
 				_logger.LogError("\ud83d\udea8 Npcap capture failed to open ANY device ({Found} found, all opens failed) — the meter cannot see game traffic. Try reinstalling Npcap.", captureDevices.Count);
-				_cts.Dispose();
-				_cts = null;
+				CleanupFailedStart();
 				throw new InvalidOperationException("Npcap не открыл ни одного сетевого адаптера. Запустите DPS Meter от имени администратора.");
 			}
 			_isRunning = true;
-			Task.Factory.StartNew(() => ConsumerLoop(_cts.Token), _cts.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
+			CancellationToken token = _cts.Token;
+			ChannelReader<CapturedPayload> reader = _payloadChannel.Reader;
+			_ = Task.Factory.StartNew(
+				() => ConsumerLoop(reader, token), token, TaskCreationOptions.LongRunning, TaskScheduler.Default).Unwrap();
 			_payloadsAtStart = Interlocked.Read(in _packetsReceived);
 			_watchdogErrorsLogged = 0;
 			_captureStartedUtc = DateTime.UtcNow;
@@ -138,21 +147,45 @@ public sealed class NpcapCaptureService : IPacketCaptureService, IDisposable
 			_logger.LogInformation("Stopping Npcap capture (received={Received}, retransmissions={Retransmissions}, gaps={Gaps}, gapBytes={GapBytes}, queueDropped={QueueDropped})", Interlocked.Read(in _packetsReceived), TcpRetransmissions, TcpGaps, TcpGapBytes, Interlocked.Read(in _queueDropped));
 			_watchdogTimer?.Dispose();
 			_watchdogTimer = null;
+			_isRunning = false;
 			_cts?.Cancel();
+			_payloadChannel?.Writer.TryComplete();
 			foreach (ILiveDevice activeDevice in _activeDevices)
 			{
-				try
-				{
-					activeDevice.StopCapture();
-					activeDevice.Close();
-				}
-				catch (Exception exception)
-				{
-					_logger.LogTrace(exception, "Error closing capture device");
-				}
+				CloseDevice(activeDevice);
 			}
 			_activeDevices.Clear();
-			_isRunning = false;
+			_payloadChannel = null;
+			_cts?.Dispose();
+			_cts = null;
+		}
+	}
+
+	private void CleanupFailedStart()
+	{
+		_payloadChannel?.Writer.TryComplete();
+		_payloadChannel = null;
+		_cts?.Dispose();
+		_cts = null;
+	}
+
+	private void CloseDevice(ILiveDevice device)
+	{
+		try
+		{
+			device.StopCapture();
+		}
+		catch (Exception exception)
+		{
+			_logger.LogTrace(exception, "Error stopping capture device {Device}", device.Name);
+		}
+		try
+		{
+			device.Close();
+		}
+		catch (Exception exception)
+		{
+			_logger.LogTrace(exception, "Error closing capture device {Device}", device.Name);
 		}
 	}
 
@@ -289,76 +322,94 @@ public sealed class NpcapCaptureService : IPacketCaptureService, IDisposable
 		catch (Exception exception)
 		{
 			_logger.LogError(exception, "Failed to start capture on {Device}", deviceLabel);
+			CloseDevice(device);
 		}
 	}
 
 	private void ProcessCapturedPacket(SharpPcap.PacketCapture capture, string deviceLabel)
 	{
 		RawCapture packet = capture.GetPacket();
-		TcpPacket tcpPacket = Packet.ParsePacket(packet.LinkLayerType, packet.Data).Extract<TcpPacket>();
-		if (tcpPacket == null)
+		Packet parsedPacket = Packet.ParsePacket(packet.LinkLayerType, packet.Data);
+		TcpPacket tcpPacket = parsedPacket.Extract<TcpPacket>();
+		IPPacket ipPacket = parsedPacket.Extract<IPPacket>();
+		if (tcpPacket == null || ipPacket == null)
 		{
 			return;
 		}
 		ushort sourcePort = tcpPacket.SourcePort;
 		ushort destinationPort = tcpPacket.DestinationPort;
+		var key = (ipPacket.SourceAddress, sourcePort, ipPacket.DestinationAddress, destinationPort);
 		if (tcpPacket.Synchronize && !tcpPacket.Acknowledgment)
 		{
-			_clientToServerPairs.TryAdd((sourcePort, destinationPort), value: true);
+			ForgetFlow(ipPacket.SourceAddress, sourcePort, ipPacket.DestinationAddress, destinationPort);
+			_clientToServerPairs.TryAdd(key, value: true);
 			_logger.LogDebug("TCP SYN detected: {Client}→{Server} (client→server)", sourcePort, destinationPort);
 		}
-		if (tcpPacket.PayloadData == null || tcpPacket.PayloadData.Length == 0 || _clientToServerPairs.ContainsKey((sourcePort, destinationPort)))
+		bool closing = tcpPacket.Finished || tcpPacket.Reset;
+		if (tcpPacket.PayloadData == null || tcpPacket.PayloadData.Length == 0 || _clientToServerPairs.ContainsKey(key))
 		{
+			if (closing)
+				ForgetFlow(ipPacket.SourceAddress, sourcePort, ipPacket.DestinationAddress, destinationPort);
 			return;
 		}
 		Interlocked.Increment(ref _packetsReceived);
 		uint sequenceNumber = tcpPacket.SequenceNumber;
-		int num = tcpPacket.PayloadData.Length;
-		(ushort, ushort) key = (sourcePort, destinationPort);
-		uint num2 = sequenceNumber + (uint)num;
+		byte[] payload = tcpPacket.PayloadData;
+		TcpPayloadSequenceDecision decision;
 		while (true)
 		{
-			if (!_nextExpectedSeq.TryGetValue(key, out var value))
+			if (!_nextExpectedSeq.TryGetValue(key, out uint expected))
 			{
-				if (_nextExpectedSeq.TryAdd(key, num2))
+				decision = TcpPayloadSequencePolicy.Evaluate(null, sequenceNumber, payload.Length);
+				if (_nextExpectedSeq.TryAdd(key, decision.NextExpected))
 				{
 					break;
 				}
 				continue;
 			}
-			int num3 = (int)(sequenceNumber - value);
-			if (num3 < 0)
+			decision = TcpPayloadSequencePolicy.Evaluate(expected, sequenceNumber, payload.Length);
+			if (decision.Drop)
 			{
-				if ((int)(num2 - value) <= 0)
-				{
-					Interlocked.Increment(ref _tcpRetransmissions);
-					return;
-				}
+				Interlocked.Increment(ref _tcpRetransmissions);
+				return;
 			}
-			else if (num3 > 0)
-			{
-				Interlocked.Increment(ref _tcpGaps);
-				Interlocked.Add(ref _tcpGapBytes, num3);
-				_logger.LogWarning("⚠\ufe0f TCP GAP: stream={Src}→{Dst}, missed {GapBytes} bytes (seq={SeqNum}, expected={Expected})", sourcePort, destinationPort, num3, sequenceNumber, value);
-			}
-			if (_nextExpectedSeq.TryUpdate(key, num2, value))
+			if (_nextExpectedSeq.TryUpdate(key, decision.NextExpected, expected))
 			{
 				break;
 			}
 		}
-		CapturedPayload item = new CapturedPayload(sourcePort, destinationPort, tcpPacket.PayloadData, deviceLabel);
-		if (!_payloadChannel.Writer.TryWrite(item))
+		if (decision.GapBytes > 0)
+		{
+			Interlocked.Increment(ref _tcpGaps);
+			Interlocked.Add(ref _tcpGapBytes, decision.GapBytes);
+			_logger.LogWarning("TCP GAP: stream={Src}→{Dst}, missed {GapBytes} bytes (seq={SeqNum})", sourcePort, destinationPort, decision.GapBytes, sequenceNumber);
+		}
+		if (decision.SkipBytes > 0)
+			payload = payload.AsSpan(decision.SkipBytes).ToArray();
+
+		CapturedPayload item = new CapturedPayload(sourcePort, destinationPort, payload, deviceLabel);
+		if (_payloadChannel is not { } channel || !channel.Writer.TryWrite(item))
 		{
 			Interlocked.Increment(ref _queueDropped);
 		}
+		if (closing)
+			ForgetFlow(ipPacket.SourceAddress, sourcePort, ipPacket.DestinationAddress, destinationPort);
 	}
 
-	private async Task ConsumerLoop(CancellationToken ct)
+	private void ForgetFlow(IPAddress source, ushort sourcePort, IPAddress destination, ushort destinationPort)
+	{
+		_nextExpectedSeq.TryRemove((source, sourcePort, destination, destinationPort), out _);
+		_nextExpectedSeq.TryRemove((destination, destinationPort, source, sourcePort), out _);
+		_clientToServerPairs.TryRemove((source, sourcePort, destination, destinationPort), out _);
+		_clientToServerPairs.TryRemove((destination, destinationPort, source, sourcePort), out _);
+	}
+
+	private async Task ConsumerLoop(ChannelReader<CapturedPayload> reader, CancellationToken ct)
 	{
 		_logger.LogDebug("Npcap payload consumer started");
 		try
 		{
-			await foreach (CapturedPayload item in _payloadChannel.Reader.ReadAllAsync(ct))
+			await foreach (CapturedPayload item in reader.ReadAllAsync(ct))
 			{
 				try
 				{

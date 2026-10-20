@@ -25,8 +25,7 @@ public sealed record MeterEventAlertSnapshot(
     string Title,
     string Countdown,
     string Detail,
-    string BackgroundColor,
-    string BorderColor);
+    string AccentColor);
 
 public sealed record MeterEventScheduleSnapshot(
     bool IsReady,
@@ -67,9 +66,11 @@ public sealed class EventScheduleService
         _schedules = Load(filePath);
     }
 
-    public MeterEventScheduleSnapshot GetSnapshot(int maximum = 16)
+    public MeterEventScheduleSnapshot GetSnapshot(int maximum = 16) =>
+        GetSnapshotAt(DateTimeOffset.UtcNow, maximum);
+
+    internal MeterEventScheduleSnapshot GetSnapshotAt(DateTimeOffset utcNow, int maximum = 16)
     {
-        DateTimeOffset utcNow = DateTimeOffset.UtcNow;
         if (!TryGetClock(utcNow, out GameRegion region, out ServerClockZone? clock))
         {
             return new MeterEventScheduleSnapshot(
@@ -224,27 +225,15 @@ public sealed class EventScheduleService
             Accent(kind)));
     }
 
-    private static MeterEventAlertSnapshot CreateAlert(MeterEventTimerSnapshot timer)
-    {
-        (string background, string border) = timer.Kind switch
-        {
-            "RIFT" or "РИФТ" => ("#E63D68C9", "#FF6F9EFF"),
-            "SIEGE" or "ОСАДА" => ("#E69F1D35", "#FFFF6676"),
-            "ABYSS BOSS" or "БОСС БЕЗДНЫ" => ("#E65B21B6", "#FFB28AFF"),
-            "FESTIVAL" or "ФЕСТИВАЛЬ" => ("#E60F766E", "#FF4EDACB"),
-            "INVASION" or "ВТОРЖЕНИЕ" => ("#E69A4A12", "#FFFFA04D"),
-            _ => ("#E63A4256", "#FF738399")
-        };
-        return new MeterEventAlertSnapshot(
+    private static MeterEventAlertSnapshot CreateAlert(MeterEventTimerSnapshot timer) =>
+        new(
             timer.Key,
             timer.IsActive
                 ? T($"{timer.Title} is open", $"{timer.Title} открыт")
                 : T($"{timer.Title} in", $"{timer.Title} через"),
             timer.IsActive ? T("NOW", "СЕЙЧАС") : Countdown(timer.TimeUntil),
             timer.Detail,
-            background,
-            border);
-    }
+            timer.AccentColor);
 
     public static string Countdown(TimeSpan remaining)
     {

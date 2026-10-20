@@ -6,14 +6,23 @@ namespace Aion2Meter.Services;
 
 public sealed class DiagnosticLog : IDisposable
 {
+    private const long DefaultMaximumFileBytes = 16 * 1024 * 1024;
     private readonly object _sync = new();
     private readonly StreamWriter _writer;
+    private readonly long _maximumFileBytes;
     private bool _disposed;
+    private bool _faulted;
+    private bool _limitReached;
 
-    public DiagnosticLog(string directory)
+    public DiagnosticLog(string directory) : this(directory, DefaultMaximumFileBytes)
+    { }
+
+    internal DiagnosticLog(string directory, long maximumFileBytes)
     {
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(maximumFileBytes);
+        _maximumFileBytes = maximumFileBytes;
         Directory.CreateDirectory(directory);
-        string stamp = DateTime.Now.ToString("yyyyMMdd-HHmmss");
+        string stamp = $"{DateTime.Now:yyyyMMdd-HHmmss-fff}-{Guid.NewGuid():N}";
         FilePath = Path.Combine(directory, $"hp-debug-{stamp}.log");
         var stream = new FileStream(FilePath, FileMode.CreateNew, FileAccess.Write, FileShare.ReadWrite);
         _writer = new StreamWriter(stream, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false))
@@ -29,12 +38,29 @@ public sealed class DiagnosticLog : IDisposable
     {
         lock (_sync)
         {
-            if (_disposed)
+            if (_disposed || _faulted || _limitReached)
             {
                 return;
             }
 
-            _writer.WriteLine($"{DateTime.Now:HH:mm:ss.fff} [{category}] {message}");
+            try
+            {
+                if (_writer.BaseStream.Position >= _maximumFileBytes)
+                {
+                    _writer.WriteLine($"{DateTime.Now:HH:mm:ss.fff} [LOG] file size limit reached; further diagnostics suppressed");
+                    _limitReached = true;
+                    return;
+                }
+                _writer.WriteLine($"{DateTime.Now:HH:mm:ss.fff} [{category}] {message}");
+            }
+            catch (IOException)
+            {
+                _faulted = true;
+            }
+            catch (UnauthorizedAccessException)
+            {
+                _faulted = true;
+            }
         }
     }
 
@@ -47,9 +73,32 @@ public sealed class DiagnosticLog : IDisposable
                 return;
             }
 
-            _writer.WriteLine($"{DateTime.Now:HH:mm:ss.fff} [STOP] Aion2Meter diagnostics stopped");
             _disposed = true;
-            _writer.Dispose();
+            try
+            {
+                if (!_faulted && !_limitReached)
+                    _writer.WriteLine($"{DateTime.Now:HH:mm:ss.fff} [STOP] Aion2Meter diagnostics stopped");
+            }
+            catch (IOException)
+            {
+                // Logging failure must never interrupt application shutdown.
+            }
+            catch (UnauthorizedAccessException)
+            {
+                // Logging failure must never interrupt application shutdown.
+            }
+            try
+            {
+                _writer.Dispose();
+            }
+            catch (IOException)
+            {
+                // Logging failure must never interrupt application shutdown.
+            }
+            catch (UnauthorizedAccessException)
+            {
+                // Logging failure must never interrupt application shutdown.
+            }
         }
     }
 }
