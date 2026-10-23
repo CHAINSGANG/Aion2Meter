@@ -10,6 +10,7 @@ public sealed class PlayerRowViewModel : BindableBase
     private string _nickname = "";
     private string _className = "";
     private string? _iconPath;
+    private string? _partyIconPath;
     private string _dpsText = "0";
     private string _damageText = "0";
     private string _shareText = "0%";
@@ -28,6 +29,8 @@ public sealed class PlayerRowViewModel : BindableBase
     private string _amountLabel = "DAMAGE";
     private string _emptySkillsText = "Skills will appear after the first damage dealt.";
     private IReadOnlyList<MeterSkillSnapshot> _skills = [];
+    private IReadOnlyList<MeterPassiveSkillSnapshot> _passives = [];
+    private IReadOnlyList<MeterSkillSpecialtySnapshot> _specialties = [];
 
     public int PlayerId { get; init; }
     public int Rank { get => _rank; set => SetProperty(ref _rank, value); }
@@ -43,6 +46,16 @@ public sealed class PlayerRowViewModel : BindableBase
         }
     }
     public bool HasClassIcon => !string.IsNullOrWhiteSpace(IconPath);
+    public string? PartyIconPath
+    {
+        get => _partyIconPath;
+        set
+        {
+            if (SetProperty(ref _partyIconPath, value))
+                OnPropertyChanged(nameof(HasPartyIcon));
+        }
+    }
+    public bool HasPartyIcon => !string.IsNullOrWhiteSpace(PartyIconPath);
     public string DpsText { get => _dpsText; set => SetProperty(ref _dpsText, value); }
     public string DamageText { get => _damageText; set => SetProperty(ref _damageText, value); }
     public string ShareText { get => _shareText; set => SetProperty(ref _shareText, value); }
@@ -61,4 +74,6 @@ public sealed class PlayerRowViewModel : BindableBase
     public string AmountLabel { get => _amountLabel; set => SetProperty(ref _amountLabel, value); }
     public string EmptySkillsText { get => _emptySkillsText; set => SetProperty(ref _emptySkillsText, value); }
     public IReadOnlyList<MeterSkillSnapshot> Skills { get => _skills; set => SetProperty(ref _skills, value); }
+    public IReadOnlyList<MeterPassiveSkillSnapshot> Passives { get => _passives; set => SetProperty(ref _passives, value); }
+    public IReadOnlyList<MeterSkillSpecialtySnapshot> Specialties { get => _specialties; set => SetProperty(ref _specialties, value); }
 }

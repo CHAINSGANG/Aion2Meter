@@ -13,7 +13,15 @@ internal sealed record UpdateCheckResult(
     Version CurrentVersion,
     Version? LatestVersion,
     string? ReleaseUrl,
-    string? Error);
+    string? Error,
+    UpdatePackage? Package = null);
+
+internal sealed record UpdatePackage(
+    Version Version,
+    string InstallerName,
+    Uri InstallerUrl,
+    Uri ChecksumUrl,
+    long InstallerSize);
 
 internal static class UpdateCheckService
 {
@@ -42,7 +50,10 @@ internal static class UpdateCheckService
                 return new UpdateCheckResult(false, false, current, null, url, "Invalid release version");
             }
 
-            return new UpdateCheckResult(true, latest > current, current, latest, url, null);
+            UpdatePackage? package = TryReadPackage(document.RootElement, tag!, latest!);
+            bool newer = new Version(latest!.Major, latest.Minor, latest.Build) >
+                         new Version(current.Major, current.Minor, Math.Max(0, current.Build));
+            return new UpdateCheckResult(true, newer, current, latest, url, null, package);
         }
         catch (Exception exception)
         {
@@ -73,10 +84,69 @@ internal static class UpdateCheckService
         string.Equals(uri.Host, "github.com", StringComparison.OrdinalIgnoreCase) &&
         uri.AbsolutePath.StartsWith("/CHAINSGANG/Aion2Meter/releases/", StringComparison.OrdinalIgnoreCase);
 
+    internal static bool IsTrustedAssetUrl(string? url, string tag, string assetName) =>
+        Uri.TryCreate(url, UriKind.Absolute, out Uri? uri) &&
+        uri.Scheme == Uri.UriSchemeHttps &&
+        uri.IsDefaultPort &&
+        string.IsNullOrEmpty(uri.UserInfo) &&
+        string.IsNullOrEmpty(uri.Query) &&
+        string.IsNullOrEmpty(uri.Fragment) &&
+        string.Equals(uri.Host, "github.com", StringComparison.OrdinalIgnoreCase) &&
+        string.Equals(uri.AbsolutePath,
+            $"/CHAINSGANG/Aion2Meter/releases/download/{tag}/{assetName}",
+            StringComparison.Ordinal);
+
+    internal static UpdatePackage? TryReadPackage(JsonElement release, string tag, Version version)
+    {
+        string versionText = version.ToString(3);
+        if (!string.Equals(tag, $"v{versionText}", StringComparison.Ordinal) ||
+            !release.TryGetProperty("assets", out JsonElement assets) ||
+            assets.ValueKind != JsonValueKind.Array)
+            return null;
+
+        string installerName = $"Aion2Meter-Setup-v{versionText}.exe";
+        string checksumName = installerName + ".sha256";
+        Uri? installerUrl = null;
+        Uri? checksumUrl = null;
+        long installerSize = 0;
+
+        foreach (JsonElement asset in assets.EnumerateArray())
+        {
+            if (!asset.TryGetProperty("name", out JsonElement nameElement) ||
+                !asset.TryGetProperty("browser_download_url", out JsonElement urlElement))
+                continue;
+
+            string? name = nameElement.GetString();
+            string? downloadUrl = urlElement.GetString();
+            if (name is null || !IsTrustedAssetUrl(downloadUrl, tag, name))
+                continue;
+
+            if (name == installerName &&
+                asset.TryGetProperty("size", out JsonElement sizeElement) &&
+                sizeElement.TryGetInt64(out long size) &&
+                size is > 0 and <= 1_073_741_824)
+            {
+                installerUrl = new Uri(downloadUrl!);
+                installerSize = size;
+            }
+            else if (name == checksumName)
+            {
+                checksumUrl = new Uri(downloadUrl!);
+            }
+        }
+
+        return installerUrl is not null && checksumUrl is not null
+            ? new UpdatePackage(version, installerName, installerUrl, checksumUrl, installerSize)
+            : null;
+    }
+
     private static bool TryParseVersion(string? tag, out Version? version)
     {
+        version = null;
         string normalized = (tag ?? string.Empty).Trim().TrimStart('v', 'V');
-        return Version.TryParse(normalized, out version);
+        if (normalized.Split('.').Length != 3 || !Version.TryParse(normalized, out version))
+            return false;
+        return version.Build >= 0;
     }
 
     private static HttpClient CreateClient()

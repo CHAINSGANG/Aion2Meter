@@ -8,7 +8,7 @@ namespace Aion2Meter.Services;
 
 internal sealed class MeterSettings
 {
-    public int Version { get; set; } = 6;
+    public int Version { get; set; } = 7;
     public string Language { get; set; } = "en";
     public double Left { get; set; } = double.NaN;
     public double Top { get; set; } = double.NaN;
@@ -27,8 +27,11 @@ internal sealed class MeterSettings
     public bool BossOnly { get; set; } = true;
     public bool ShowPartyMembers { get; set; }
     public bool ShowTargetDebuffs { get; set; } = true;
+    public bool ShowOtherPlayersDebuffs { get; set; }
+    public bool UsePartyRowStyle { get; set; }
     public bool PvpMode { get; set; }
     public bool KeepNotificationsWhenHidden { get; set; }
+    public bool CheckUpdatesOnStartup { get; set; } = true;
     public MeterDisplayMode DisplayMode { get; set; } = MeterDisplayMode.Damage;
 }
 
@@ -144,6 +147,14 @@ internal sealed class MeterSettingsStore
             // Keep the chosen width, but restore the one-row height baseline.
             settings.CompactHeight = Math.Min(settings.CompactHeight, 218);
             settings.Version = 6;
+        }
+
+        if (settings.Version < 7)
+        {
+            // Older builds checked on every launch. Preserve that behavior
+            // while making it an explicit, user-controlled preference.
+            settings.CheckUpdatesOnStartup = true;
+            settings.Version = 7;
         }
 
         settings.Language = string.Equals(settings.Language, "ru", StringComparison.OrdinalIgnoreCase)

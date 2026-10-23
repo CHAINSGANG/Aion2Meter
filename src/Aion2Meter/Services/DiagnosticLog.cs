@@ -7,9 +7,12 @@ namespace Aion2Meter.Services;
 public sealed class DiagnosticLog : IDisposable
 {
     private const long DefaultMaximumFileBytes = 16 * 1024 * 1024;
+    private const int MaximumFilesPerRun = 8;
     private readonly object _sync = new();
-    private readonly StreamWriter _writer;
+    private StreamWriter _writer;
     private readonly long _maximumFileBytes;
+    private readonly string _fileStem;
+    private int _fileNumber = 1;
     private bool _disposed;
     private bool _faulted;
     private bool _limitReached;
@@ -23,12 +26,9 @@ public sealed class DiagnosticLog : IDisposable
         _maximumFileBytes = maximumFileBytes;
         Directory.CreateDirectory(directory);
         string stamp = $"{DateTime.Now:yyyyMMdd-HHmmss-fff}-{Guid.NewGuid():N}";
-        FilePath = Path.Combine(directory, $"hp-debug-{stamp}.log");
-        var stream = new FileStream(FilePath, FileMode.CreateNew, FileAccess.Write, FileShare.ReadWrite);
-        _writer = new StreamWriter(stream, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false))
-        {
-            AutoFlush = true
-        };
+        _fileStem = Path.Combine(directory, $"hp-debug-{stamp}");
+        FilePath = _fileStem + ".log";
+        _writer = OpenWriter(FilePath);
         Write("START", $"Aion2Meter diagnostics started; base={AppContext.BaseDirectory}");
     }
 
@@ -47,9 +47,21 @@ public sealed class DiagnosticLog : IDisposable
             {
                 if (_writer.BaseStream.Position >= _maximumFileBytes)
                 {
-                    _writer.WriteLine($"{DateTime.Now:HH:mm:ss.fff} [LOG] file size limit reached; further diagnostics suppressed");
-                    _limitReached = true;
-                    return;
+                    if (_fileNumber >= MaximumFilesPerRun)
+                    {
+                        _writer.WriteLine($"{DateTime.Now:HH:mm:ss.fff} [LOG] file size limit reached; further diagnostics suppressed");
+                        _limitReached = true;
+                        return;
+                    }
+
+                    int nextFileNumber = _fileNumber + 1;
+                    string nextPath = $"{_fileStem}-part{nextFileNumber:00}.log";
+                    StreamWriter nextWriter = OpenWriter(nextPath);
+                    _writer.WriteLine($"{DateTime.Now:HH:mm:ss.fff} [LOG] continuing in {Path.GetFileName(nextPath)}");
+                    _writer.Dispose();
+                    _writer = nextWriter;
+                    _fileNumber = nextFileNumber;
+                    _writer.WriteLine($"{DateTime.Now:HH:mm:ss.fff} [START] diagnostics continuation part {_fileNumber}");
                 }
                 _writer.WriteLine($"{DateTime.Now:HH:mm:ss.fff} [{category}] {message}");
             }
@@ -63,6 +75,13 @@ public sealed class DiagnosticLog : IDisposable
             }
         }
     }
+
+    private static StreamWriter OpenWriter(string path) => new(
+        new FileStream(path, FileMode.CreateNew, FileAccess.Write, FileShare.ReadWrite),
+        new UTF8Encoding(encoderShouldEmitUTF8Identifier: false))
+    {
+        AutoFlush = true
+    };
 
     public void Dispose()
     {

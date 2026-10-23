@@ -5,9 +5,9 @@
         xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
         xmlns:controls="clr-namespace:Aion2Meter.Controls"
         Title="{services:BilingualText English='Player Breakdown', Russian='Разбор игрока'}"
-        Width="780"
-        Height="500"
-        MinWidth="680"
+        Width="1020"
+        Height="560"
+        MinWidth="900"
         MinHeight="390"
         WindowStyle="None"
         ResizeMode="CanResizeWithGrip"
@@ -44,6 +44,31 @@
             <Setter Property="Foreground" Value="#FFADB5B9" />
             <Setter Property="VerticalAlignment" Value="Center" />
         </Style>
+
+        <Style x:Key="BreakdownTabStyle" TargetType="RadioButton">
+            <Setter Property="Foreground" Value="#FF98A5AB" />
+            <Setter Property="FontSize" Value="10" />
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Border x:Name="TabBorder" BorderBrush="Transparent" BorderThickness="0,0,0,2" Background="Transparent">
+                            <ContentPresenter VerticalAlignment="Center" Margin="11,0" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter Property="Foreground" Value="#FFE9D6AD" />
+                                <Setter TargetName="TabBorder" Property="BorderBrush" Value="#FFC8A465" />
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Foreground" Value="White" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </Window.Resources>
 
     <Border Margin="2" Background="{StaticResource PanelBackground}" BorderBrush="#FF62696D" BorderThickness="1">
@@ -51,7 +76,7 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="53" />
                 <RowDefinition Height="68" />
-                <RowDefinition Height="25" />
+                <RowDefinition Height="31" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
@@ -90,50 +115,66 @@
                 <StackPanel Grid.Column="8" Margin="12,0,0,0"><TextBlock Text="{services:BilingualText English='CRITS', Russian='КРИТЫ'}" Style="{StaticResource ColumnLabel}" /><TextBlock Text="{Binding CritText}" Margin="0,4,0,0" FontSize="14" FontWeight="Bold" /></StackPanel>
             </Grid>
 
-            <Grid Grid.Row="2" Margin="11,0,13,0">
+            <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="9,0,9,0" VerticalAlignment="Stretch">
+                <RadioButton Content="{services:BilingualText English='SKILLS', Russian='НАВЫКИ'}" GroupName="BreakdownTabs" IsChecked="True" Style="{StaticResource BreakdownTabStyle}" Checked="BreakdownTab_Checked" />
+                <RadioButton x:Name="PassivesTab" Content="{services:BilingualText English='PASSIVES', Russian='ПАССИВКИ'}" GroupName="BreakdownTabs" Style="{StaticResource BreakdownTabStyle}" Checked="BreakdownTab_Checked" />
+                <RadioButton x:Name="SpecialtiesTab" Content="{services:BilingualText English='SPECIALTIES', Russian='ОСОБЕННОСТИ'}" GroupName="BreakdownTabs" Style="{StaticResource BreakdownTabStyle}" Checked="BreakdownTab_Checked" />
+            </StackPanel>
+
+            <Grid x:Name="SkillsPanel" Grid.Row="3">
+                <Grid.RowDefinitions><RowDefinition Height="25" /><RowDefinition Height="*" /></Grid.RowDefinitions>
+            <Grid Grid.Row="0" Margin="14,0,14,0">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" /><ColumnDefinition Width="45" /><ColumnDefinition Width="49" /><ColumnDefinition Width="49" />
-                    <ColumnDefinition Width="49" /><ColumnDefinition Width="49" /><ColumnDefinition Width="66" /><ColumnDefinition Width="61" />
-                    <ColumnDefinition Width="61" /><ColumnDefinition Width="70" /><ColumnDefinition Width="48" />
+                    <ColumnDefinition Width="*" /><ColumnDefinition Width="45" /><ColumnDefinition Width="46" /><ColumnDefinition Width="49" />
+                    <ColumnDefinition Width="49" /><ColumnDefinition Width="49" /><ColumnDefinition Width="49" /><ColumnDefinition Width="66" />
+                    <ColumnDefinition Width="61" /><ColumnDefinition Width="61" /><ColumnDefinition Width="61" /><ColumnDefinition Width="70" /><ColumnDefinition Width="48" />
                 </Grid.ColumnDefinitions>
                 <TextBlock Style="{StaticResource ColumnLabel}" Text="{services:BilingualText English='SKILL', Russian='НАВЫК'}" />
                 <TextBlock Grid.Column="1" Style="{StaticResource ColumnLabel}" Text="{services:BilingualText English='HIT', Russian='УД.'}" HorizontalAlignment="Right" />
-                <TextBlock Grid.Column="2" Style="{StaticResource ColumnLabel}" Text="{services:BilingualText English='CRIT', Russian='КРИТ'}" HorizontalAlignment="Right" />
-                <TextBlock Grid.Column="3" Style="{StaticResource ColumnLabel}" Text="{services:BilingualText English='BACK', Russian='СПИНА'}" HorizontalAlignment="Right" />
-                <TextBlock Grid.Column="4" Style="{StaticResource ColumnLabel}" Text="{services:BilingualText English='DOUBLE', Russian='ДВОЙН.'}" HorizontalAlignment="Right" />
-                <TextBlock Grid.Column="5" Style="{StaticResource ColumnLabel}" Text="{services:BilingualText English='PERFECT', Russian='МОЩН.'}" HorizontalAlignment="Right" />
-                <TextBlock Grid.Column="6" Style="{StaticResource ColumnLabel}" Text="{Binding RateLabel}" HorizontalAlignment="Right" />
-                <TextBlock Grid.Column="7" Style="{StaticResource ColumnLabel}" Text="{services:BilingualText English='AVG.', Russian='СРЕДН.'}" HorizontalAlignment="Right" />
-                <TextBlock Grid.Column="8" Style="{StaticResource ColumnLabel}" Text="{services:BilingualText English='MAX.', Russian='МАКС.'}" HorizontalAlignment="Right" />
-                <TextBlock Grid.Column="9" Style="{StaticResource ColumnLabel}" Text="{Binding AmountLabel}" HorizontalAlignment="Right" />
-                <TextBlock Grid.Column="10" Style="{StaticResource ColumnLabel}" Text="%" HorizontalAlignment="Right" />
+                <TextBlock Grid.Column="2" Style="{StaticResource ColumnLabel}" Text="{services:BilingualText English='TICKS', Russian='ТИКИ'}" HorizontalAlignment="Right" />
+                <TextBlock Grid.Column="3" Style="{StaticResource ColumnLabel}" Text="{services:BilingualText English='CRIT', Russian='КРИТ'}" HorizontalAlignment="Right" />
+                <TextBlock Grid.Column="4" Style="{StaticResource ColumnLabel}" Text="{services:BilingualText English='BACK', Russian='СПИНА'}" HorizontalAlignment="Right" />
+                <TextBlock Grid.Column="5" Style="{StaticResource ColumnLabel}" Text="{services:BilingualText English='DOUBLE', Russian='ДВОЙН.'}" HorizontalAlignment="Right" />
+                <TextBlock Grid.Column="6" Style="{StaticResource ColumnLabel}" Text="{services:BilingualText English='PERFECT', Russian='МОЩН.'}" HorizontalAlignment="Right" />
+                <TextBlock Grid.Column="7" Style="{StaticResource ColumnLabel}" Text="{Binding RateLabel}" HorizontalAlignment="Right" />
+                <TextBlock Grid.Column="8" Style="{StaticResource ColumnLabel}" Text="{services:BilingualText English='MIN.', Russian='МИН.'}" HorizontalAlignment="Right" />
+                <TextBlock Grid.Column="9" Style="{StaticResource ColumnLabel}" Text="{services:BilingualText English='AVG.', Russian='СРЕДН.'}" HorizontalAlignment="Right" />
+                <TextBlock Grid.Column="10" Style="{StaticResource ColumnLabel}" Text="{services:BilingualText English='MAX.', Russian='МАКС.'}" HorizontalAlignment="Right" />
+                <TextBlock Grid.Column="11" Style="{StaticResource ColumnLabel}" Text="{Binding AmountLabel}" HorizontalAlignment="Right" />
+                <TextBlock Grid.Column="12" Style="{StaticResource ColumnLabel}" Text="%" HorizontalAlignment="Right" />
             </Grid>
 
-            <Grid Grid.Row="3" Margin="9,0,9,9">
+            <Grid Grid.Row="1" Margin="9,0,9,9">
                 <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                     <ItemsControl ItemsSource="{Binding Skills}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <Border Height="36" Margin="0,0,0,2" Background="#26000000" BorderBrush="{StaticResource SoftLine}" BorderThickness="0,0,0,1" ClipToBounds="True">
+                                <Border Height="38" Margin="0,0,0,2" Background="#26000000" BorderBrush="{StaticResource SoftLine}" BorderThickness="0,0,0,1" ClipToBounds="True" ToolTip="{Binding BreakdownTooltip}">
                                     <Grid>
                                         <controls:SmoothProgressBar Minimum="0" Maximum="100" AnimatedValue="{Binding BarPercent}" Foreground="{StaticResource SkillFill}" Style="{StaticResource RowProgressStyle}" />
                                         <Grid Margin="5,0">
                                             <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*" /><ColumnDefinition Width="45" /><ColumnDefinition Width="49" /><ColumnDefinition Width="49" />
-                                                <ColumnDefinition Width="49" /><ColumnDefinition Width="49" /><ColumnDefinition Width="66" /><ColumnDefinition Width="61" />
-                                                <ColumnDefinition Width="61" /><ColumnDefinition Width="70" /><ColumnDefinition Width="48" />
+                                                <ColumnDefinition Width="*" /><ColumnDefinition Width="45" /><ColumnDefinition Width="46" /><ColumnDefinition Width="49" />
+                                                <ColumnDefinition Width="49" /><ColumnDefinition Width="49" /><ColumnDefinition Width="49" /><ColumnDefinition Width="66" />
+                                                <ColumnDefinition Width="61" /><ColumnDefinition Width="61" /><ColumnDefinition Width="61" /><ColumnDefinition Width="70" /><ColumnDefinition Width="48" />
                                             </Grid.ColumnDefinitions>
-                                            <TextBlock Text="{Binding Name}" VerticalAlignment="Center" FontSize="10" FontWeight="Bold" TextTrimming="CharacterEllipsis" />
+                                            <Grid>
+                                                <Grid.ColumnDefinitions><ColumnDefinition Width="35" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                                                <Image Source="{Binding IconPath}" Width="26" Height="26" Stretch="Uniform" HorizontalAlignment="Left" VerticalAlignment="Center" />
+                                                <TextBlock Grid.Column="1" Text="{Binding Name}" VerticalAlignment="Center" FontSize="10" FontWeight="Bold" Foreground="#FFE8C47D" TextTrimming="CharacterEllipsis" />
+                                            </Grid>
                                             <TextBlock Grid.Column="1" Text="{Binding HitsText}" HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="9" />
-                                            <TextBlock Grid.Column="2" Text="{Binding CritText}" HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="9" />
-                                            <TextBlock Grid.Column="3" Text="{Binding BackText}" HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="9" />
-                                            <TextBlock Grid.Column="4" Text="{Binding DoubleText}" HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="9" />
-                                            <TextBlock Grid.Column="5" Text="{Binding PerfectText}" HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="9" />
-                                            <TextBlock Grid.Column="6" Text="{Binding DpsText}" HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="9" FontWeight="Bold" />
-                                            <TextBlock Grid.Column="7" Text="{Binding AverageText}" HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="9" />
-                                            <TextBlock Grid.Column="8" Text="{Binding MaximumText}" HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="9" />
-                                            <TextBlock Grid.Column="9" Text="{Binding DamageText}" HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="9" />
-                                            <TextBlock Grid.Column="10" Text="{Binding ShareText}" HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="9" FontWeight="Bold" Foreground="{StaticResource CyanBrush}" />
+                                            <TextBlock Grid.Column="2" Text="{Binding DotHitsText}" HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="9" />
+                                            <TextBlock Grid.Column="3" Text="{Binding CritText}" HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="9" />
+                                            <TextBlock Grid.Column="4" Text="{Binding BackText}" HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="9" />
+                                            <TextBlock Grid.Column="5" Text="{Binding DoubleText}" HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="9" />
+                                            <TextBlock Grid.Column="6" Text="{Binding PerfectText}" HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="9" />
+                                            <TextBlock Grid.Column="7" Text="{Binding DpsText}" HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="9" FontWeight="Bold" />
+                                            <TextBlock Grid.Column="8" Text="{Binding MinimumText}" HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="9" />
+                                            <TextBlock Grid.Column="9" Text="{Binding AverageText}" HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="9" />
+                                            <TextBlock Grid.Column="10" Text="{Binding MaximumText}" HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="9" />
+                                            <TextBlock Grid.Column="11" Text="{Binding DamageText}" HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="9" />
+                                            <TextBlock Grid.Column="12" Text="{Binding ShareText}" HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="9" FontWeight="Bold" Foreground="{StaticResource CyanBrush}" />
                                         </Grid>
                                     </Grid>
                                 </Border>
@@ -142,6 +183,95 @@
                     </ItemsControl>
                 </ScrollViewer>
                 <TextBlock Text="{Binding EmptySkillsText}" Visibility="{Binding HasSkills, Converter={StaticResource InverseBoolToVisibility}}" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FF90999E" />
+            </Grid>
+            </Grid>
+
+            <Grid x:Name="PassivesPanel" Grid.Row="3" Visibility="Collapsed" Margin="12,3,12,10">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                    <ItemsControl ItemsSource="{Binding Passives}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Width="235" Height="55" Margin="0,0,6,6" Background="#26000000" BorderBrush="{StaticResource SoftLine}" BorderThickness="0,0,0,1" ToolTip="{Binding Name}">
+                                    <Grid Margin="8,0">
+                                        <Grid.ColumnDefinitions><ColumnDefinition Width="39" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                                        <Image Source="{Binding IconPath}" Width="31" Height="31" Stretch="Uniform" HorizontalAlignment="Left" VerticalAlignment="Center" />
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding Name}" FontSize="10" FontWeight="Bold" Foreground="#FFE8C47D" TextTrimming="CharacterEllipsis" />
+                                            <TextBlock Text="{Binding StatusText}" Margin="0,3,0,0" FontSize="9" Foreground="#FF9FAAAF" />
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+                <TextBlock Text="{Binding PassivesEmptyText}" Visibility="{Binding HasPassives, Converter={StaticResource InverseBoolToVisibility}}" HorizontalAlignment="Center" VerticalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" Foreground="#FF90999E" />
+            </Grid>
+
+            <Grid x:Name="SpecialtiesPanel" Grid.Row="3" Visibility="Collapsed" Margin="12,3,12,10">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                    <ItemsControl ItemsSource="{Binding Specialties}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Width="315" Margin="0,0,8,8" Padding="9,8" Background="#26000000" BorderBrush="{StaticResource SoftLine}" BorderThickness="1">
+                                    <StackPanel>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions><ColumnDefinition Width="35" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                                            <Image Source="{Binding IconPath}" Width="29" Height="29" Stretch="Uniform" VerticalAlignment="Center" />
+                                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding Name}" FontSize="10" FontWeight="Bold" Foreground="#FFE8C47D" TextTrimming="CharacterEllipsis" />
+                                                <TextBlock Text="{Binding LevelText}" FontSize="9" Foreground="#FF9FAAAF" />
+                                            </StackPanel>
+                                            <ItemsControl Grid.Column="2" ItemsSource="{Binding Slots}" VerticalAlignment="Center">
+                                                <ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel Orientation="Horizontal" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Grid Width="24" Height="27" Margin="2,0">
+                                                            <Image Source="{Binding IconPath}" Width="24" Height="24" Stretch="Uniform" />
+                                                            <Path x:Name="Shield" Visibility="Collapsed" Data="M 3,2 L 21,2 L 21,17 L 12,24 L 3,17 Z" Fill="#6EAC854A" Stroke="#FFD4B472" StrokeThickness="1" />
+                                                            <TextBlock x:Name="SlotNumber" Visibility="Collapsed" Text="{Binding Number}" Foreground="#FFF5E8CB" FontSize="10" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,-2,0,0" />
+                                                        </Grid>
+                                                        <DataTemplate.Triggers>
+                                                            <DataTrigger Binding="{Binding IconPath}" Value="{x:Null}">
+                                                                <Setter TargetName="Shield" Property="Visibility" Value="Visible" />
+                                                                <Setter TargetName="SlotNumber" Property="Visibility" Value="Visible" />
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding IsSelected}" Value="False">
+                                                                <Setter TargetName="Shield" Property="Fill" Value="#161F272D" />
+                                                                <Setter TargetName="Shield" Property="Stroke" Value="#58646C6E" />
+                                                            </DataTrigger>
+                                                        </DataTemplate.Triggers>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </Grid>
+                                        <ItemsControl ItemsSource="{Binding SelectedOptions}" Margin="0,7,0,0">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Grid Margin="1,3,0,3">
+                                                        <Grid.ColumnDefinitions><ColumnDefinition Width="32" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                                                        <Grid Width="26" Height="26" VerticalAlignment="Top">
+                                                            <TextBlock Text="{Binding Number}" FontSize="10" FontWeight="Bold" Foreground="#FFD4B472" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                            <Image Source="{Binding IconPath}" Width="26" Height="26" Stretch="Uniform" />
+                                                        </Grid>
+                                                        <TextBlock Grid.Column="1" Text="{Binding Description}" FontSize="10" Foreground="{StaticResource CyanBrush}" TextWrapping="Wrap" VerticalAlignment="Center" />
+                                                    </Grid>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+                <TextBlock Text="{Binding SpecialtiesEmptyText}" Visibility="{Binding HasSpecialties, Converter={StaticResource InverseBoolToVisibility}}" HorizontalAlignment="Center" VerticalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" Foreground="#FF90999E" />
             </Grid>
         </Grid>
     </Border>

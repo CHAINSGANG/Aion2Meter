@@ -1,0 +1,64 @@
+<UserControl x:Class="Aion2Meter.Controls.PartyDamageRow"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             SnapsToDevicePixels="True"
+             UseLayoutRounding="True">
+    <Border Background="Transparent" ClipToBounds="True">
+        <Grid Margin="4,0,6,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="35" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="75" />
+            </Grid.ColumnDefinitions>
+
+            <Grid Grid.Column="0" Width="32" Height="36" HorizontalAlignment="Left" VerticalAlignment="Center">
+                <Image Source="{Binding PartyIconPath}" Width="30" Height="30" Stretch="Uniform" VerticalAlignment="Top"
+                       ToolTip="{Binding ClassName}">
+                    <Image.Style>
+                        <Style TargetType="Image">
+                            <Setter Property="Visibility" Value="{Binding HasPartyIcon, Converter={StaticResource BoolToVisibility}}" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsLocalPlayer}" Value="True">
+                                    <Setter Property="Effect">
+                                        <Setter.Value>
+                                            <DropShadowEffect Color="#FFF4E7BD" BlurRadius="8" ShadowDepth="0" Opacity="0.8" />
+                                        </Setter.Value>
+                                    </Setter>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Image.Style>
+                </Image>
+                <TextBlock Text="{Binding Rank}" FontFamily="{StaticResource AionBodyFont}"
+                           HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,-1"
+                           FontSize="9" FontWeight="Bold" Foreground="#FFE9E6DB">
+                    <TextBlock.Effect>
+                        <DropShadowEffect Color="Black" BlurRadius="2" ShadowDepth="1" Opacity="0.9" />
+                    </TextBlock.Effect>
+                </TextBlock>
+            </Grid>
+
+            <Grid Grid.Column="1" VerticalAlignment="Center" Margin="0,0,4,0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="18" />
+                    <RowDefinition Height="16" />
+                </Grid.RowDefinitions>
+                <TextBlock Text="{Binding Nickname}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"
+                           FontSize="12" FontWeight="Bold" Foreground="#FF36D0DC" ToolTip="{Binding Nickname}" />
+                <TextBlock Grid.Row="1" Text="{Binding ShareText}" VerticalAlignment="Center"
+                           FontSize="10" Foreground="#FFB7BEC0" />
+            </Grid>
+
+            <Grid Grid.Column="2" VerticalAlignment="Center" Margin="4,0,0,0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="17" />
+                    <RowDefinition Height="17" />
+                </Grid.RowDefinitions>
+                <TextBlock Text="{Binding DpsText}" HorizontalAlignment="Right" VerticalAlignment="Center"
+                           FontSize="11" FontWeight="Bold" Foreground="#FFF4F2ED" ToolTip="{Binding RateLabel}" />
+                <TextBlock Grid.Row="1" Text="{Binding DamageText}" HorizontalAlignment="Right" VerticalAlignment="Center"
+                           FontSize="10" FontWeight="SemiBold" Foreground="#FF9ACBD2" ToolTip="{Binding AmountLabel}" />
+            </Grid>
+        </Grid>
+    </Border>
+</UserControl>

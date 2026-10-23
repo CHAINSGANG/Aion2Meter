@@ -34,6 +34,7 @@ public partial class MainWindow : Window
     private double _textOpacity = 1;
     private bool _isCompact;
     private bool _settingsReady;
+    private bool _checkUpdatesOnStartup = true;
     private bool _isApplyingSize;
     private int _sizeApplyVersion;
     private bool _heightUpdateQueued;
@@ -58,6 +59,7 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         MeterSettings settings = _settingsStore.Load();
+        _checkUpdatesOnStartup = settings.CheckUpdatesOnStartup;
         UiLanguageService.Apply(settings.Language);
         _viewModel = new MeterViewModel();
         InitializeComponent();
@@ -75,7 +77,9 @@ public partial class MainWindow : Window
             settings.ShowTargetDebuffs,
             settings.DisplayMode,
             settings.PvpMode,
-            settings.KeepNotificationsWhenHidden);
+            settings.KeepNotificationsWhenHidden,
+            settings.ShowOtherPlayersDebuffs,
+            settings.UsePartyRowStyle);
 
         _settingsSaveTimer = new DispatcherTimer(DispatcherPriority.Background)
         {
@@ -133,6 +137,17 @@ public partial class MainWindow : Window
             () => Dispatcher.Invoke(ShowFromTray),
             () => Dispatcher.Invoke(HideToTray),
             () => Dispatcher.InvokeAsync(async () => await CheckForUpdatesAsync(showCurrentStatus: true)),
+            releaseUrl => Dispatcher.Invoke(() =>
+            {
+                if (AvailableUpdate?.Package is not null)
+                {
+                    ShowFromTray();
+                    OpenTools();
+                    _toolsWindow?.ShowAvailableUpdate();
+                }
+                else
+                    UpdateCheckService.OpenRelease(releaseUrl);
+            }),
             () => Dispatcher.Invoke(ExitApplication));
         _gameWindowAttachment = new GameWindowAttachment(this);
         _gameWindowAttachment.Start();
@@ -176,7 +191,8 @@ public partial class MainWindow : Window
         {
             OpenTimers();
         }
-        await CheckForUpdatesAsync(showCurrentStatus: false);
+        if (_checkUpdatesOnStartup)
+            await CheckForUpdatesAsync(showCurrentStatus: false);
     }
 
     private void Window_LocationChanged(object? sender, EventArgs e)
@@ -358,6 +374,8 @@ public partial class MainWindow : Window
             QueueSettingsSave();
         }
         else if (e.PropertyName == nameof(MeterViewModel.ShowTargetDebuffs) ||
+                 e.PropertyName == nameof(MeterViewModel.ShowOtherPlayersDebuffs) ||
+                 e.PropertyName == nameof(MeterViewModel.UsePartyRowStyle) ||
                  e.PropertyName == nameof(MeterViewModel.IsPvpMode) ||
                  e.PropertyName == nameof(MeterViewModel.KeepNotificationsWhenHidden))
         {
@@ -566,6 +584,8 @@ public partial class MainWindow : Window
     internal async Task<string> CheckForUpdatesAsync(bool showCurrentStatus)
     {
         UpdateCheckResult result = await UpdateCheckService.CheckAsync();
+        AvailableUpdate = result.IsUpdateAvailable ? result : null;
+        _toolsWindow?.SyncUpdateControls();
         if (!result.Succeeded)
         {
             return UiLanguageService.Text("UpdateFailed", result.Error ?? "Unknown error");
@@ -573,13 +593,26 @@ public partial class MainWindow : Window
 
         if (result.IsUpdateAvailable && result.LatestVersion is not null)
         {
-            _trayIcon?.ShowUpdate(result.LatestVersion, result.ReleaseUrl);
-            return UiLanguageService.Text("UpdateAvailable", result.LatestVersion);
+            _trayIcon?.ShowUpdate(result.LatestVersion, result.ReleaseUrl,
+                result.Package is not null);
+            return UiLanguageService.Text(result.Package is not null
+                ? "UpdateAvailable" : "UpdateAvailableManual", result.LatestVersion);
         }
 
         return showCurrentStatus
             ? UiLanguageService.Text("UpdateCurrent", result.CurrentVersion)
             : string.Empty;
+    }
+
+    internal bool CheckUpdatesOnStartup => _checkUpdatesOnStartup;
+    internal UpdateCheckResult? AvailableUpdate { get; private set; }
+
+    internal void SetCheckUpdatesOnStartup(bool enabled)
+    {
+        if (_checkUpdatesOnStartup == enabled)
+            return;
+        _checkUpdatesOnStartup = enabled;
+        QueueSettingsSave();
     }
 
     private void HideToTray() => _gameWindowAttachment?.HideToTray();
@@ -652,10 +685,17 @@ public partial class MainWindow : Window
     private void ApplyWindowFillOpacity(Window window)
     {
         window.Opacity = 1;
-        foreach (string key in new[] { "PanelBackground", "PanelHeader", "DarkStrip" })
+        foreach (string key in new[] { "PanelBackground", "PanelHeader", "PartyPanelBackground", "PartyPanelHeader", "DarkStrip" })
         {
             if (window.Resources[key] is Brush brush)
             {
+                if (brush.IsFrozen)
+                {
+                    brush = brush.Clone();
+                    brush.Opacity = _windowOpacity;
+                    window.Resources[key] = brush;
+                    continue;
+                }
                 brush.Opacity = _windowOpacity;
             }
         }
@@ -881,8 +921,11 @@ public partial class MainWindow : Window
             BossOnly = _viewModel.BossOnly,
             ShowPartyMembers = _viewModel.ShowPartyMembers,
             ShowTargetDebuffs = _viewModel.ShowTargetDebuffs,
+            ShowOtherPlayersDebuffs = _viewModel.ShowOtherPlayersDebuffs,
+            UsePartyRowStyle = _viewModel.UsePartyRowStyle,
             PvpMode = _viewModel.IsPvpMode,
             KeepNotificationsWhenHidden = _viewModel.KeepNotificationsWhenHidden,
+            CheckUpdatesOnStartup = _checkUpdatesOnStartup,
             DisplayMode = _viewModel.DisplayMode
         }) && _settingsStore.LastSaveError is { } exception)
         {

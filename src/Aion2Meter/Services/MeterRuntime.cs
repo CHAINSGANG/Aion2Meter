@@ -1,10 +1,8 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using AionFlex.Application.Data;
@@ -61,14 +59,23 @@ public sealed record MeterSkillSnapshot(
     double DoubleRate,
     double PerfectRate,
     double AverageDamage,
-    long MaximumDamage);
+    long MaximumDamage,
+    long MinimumDamage,
+    int DirectHits,
+    int DotHits,
+    long DirectDamage,
+    long DotDamage,
+    bool HasHitQualityData);
 
 public sealed record MeterDebuffSnapshot(
     int SkillCode,
     string Name,
     long RemainingMs,
     long DurationMs,
-    int Stacks);
+    int Stacks,
+    int OwnerId = 0,
+    string? OwnerName = null,
+    bool IsOtherPlayer = false);
 
 public sealed record MeterNavigationPosition(
     int ZoneId,
@@ -96,16 +103,6 @@ public sealed record MeterSnapshot(
 
 public sealed class MeterRuntime : IDisposable
 {
-    private static readonly Regex LocalPlayerLogPattern = new(
-        @"\[PLAYER\] (?:restored )?local id=(?<id>\d+) name='(?<name>[^']+)'",
-        RegexOptions.Compiled | RegexOptions.CultureInvariant);
-    private static readonly Regex ConfirmedPlayerLogPattern = new(
-        @"\[PLAYER\] name id=(?<id>\d+) nickname='(?<name>[^']+)' confirmed=True\b",
-        RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
-    private static readonly Regex ReboundLocalPlayerLogPattern = new(
-        @"\[PLAYER\] local rebound id=(?:\d+|-)->(?<id>\d+) name='(?<name>[^']+)'",
-        RegexOptions.Compiled | RegexOptions.CultureInvariant);
-
     private readonly DataRepository _dataRepository;
     private readonly SkillRepository _skillRepository;
     private readonly MobRepository _mobRepository;
@@ -122,9 +119,15 @@ public sealed class MeterRuntime : IDisposable
     private readonly DebuffTracker _debuffTracker = new();
     private readonly ConcurrentDictionary<int, int> _playerTargets = new();
     private readonly ConcurrentDictionary<int, string> _identityDisplayTrace = new();
+    private readonly ConcurrentDictionary<string, long> _identityCaptureFlows = new();
     private readonly ConcurrentDictionary<int, long> _defeatedTargetMaxHp = new();
     private readonly object _featureStateLock = new();
     private IReadOnlyList<(int PetId, int Level)> _petRoster = [];
+    private IReadOnlyList<SkillRosterEntry> _localSkillRoster = [];
+    private IReadOnlyList<SkillEquippedEntry> _localEquippedSkills = [];
+    private IReadOnlyList<MeterPassiveSkillSnapshot> _selectedLocalPassives = [];
+    private IReadOnlyList<MeterSkillSpecialtySnapshot> _selectedLocalSpecialties = [];
+    private string? _selectedLoadoutOwnerName;
     private PartyRoomRoster? _partyRoster;
     private BossPullClock _bossPullClock = new(30_000L);
     private int _selectedTargetId;
@@ -133,9 +136,11 @@ public sealed class MeterRuntime : IDisposable
     private int _inferredLocalPlayerId;
     private int _hasLiveLocalPlayerIdentity;
     private string _lastHealthTrace = string.Empty;
+    private long _lastSnapshotDiagnosticTick;
     private string _lastDebuffTrace = string.Empty;
     private string _lastEventTrace = string.Empty;
     private long _lastPvpEventVersion = -1;
+    private long _lastIdentityDiagnosticTick;
     private DpsSnapshot _cachedPvpSnapshot = new();
     private int _currentZoneId;
     private MeterNavigationPosition? _navigationPosition;
@@ -218,20 +223,6 @@ public sealed class MeterRuntime : IDisposable
                 skillRepository,
                 mobRepository);
             var hpTracker = new HpTracker();
-            (int EntityId, string Name)? recoveredLocal = TryRecoverLocalPlayer(logDirectory)
-                ?? TryRecoverLocalPlayer(Path.Combine(AppContext.BaseDirectory, "logs"));
-            if (recoveredLocal.HasValue)
-            {
-                dataRepository.SetLocalPlayerName(recoveredLocal.Value.Name);
-                dataRepository.SetNickname(
-                    recoveredLocal.Value.EntityId,
-                    recoveredLocal.Value.Name,
-                    isConfirmedPlayer: true,
-                    isAuthoritativeSource: true);
-                diagnostics.Write(
-                    "PLAYER",
-                    $"restored local id={recoveredLocal.Value.EntityId} name='{recoveredLocal.Value.Name}' from current game session");
-            }
             hpTracker.Diagnostic += message => diagnostics.Write("HP-TRACKER", message);
             calculator.SetMaxHpProvider(id => hpTracker.GetActorHpData(id)?.MaxHp ?? 0);
             calculator.SetTrustedMaxHpProvider((id, firstDamageMs) => hpTracker.TryGetTrustedMaxHp(id, firstDamageMs));
@@ -244,10 +235,6 @@ public sealed class MeterRuntime : IDisposable
                 "field_boss_timers.json"));
 
             runtime = new MeterRuntime(dataRepository, skillRepository, mobRepository, capture, parser, petParser, calculator, hpTracker, diagnostics, petCatalog, eventSchedule, fieldBossTimer);
-            if (recoveredLocal.HasValue)
-            {
-                Volatile.Write(ref runtime._inferredLocalPlayerId, recoveredLocal.Value.EntityId);
-            }
             runtime.WirePipeline();
 
             runtime._npcapStartedByMeter = NpcapServiceLifecycle.TryStart(diagnostics);
@@ -271,122 +258,6 @@ public sealed class MeterRuntime : IDisposable
         }
     }
 
-    private static (int EntityId, string Name)? TryRecoverLocalPlayer(string logDirectory)
-    {
-        DateTime? gameStartedUtc = GetCurrentGameSessionStartUtc();
-        if (!gameStartedUtc.HasValue || !Directory.Exists(logDirectory))
-        {
-            return null;
-        }
-
-        try
-        {
-            (int EntityId, string Name)? recovered = null;
-            foreach (string file in Directory.EnumerateFiles(logDirectory, "hp-debug-*.log")
-                         .Where(file => File.GetLastWriteTimeUtc(file) >= gameStartedUtc.Value.AddSeconds(-5))
-                         .OrderBy(File.GetLastWriteTimeUtc))
-            {
-                string[] lines;
-                try
-                {
-                    lines = File.ReadAllLines(file);
-                }
-                catch (IOException)
-                {
-                    // The diagnostic file created for this very startup is still
-                    // locked for writing. Skip it and inspect the previous run.
-                    continue;
-                }
-                catch (UnauthorizedAccessException)
-                {
-                    continue;
-                }
-                foreach (string line in lines)
-                {
-                    Match identityMatch = LocalPlayerLogPattern.Match(line);
-                    if (!identityMatch.Success)
-                    {
-                        identityMatch = ReboundLocalPlayerLogPattern.Match(line);
-                    }
-                    if (TryReadLoggedIdentity(identityMatch, out int entityId, out string name))
-                    {
-                        recovered = (entityId, name);
-                        continue;
-                    }
-
-                    if (!recovered.HasValue)
-                    {
-                        continue;
-                    }
-
-                    Match confirmedMatch = ConfirmedPlayerLogPattern.Match(line);
-                    if (TryReadLoggedIdentity(confirmedMatch, out entityId, out name) &&
-                        string.Equals(name, recovered.Value.Name, StringComparison.OrdinalIgnoreCase))
-                    {
-                        // The character name is stable for the game session but
-                        // the entity id changes after relogs and some zone moves.
-                        // Prefer the newest confirmed record for that same name.
-                        recovered = (entityId, recovered.Value.Name);
-                    }
-                }
-            }
-
-            return recovered;
-        }
-        catch
-        {
-            // Recovery is an optimization. Fresh login packets remain the
-            // authoritative fallback if old diagnostics cannot be read.
-        }
-
-        return null;
-    }
-
-    private static bool TryReadLoggedIdentity(Match match, out int entityId, out string name)
-    {
-        entityId = 0;
-        name = string.Empty;
-        if (!match.Success ||
-            !int.TryParse(match.Groups["id"].Value, out entityId) ||
-            entityId <= 0)
-        {
-            return false;
-        }
-
-        name = match.Groups["name"].Value.Trim();
-        return !string.IsNullOrWhiteSpace(name);
-    }
-
-    private static DateTime? GetCurrentGameSessionStartUtc()
-    {
-        try
-        {
-            DateTime[] starts = Process.GetProcessesByName("AION2")
-                .Select(process =>
-                {
-                    using (process)
-                    {
-                        try
-                        {
-                            return (DateTime?)process.StartTime.ToUniversalTime();
-                        }
-                        catch
-                        {
-                            return null;
-                        }
-                    }
-                })
-                .Where(start => start.HasValue)
-                .Select(start => start!.Value)
-                .ToArray();
-            return starts.Length == 0 ? null : starts.Min();
-        }
-        catch
-        {
-            return null;
-        }
-    }
-
     private static bool IsProcessElevated()
     {
         using var identity = System.Security.Principal.WindowsIdentity.GetCurrent();
@@ -396,6 +267,59 @@ public sealed class MeterRuntime : IDisposable
 
     private void WirePipeline()
     {
+        _parser.SkillSpecsDetected += (_, change) =>
+        {
+            if (change.BaseSkillCode <= 0 || change.SpecIndices.Count == 0)
+                return;
+
+            lock (_featureStateLock)
+            {
+                int previousLevel = _localEquippedSkills
+                    .FirstOrDefault(entry => entry.BaseCode == change.BaseSkillCode).Level;
+                int rosterLevel = _localSkillRoster
+                    .FirstOrDefault(entry => entry.Code == change.BaseSkillCode).Level;
+                int level = change.SkillLevel > 0 ? change.SkillLevel : Math.Max(previousLevel, rosterLevel);
+                var update = new SkillEquippedEntry(
+                    change.BaseSkillCode,
+                    level,
+                    change.SpecIndices.OrderBy(option => option).ToArray());
+                _localEquippedSkills = SkillLoadoutAccumulator.MergeEquipped(
+                    _localEquippedSkills,
+                    [update]);
+                _selectedLocalSpecialties = SkillSpecialtySelection.FromLoadout(
+                    new SkillLoadoutSnapshot(_localSkillRoster, _localEquippedSkills),
+                    _skillRepository.GetSkillMetadata,
+                    _skillRepository.GetSkillName);
+            }
+        };
+
+        _parser.SkillLoadoutDecoded += (_, loadout) =>
+        {
+            if (loadout.Roster.Count == 0 && loadout.Equipped.Count == 0)
+                return;
+
+            string? ownerName = _dataRepository.GetLocalPlayerName();
+            int passiveCount;
+            lock (_featureStateLock)
+            {
+                if (loadout.Roster.Count > 0)
+                    _localSkillRoster = SkillLoadoutAccumulator.MergeRoster(_localSkillRoster, loadout.Roster);
+                if (loadout.Equipped.Count > 0)
+                    _localEquippedSkills = SkillLoadoutAccumulator.MergeEquipped(_localEquippedSkills, loadout.Equipped);
+                _selectedLocalPassives = PassiveLoadoutSkills.FromLoadout(
+                    new SkillLoadoutSnapshot(_localSkillRoster, _localEquippedSkills),
+                    _skillRepository.GetSkillMetadata,
+                    _skillRepository.GetSkillName);
+                _selectedLocalSpecialties = SkillSpecialtySelection.FromLoadout(
+                    new SkillLoadoutSnapshot(_localSkillRoster, _localEquippedSkills),
+                    _skillRepository.GetSkillMetadata,
+                    _skillRepository.GetSkillName);
+                _selectedLoadoutOwnerName = ownerName ?? _selectedLoadoutOwnerName;
+                passiveCount = _selectedLocalPassives.Count;
+            }
+            _diagnostics.Write("LOADOUT", $"roster={loadout.Roster.Count} equipped={loadout.Equipped.Count} passives={passiveCount}");
+        };
+
         _parser.FieldBossListParsed += (_, list) =>
         {
             int? serverId = _dataRepository.GetCurrentServerId();
@@ -405,6 +329,12 @@ public sealed class MeterRuntime : IDisposable
 
         _capture.PayloadCaptured += (_, payload) =>
         {
+            if (Volatile.Read(ref _hasLiveLocalPlayerIdentity) == 0)
+            {
+                string flow = $"{payload.DeviceName ?? "?"} {payload.SourcePort}->{payload.DestinationPort}";
+                if (_identityCaptureFlows.Count < 128 || _identityCaptureFlows.ContainsKey(flow))
+                    _identityCaptureFlows.AddOrUpdate(flow, 1, (_, count) => count + 1);
+            }
             _parser.ProcessPayload(payload);
             _petParser.ProcessPayload(payload);
         };
@@ -428,6 +358,19 @@ public sealed class MeterRuntime : IDisposable
 
         _parser.DamageEventParsed += (_, damageEvent) =>
         {
+            int sourceId = _dataRepository.GetSummoner(damageEvent.ActorId) ?? damageEvent.ActorId;
+            int knownLocalId = Volatile.Read(ref _inferredLocalPlayerId);
+            bool playerSource = sourceId == knownLocalId ||
+                _dataRepository.IsConfirmedPlayer(sourceId) ||
+                !string.IsNullOrWhiteSpace(_dataRepository.GetNickname(sourceId));
+            if (!damageEvent.IsHeal && !playerSource && !HasCombatTargetEvidence(damageEvent.TargetId))
+            {
+                _diagnostics.Write(
+                    "DAMAGE-DROP",
+                    $"unverified actor={damageEvent.ActorId} target={damageEvent.TargetId} amount={damageEvent.Damage} skill={damageEvent.SkillCode}");
+                return;
+            }
+
             _mitigationTracker.Record(damageEvent);
             _bossPullClock.OnDamage(
                 damageEvent.TargetId,
@@ -441,11 +384,6 @@ public sealed class MeterRuntime : IDisposable
             }
             else
             {
-                int sourceId = _dataRepository.GetSummoner(damageEvent.ActorId) ?? damageEvent.ActorId;
-                int knownLocalId = Volatile.Read(ref _inferredLocalPlayerId);
-                bool playerSource = sourceId == knownLocalId ||
-                    _dataRepository.IsConfirmedPlayer(sourceId) ||
-                    !string.IsNullOrWhiteSpace(_dataRepository.GetNickname(sourceId));
                 if (playerSource && IsHostileTargetCandidate(damageEvent.TargetId))
                 {
                     Volatile.Write(ref _lastCombatTargetId, damageEvent.TargetId);
@@ -480,24 +418,45 @@ public sealed class MeterRuntime : IDisposable
         {
             _dataRepository.SetNickname(player.PlayerId, player.Nickname, player.IsConfirmedPlayer);
             Interlocked.Exchange(ref _lastPvpEventVersion, -1);
-            TryRebindRecoveredLocalPlayer(player.PlayerId, player.Nickname, player.ServerId);
             _diagnostics.Write(
                 "PLAYER",
                 $"name id={player.PlayerId} nickname='{player.Nickname}' confirmed={player.IsConfirmedPlayer} server={player.ServerId}");
         };
         _parser.LocalPlayerDiscovered += (_, player) =>
         {
+            int previousPlayerId = Volatile.Read(ref _inferredLocalPlayerId);
+            if (previousPlayerId != player.EntityId)
+            {
+                // Pre-login data has no trustworthy owner. A later relog can also
+                // change the entity ID, so begin a fresh fight in either case.
+                Reset();
+                _playerTargets.Clear();
+                _defeatedTargetMaxHp.Clear();
+                Volatile.Write(ref _selectedTargetId, 0);
+                Volatile.Write(ref _lastCombatTargetId, 0);
+                Volatile.Write(ref _displayTargetId, 0);
+                _dataRepository.SetCurrentTarget(0);
+                _parser.SetCurrentTarget(0);
+                _diagnostics.Write("PLAYER", $"fresh login id={previousPlayerId}->{player.EntityId}: discarded prior combat data");
+            }
+            lock (_featureStateLock)
+            {
+                if ((_selectedLoadoutOwnerName is not null &&
+                     !string.Equals(_selectedLoadoutOwnerName, player.Name, StringComparison.OrdinalIgnoreCase)) ||
+                    (previousPlayerId > 0 && previousPlayerId != player.EntityId))
+                {
+                    _localSkillRoster = [];
+                    _localEquippedSkills = [];
+                    _selectedLocalPassives = [];
+                    _selectedLocalSpecialties = [];
+                }
+                _selectedLoadoutOwnerName = player.Name;
+            }
             _dataRepository.SetLocalPlayerName(player.Name);
             _dataRepository.SetNickname(player.EntityId, player.Name, true, true);
             Volatile.Write(ref _inferredLocalPlayerId, player.EntityId);
             Volatile.Write(ref _hasLiveLocalPlayerIdentity, 1);
             _diagnostics.Write("PLAYER", $"local id={player.EntityId} name='{player.Name}'");
-            if (_playerTargets.TryGetValue(player.EntityId, out int targetId))
-            {
-                Volatile.Write(ref _selectedTargetId, targetId);
-                _parser.SetCurrentTarget(targetId);
-                _diagnostics.Write("TARGET", $"restored local target={targetId} after player discovery");
-            }
         };
         _parser.MobNameDiscovered += (_, mob) =>
         {
@@ -596,6 +555,8 @@ public sealed class MeterRuntime : IDisposable
             int? localPlayerId = _dataRepository.GetLocalPlayerEntityId()
                 ?? _dataRepository.GetLastBoundLocalPlayerEntityId()
                 ?? PositiveOrNull(Volatile.Read(ref _inferredLocalPlayerId));
+            if (position.EntityId > 0 && !localPlayerId.HasValue)
+                return;
             if (position.EntityId > 0 && localPlayerId.HasValue && position.EntityId != localPlayerId.Value)
             {
                 return;
@@ -614,18 +575,8 @@ public sealed class MeterRuntime : IDisposable
         {
             _playerTargets[target.PlayerEntityId] = target.TargetEntityId;
             int? localPlayerId = _dataRepository.GetLocalPlayerEntityId()
-                ?? _dataRepository.GetLastBoundLocalPlayerEntityId();
-            if (!localPlayerId.HasValue)
-            {
-                int inferred = Volatile.Read(ref _inferredLocalPlayerId);
-                if (inferred <= 0)
-                {
-                    Interlocked.CompareExchange(ref _inferredLocalPlayerId, target.PlayerEntityId, 0);
-                    inferred = Volatile.Read(ref _inferredLocalPlayerId);
-                    _diagnostics.Write("PLAYER", $"provisional local id={inferred} from target-change lane");
-                }
-                localPlayerId = inferred;
-            }
+                ?? _dataRepository.GetLastBoundLocalPlayerEntityId()
+                ?? PositiveOrNull(Volatile.Read(ref _inferredLocalPlayerId));
             bool isLocal = localPlayerId == target.PlayerEntityId;
             _diagnostics.Write(
                 "TARGET",
@@ -724,8 +675,11 @@ public sealed class MeterRuntime : IDisposable
         _bossPullClock = new BossPullClock(30_000L);
     }
 
-    public IReadOnlyList<MeterDebuffSnapshot> GetActiveTargetDebuffs()
+    public IReadOnlyList<MeterDebuffSnapshot> GetActiveTargetDebuffs(bool includeOtherPlayers = false)
     {
+        if (Volatile.Read(ref _hasLiveLocalPlayerIdentity) == 0)
+            return [];
+
         // Use the same target as the visible HP bar.  Selected-target packets can
         // briefly point at a party member or an add while the encounter header is
         // still showing the boss.
@@ -740,64 +694,39 @@ public sealed class MeterRuntime : IDisposable
         int? localPlayerId = _dataRepository.GetLocalPlayerEntityId()
             ?? _dataRepository.GetLastBoundLocalPlayerEntityId()
             ?? PositiveOrNull(Volatile.Read(ref _inferredLocalPlayerId));
-        if (targetId <= 0 || !localPlayerId.HasValue)
+        if (targetId <= 0 || (!localPlayerId.HasValue && !includeOtherPlayers))
         {
-            TraceDebuffSelection(targetId, localPlayerId, 0, 0, []);
+            TraceDebuffSelection(targetId, localPlayerId, includeOtherPlayers, 0, []);
             return [];
         }
 
         long nowMs = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
         IReadOnlyList<ActiveDebuffWindow> active = _debuffTracker.GetActive(targetId, nowMs);
-        var owned = active
-            .Select(effect => new
-            {
-                Effect = effect,
-                OwnerId = _dataRepository.GetSummoner(effect.CasterId) ?? effect.CasterId,
-                SkillCode = effect.SourceSkillId / 10000 * 10000,
-                Metadata = _skillRepository.GetSkillMetadata(effect.SourceSkillId)
-            })
-            .Where(item => item.OwnerId == localPlayerId.Value)
-            .ToArray();
-        MeterDebuffSnapshot[] debuffs = owned
-            // Very short abnormal windows are hit markers used by the protocol,
-            // not debuffs a player can meaningfully track in the HUD.
-            .Where(item => item.SkillCode > 0
-                && item.Metadata?.IsDebuff == true
-                && item.Effect.DurationMs >= 750)
-            .GroupBy(item => item.SkillCode)
-            .Select(group =>
-            {
-                var longest = group.OrderByDescending(item => item.Effect.EndMs).First();
-                int stacks = group
-                    .GroupBy(item => item.Effect.AbnormalId)
-                    .Select(items => items.Count())
-                    .DefaultIfEmpty(1)
-                    .Max();
-                return new MeterDebuffSnapshot(
-                    group.Key,
-                    _skillRepository.GetSkillName(group.Key),
-                    Math.Max(0, longest.Effect.EndMs - nowMs),
-                    longest.Effect.DurationMs,
-                    stacks);
-            })
-            .OrderBy(effect => effect.RemainingMs)
-            .ThenBy(effect => effect.SkillCode)
-            .Take(8)
-            .ToArray();
-        TraceDebuffSelection(targetId, localPlayerId, active.Count, owned.Length, debuffs);
+        IReadOnlyList<MeterDebuffSnapshot> debuffs = TargetDebuffSelection.Project(
+            active,
+            localPlayerId,
+            includeOtherPlayers,
+            nowMs,
+            _dataRepository.GetSummoner,
+            ownerId => _dataRepository.IsConfirmedPlayer(ownerId) ||
+                !string.IsNullOrWhiteSpace(_dataRepository.GetNickname(ownerId)),
+            _skillRepository.GetSkillMetadata,
+            _skillRepository.GetSkillName,
+            _dataRepository.GetNickname);
+        TraceDebuffSelection(targetId, localPlayerId, includeOtherPlayers, active.Count, debuffs);
         return debuffs;
     }
 
     private void TraceDebuffSelection(
         int targetId,
         int? localPlayerId,
+        bool includeOtherPlayers,
         int activeCount,
-        int ownedCount,
         IReadOnlyList<MeterDebuffSnapshot> debuffs)
     {
         string trace =
-            $"target={targetId} local={localPlayerId?.ToString() ?? "-"} active={activeCount} mine={ownedCount} " +
-            $"shown={debuffs.Count} skills=[{string.Join(',', debuffs.Select(item => item.SkillCode))}]";
+            $"target={targetId} local={localPlayerId?.ToString() ?? "-"} others={includeOtherPlayers} active={activeCount} " +
+            $"shown={debuffs.Count} skills=[{string.Join(',', debuffs.Select(item => $"{item.OwnerId}:{item.SkillCode}"))}]";
         if (string.Equals(trace, _lastDebuffTrace, StringComparison.Ordinal))
         {
             return;
@@ -919,6 +848,52 @@ public sealed class MeterRuntime : IDisposable
             IsPvpTargetCandidate(candidate, localId.Value, partyNames));
     }
 
+    public IReadOnlyList<MeterPassiveSkillSnapshot> GetSelectedLocalPassives()
+    {
+        lock (_featureStateLock)
+        {
+            return _selectedLocalPassives;
+        }
+    }
+
+    public IReadOnlyList<MeterSkillSpecialtySnapshot> GetSelectedLocalSpecialties()
+    {
+        lock (_featureStateLock)
+        {
+            return _selectedLocalSpecialties;
+        }
+    }
+
+    private void TraceUnresolvedIdentity(int? localPlayerId, string? localPlayerName, long received, long dropped)
+    {
+        if (Volatile.Read(ref _hasLiveLocalPlayerIdentity) != 0)
+            return;
+
+        long now = Environment.TickCount64;
+        long previous = Volatile.Read(ref _lastIdentityDiagnosticTick);
+        if (previous != 0 && now - previous < 15_000)
+            return;
+        if (Interlocked.CompareExchange(ref _lastIdentityDiagnosticTick, now, previous) != previous)
+            return;
+
+        string flows = string.Join("; ", _identityCaptureFlows
+            .OrderByDescending(entry => entry.Value)
+            .Take(12)
+            .Select(entry => $"{entry.Key} x{entry.Value}"));
+        _identityCaptureFlows.Clear();
+
+        IdentityLaneStats identity = _parser.GetIdentityLaneStats();
+        TunnelUnwrapStats tunnel = _parser.GetTunnelUnwrapStats();
+        _diagnostics.Write(
+            "IDENTITY-DIAG",
+            $"local={localPlayerId?.ToString() ?? "-"}/{localPlayerName ?? "-"} " +
+            $"locked={_parser.LockedDeviceName ?? "-"} capture={received}/{dropped} " +
+            $"queueDropped={_capture.QueueDropped} tcpGaps={_capture.TcpGaps} " +
+            $"identity=candidates:{identity.Candidates},decoded:{identity.Decoded},playerInfo:{identity.PlayerInfoRecords},localRecords:{identity.LocalRecords},localBound:{identity.LocalBound} " +
+            $"tunnel=streams:{tunnel.StreamsDetected},payloads:{tunnel.TunnelPayloads},delivered:{tunnel.Delivered},bad:{tunnel.BadFrames},missingIdentity:{tunnel.MissingIdentity} " +
+            $"flows=[{flows}]");
+    }
+
     public MeterSnapshot GetSnapshot(MeterDisplayMode mode = MeterDisplayMode.Damage, bool pvpMode = false)
     {
         bool usePvp = pvpMode && mode == MeterDisplayMode.Damage;
@@ -943,8 +918,14 @@ public sealed class MeterRuntime : IDisposable
                         skill.BackRate,
                         skill.DoubleRate,
                         skill.PerfectRate,
-                        skill.AverageDamage,
-                        skill.GuardedOverallMax))
+                        skill.TotalHits > 0 ? (double)skill.TotalDamage / skill.TotalHits : 0,
+                        skill.GuardedOverallMax,
+                        skill.OverallMinDamage,
+                        skill.Times,
+                        skill.DotTimes,
+                        skill.DamageAmount,
+                        skill.DotDamageAmount,
+                        skill.HasHitQualityData))
                     .ToArray();
                 return new MeterPlayerSnapshot(
                     player.PlayerId,
@@ -966,10 +947,16 @@ public sealed class MeterRuntime : IDisposable
             ?? _dataRepository.GetLastBoundLocalPlayerEntityId()
             ?? PositiveOrNull(Volatile.Read(ref _inferredLocalPlayerId));
         string? localPlayerName = _calculator.GetLocalPlayerDisplayName();
+        if (Volatile.Read(ref _hasLiveLocalPlayerIdentity) == 0)
+        {
+            localPlayerId = null;
+            localPlayerName = null;
+        }
         if (string.IsNullOrWhiteSpace(localPlayerName) && localPlayerId.HasValue)
         {
             localPlayerName = _dataRepository.GetNickname(localPlayerId.Value);
         }
+        TraceUnresolvedIdentity(localPlayerId, localPlayerName, received, dropped);
         JobClass localPlayerJob = localPlayerId.HasValue
             ? _dataRepository.GetJobClass(localPlayerId.Value)
             : JobClass.Unknown;
@@ -1021,6 +1008,20 @@ public sealed class MeterRuntime : IDisposable
         TargetFrameKind targetFrame = mode == MeterDisplayMode.Damage && !usePvp
             ? ResolveTargetFrame(targetRole, targetMaxHp)
             : TargetFrameKind.Normal;
+
+        long diagnosticTick = Environment.TickCount64;
+        long previousDiagnosticTick = Volatile.Read(ref _lastSnapshotDiagnosticTick);
+        if ((previousDiagnosticTick == 0 || diagnosticTick - previousDiagnosticTick >= 5_000) &&
+            Interlocked.CompareExchange(ref _lastSnapshotDiagnosticTick, diagnosticTick, previousDiagnosticTick) == previousDiagnosticTick)
+        {
+            string leaders = string.Join(", ", players.Take(5).Select(player =>
+                $"{player.PlayerId}:{player.Nickname}:{player.Dps:0.#}"));
+            _diagnostics.Write("SNAPSHOT",
+                $"mode={mode} pvp={usePvp} target={targetId} name='{targetName}' npc={targetNpcId} " +
+                $"hp={targetCurrentHp?.ToString() ?? "-"}/{targetMaxHp?.ToString() ?? "-"} " +
+                $"local={localPlayerId?.ToString() ?? "-"}/{localPlayerName ?? "-"} live={Volatile.Read(ref _hasLiveLocalPlayerIdentity) != 0} " +
+                $"rows={players.Length} dps={snapshot.TotalDps:0.#} leaders=[{leaders}]");
+        }
 
         return new MeterSnapshot(
             targetName,
@@ -1076,7 +1077,25 @@ public sealed class MeterRuntime : IDisposable
             ?? PositiveOrNull(Volatile.Read(ref _inferredLocalPlayerId));
         return localPlayerId != entityId &&
                !_dataRepository.IsConfirmedPlayer(entityId) &&
-               string.IsNullOrWhiteSpace(_dataRepository.GetNickname(entityId));
+               string.IsNullOrWhiteSpace(_dataRepository.GetNickname(entityId)) &&
+               HasCombatTargetEvidence(entityId);
+    }
+
+    private bool HasCombatTargetEvidence(int entityId)
+    {
+        if (entityId <= 0)
+            return false;
+        if (_dataRepository.GetEntityNpcId(entityId) > 0 ||
+            !string.IsNullOrWhiteSpace(_dataRepository.GetMobName(entityId)) ||
+            _dataRepository.IsConfirmedPlayer(entityId) ||
+            !string.IsNullOrWhiteSpace(_dataRepository.GetNickname(entityId)))
+            return true;
+
+        ActorHpData? health = _hpTracker.GetActorHpData(entityId);
+        if (health is null)
+            return false;
+        lock (health)
+            return health.UpdateCount > 0 && health.MaxHp > 0;
     }
 
     private TargetFrameKind ResolveTargetFrame(string? role, long? maxHp)
@@ -1141,10 +1160,6 @@ public sealed class MeterRuntime : IDisposable
             string displayName = restoredName ?? FallbackPlayerName(player.Job);
             players[index] = player with { Nickname = displayName };
             usedNames.Add(displayName);
-            if (restoredName is not null)
-            {
-                RebindLocalPlayerFromRoster(player.PlayerId, restoredName);
-            }
             if (!_identityDisplayTrace.TryGetValue(player.PlayerId, out string? previous) ||
                 !string.Equals(previous, displayName, StringComparison.Ordinal))
             {
@@ -1153,104 +1168,6 @@ public sealed class MeterRuntime : IDisposable
                     "IDENTITY",
                     $"entity={player.PlayerId} raw='{player.Nickname}' display='{displayName}' source={(restoredName is null ? "class-fallback" : "party-roster")}");
             }
-        }
-    }
-
-    private void RebindLocalPlayerFromRoster(int playerId, string recoveredName)
-    {
-        // The party-roster match is a recovery heuristic. Once the parser has
-        // observed an authoritative local-player record, never let a same-class
-        // party member overwrite that live identity.
-        if (Volatile.Read(ref _hasLiveLocalPlayerIdentity) != 0)
-        {
-            return;
-        }
-
-        string? localName = _dataRepository.GetLocalPlayerName();
-        if (string.IsNullOrWhiteSpace(localName) ||
-            !string.Equals(localName, recoveredName, StringComparison.OrdinalIgnoreCase))
-        {
-            return;
-        }
-
-        int? previousId = _dataRepository.GetLocalPlayerEntityId()
-            ?? _dataRepository.GetLastBoundLocalPlayerEntityId()
-            ?? PositiveOrNull(Volatile.Read(ref _inferredLocalPlayerId));
-        _dataRepository.SetNickname(
-            playerId,
-            recoveredName,
-            isConfirmedPlayer: true,
-            isAuthoritativeSource: true);
-        Volatile.Write(ref _inferredLocalPlayerId, playerId);
-        Volatile.Write(ref _hasLiveLocalPlayerIdentity, 1);
-
-        if (previousId == playerId)
-        {
-            return;
-        }
-
-        _diagnostics.Write(
-            "PLAYER",
-            $"local rebound id={previousId?.ToString() ?? "-"}->{playerId} name='{recoveredName}' from party roster");
-        if (_playerTargets.TryGetValue(playerId, out int targetId))
-        {
-            Volatile.Write(ref _selectedTargetId, targetId);
-            _dataRepository.SetCurrentTarget(targetId);
-            _parser.SetCurrentTarget(targetId);
-        }
-    }
-
-    private void TryRebindRecoveredLocalPlayer(int playerId, string nickname, int serverId)
-    {
-        // Startup recovery deliberately begins with the identity from the last
-        // meter run in the same game session. Entity ids change after a relog or
-        // zone transition, however. A confirmed live player record carrying the
-        // recovered character name is the strongest available signal that the
-        // entity id has changed, so promote it before target/debuff filtering.
-        if (Volatile.Read(ref _hasLiveLocalPlayerIdentity) != 0 ||
-            playerId <= 0 ||
-            string.IsNullOrWhiteSpace(nickname))
-        {
-            return;
-        }
-
-        string? localName = _dataRepository.GetLocalPlayerName();
-        if (string.IsNullOrWhiteSpace(localName) ||
-            !string.Equals(localName, nickname, StringComparison.OrdinalIgnoreCase))
-        {
-            return;
-        }
-
-        int? currentServerId = _dataRepository.GetCurrentServerId();
-        if (serverId > 0 && currentServerId is > 0 && serverId != currentServerId.Value)
-        {
-            return;
-        }
-
-        int? previousId = _dataRepository.GetLocalPlayerEntityId()
-            ?? _dataRepository.GetLastBoundLocalPlayerEntityId()
-            ?? PositiveOrNull(Volatile.Read(ref _inferredLocalPlayerId));
-        _dataRepository.SetNickname(
-            playerId,
-            nickname,
-            isConfirmedPlayer: true,
-            isAuthoritativeSource: true);
-        Volatile.Write(ref _inferredLocalPlayerId, playerId);
-        Volatile.Write(ref _hasLiveLocalPlayerIdentity, 1);
-
-        if (previousId == playerId)
-        {
-            return;
-        }
-
-        _diagnostics.Write(
-            "PLAYER",
-            $"local rebound id={previousId?.ToString() ?? "-"}->{playerId} name='{nickname}' from confirmed live name");
-        if (_playerTargets.TryGetValue(playerId, out int targetId))
-        {
-            Volatile.Write(ref _selectedTargetId, targetId);
-            _dataRepository.SetCurrentTarget(targetId);
-            _parser.SetCurrentTarget(targetId);
         }
     }
 

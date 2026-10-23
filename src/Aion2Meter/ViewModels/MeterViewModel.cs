@@ -63,7 +63,7 @@ public sealed class MeterViewModel : BindableBase, IDisposable
     private bool _bossOnly = true;
     private bool _showParty;
     private MeterDisplayMode _displayMode = MeterDisplayMode.Damage;
-    private bool _needsRelog = true;
+    private bool _localIdentityPending = true;
     private string _statusText = T("STARTING", "ЗАПУСК");
     private string _statusTooltip = T("Initializing", "Инициализация");
     private Brush _statusBrush = ReadyBrush;
@@ -88,6 +88,8 @@ public sealed class MeterViewModel : BindableBase, IDisposable
     private bool _hasEventTimers;
     private bool _hasTargetDebuffs;
     private bool _showTargetDebuffs = true;
+    private bool _showOtherPlayersDebuffs;
+    private bool _usePartyRowStyle;
     private bool _isPvpMode;
     private bool _overlayVisible = true;
     private bool _keepNotificationsWhenHidden;
@@ -221,6 +223,16 @@ public sealed class MeterViewModel : BindableBase, IDisposable
         }
     }
     public bool ShowDebuffIcons => _overlayVisible && ShowTargetDebuffs && HasTargetDebuffs && IsDamageMode;
+    public bool ShowOtherPlayersDebuffs
+    {
+        get => _showOtherPlayersDebuffs;
+        set => SetProperty(ref _showOtherPlayersDebuffs, value);
+    }
+    public bool UsePartyRowStyle
+    {
+        get => _usePartyRowStyle;
+        set => SetProperty(ref _usePartyRowStyle, value);
+    }
     public bool KeepNotificationsWhenHidden
     {
         get => _keepNotificationsWhenHidden;
@@ -283,14 +295,18 @@ public sealed class MeterViewModel : BindableBase, IDisposable
     public bool HasNotifications => EventAlerts.Count > 0;
     public Brush TargetBarBrush { get => _targetBarBrush; private set => SetProperty(ref _targetBarBrush, value); }
     public bool IsDemo { get => _isDemo; private set => SetProperty(ref _isDemo, value); }
-    public bool NeedsRelog
+    public bool IsLocalIdentityPending
     {
-        get => _needsRelog;
+        get => _localIdentityPending;
         private set
         {
-            if (SetProperty(ref _needsRelog, value))
+            if (SetProperty(ref _localIdentityPending, value))
             {
                 OnPropertyChanged(nameof(EmptyStateText));
+                OnPropertyChanged(nameof(IsSelfView));
+                OnPropertyChanged(nameof(IsPartyView));
+                OnPropertyChanged(nameof(ParticipantsModeTooltip));
+                NotifyMetricLabelsChanged();
             }
         }
     }
@@ -312,18 +328,18 @@ public sealed class MeterViewModel : BindableBase, IDisposable
         : T("MODE", "РЕЖИМ");
     public string ParticipantsHeader => DisplayMode == MeterDisplayMode.DamageTaken
         ? T("SOURCE", "ИСТОЧНИК")
-        : ShowPartyMembers ? T("PARTY", "ГРУППА") : T("PLAYER", "ПЕРСОНАЖ");
+        : IsPartyView ? T("PARTY", "ГРУППА") : T("PLAYER", "ПЕРСОНАЖ");
     public string SummaryDpsLabel => DisplayMode switch
     {
-        MeterDisplayMode.Healing => ShowPartyMembers ? T("PARTY HPS", "HPS ГРУППЫ") : T("MY HPS", "МОЙ HPS"),
+        MeterDisplayMode.Healing => IsPartyView ? T("PARTY HPS", "HPS ГРУППЫ") : T("MY HPS", "МОЙ HPS"),
         MeterDisplayMode.DamageTaken => T("INCOMING /S", "ВХОДЯЩИЙ /С"),
-        _ => ShowPartyMembers ? T("PARTY DPS", "DPS ГРУППЫ") : T("MY DPS", "МОЙ DPS")
+        _ => IsPartyView ? T("PARTY DPS", "DPS ГРУППЫ") : T("MY DPS", "МОЙ DPS")
     };
     public string SummaryDamageLabel => DisplayMode switch
     {
-        MeterDisplayMode.Healing => ShowPartyMembers ? T("Party healing", "Лечение группы") : T("My healing", "Моё лечение"),
+        MeterDisplayMode.Healing => IsPartyView ? T("Party healing", "Лечение группы") : T("My healing", "Моё лечение"),
         MeterDisplayMode.DamageTaken => T("Damage taken", "Полученный урон"),
-        _ => ShowPartyMembers ? T("Party damage", "Урон группы") : T("My damage", "Мой урон")
+        _ => IsPartyView ? T("Party damage", "Урон группы") : T("My damage", "Мой урон")
     };
     public string TotalAmountLabel => DisplayMode == MeterDisplayMode.Healing ? T("TOTAL HEALING", "ОБЩЕЕ ЛЕЧЕНИЕ") : T("TOTAL DAMAGE", "ОБЩИЙ УРОН");
     public string PerSecondColumnLabel => DisplayMode switch
@@ -333,8 +349,8 @@ public sealed class MeterViewModel : BindableBase, IDisposable
         _ => T("DPS/S", "DPS/С")
     };
     public string AmountColumnLabel => DisplayMode == MeterDisplayMode.Healing ? T("HEALING", "ЛЕЧЕНИЕ") : T("DAMAGE", "УРОН");
-    public string EmptyStateText => NeedsRelog
-        ? T("RELOG TO THE CHARACTER\nTHE METER IS READY TO CAPTURE", "ПЕРЕЗАЙДИТЕ НА ПЕРСОНАЖА\nМЕТР УЖЕ ГОТОВ К ЗАХВАТУ")
+    public string EmptyStateText => IsLocalIdentityPending
+        ? T("RELOG TO YOUR CHARACTER\nWITH THE METER RUNNING", "ПЕРЕЗАЙДИТЕ НА ПЕРСОНАЖА\nС ЗАПУЩЕННЫМ МЕТРОМ")
         : DisplayMode switch
         {
             MeterDisplayMode.Healing => T("NO HEALING DATA", "НЕТ ДАННЫХ ЛЕЧЕНИЯ"),
@@ -427,12 +443,14 @@ public sealed class MeterViewModel : BindableBase, IDisposable
     public string ModeText => BossOnly ? T("BOSS", "БОСС") : T("ALL TARGETS", "ВСЕ ЦЕЛИ");
     public string ModeShortText => BossOnly ? T("BOSS", "БОСС") : T("ALL", "ВСЕ");
     public string ModeTooltip => BossOnly ? T("Bosses only", "Только боссы") : T("All targets", "Все цели");
-    public string ParticipantsModeTooltip => ShowPartyMembers
+    public string ParticipantsModeTooltip => IsLocalIdentityPending
+        ? T("Relog to your character to enable the participant list", "Перезайдите на персонажа, чтобы открыть список участников")
+        : ShowPartyMembers
         ? T("Now: whole party · click to show only yourself", "Сейчас: вся группа · нажмите, чтобы оставить только себя")
         : T("Now: only me · click to show the whole party", "Сейчас: только я · нажмите, чтобы показать всю группу");
     public string DebuffToggleTooltip => ShowTargetDebuffs
-        ? T("Active character debuffs: shown · click to hide", "Дебафы активного персонажа: показываются · нажмите, чтобы скрыть")
-        : T("Active character debuffs: hidden · click to show", "Дебафы активного персонажа: скрыты · нажмите, чтобы показать");
+        ? T("Target debuffs: shown · click to hide", "Дебафы цели: показываются · нажмите, чтобы скрыть")
+        : T("Target debuffs: hidden · click to show", "Дебафы цели: скрыты · нажмите, чтобы показать");
     public string PauseText => IsPaused ? T("RESUME", "ПРОДОЛЖИТЬ") : T("PAUSE", "ПАУЗА");
     public string PauseGlyph => IsPaused ? "▶" : "Ⅱ";
 
@@ -442,12 +460,16 @@ public sealed class MeterViewModel : BindableBase, IDisposable
         bool showTargetDebuffs,
         MeterDisplayMode displayMode,
         bool pvpMode = false,
-        bool keepNotificationsWhenHidden = false)
+        bool keepNotificationsWhenHidden = false,
+        bool showOtherPlayersDebuffs = false,
+        bool usePartyRowStyle = false)
     {
         BossOnly = bossOnly;
         DisplayMode = displayMode;
         ShowPartyMembers = displayMode == MeterDisplayMode.DamageTaken || showPartyMembers;
         ShowTargetDebuffs = showTargetDebuffs;
+        ShowOtherPlayersDebuffs = showOtherPlayersDebuffs;
+        UsePartyRowStyle = usePartyRowStyle;
         IsPvpMode = pvpMode && displayMode == MeterDisplayMode.Damage;
         KeepNotificationsWhenHidden = keepNotificationsWhenHidden;
     }
@@ -580,43 +602,50 @@ public sealed class MeterViewModel : BindableBase, IDisposable
 
     internal void ApplySnapshot(MeterSnapshot snapshot)
     {
+        _latestSnapshot = snapshot;
         IsInCombat = snapshot.IsInCombat;
-        NeedsRelog = !IsDemo &&
+        IsLocalIdentityPending = !IsDemo &&
             (!snapshot.LocalPlayerId.HasValue || string.IsNullOrWhiteSpace(snapshot.LocalPlayerName));
-        TargetName = string.IsNullOrWhiteSpace(snapshot.TargetName)
+        TargetName = IsLocalIdentityPending
+            ? T("Character not detected", "Персонаж не определён")
+            : string.IsNullOrWhiteSpace(snapshot.TargetName)
             ? (IsPvpMode ? T("Player target not detected", "Игрок-цель не найден") : BossOnly ? T("Target not detected", "Цель не определена") : T("All targets", "Все цели"))
             : snapshot.TargetName;
-        TargetFrame = snapshot.TargetFrame;
+        TargetFrame = IsLocalIdentityPending ? TargetFrameKind.Normal : snapshot.TargetFrame;
         if (DisplayMode == MeterDisplayMode.Damage)
         {
-            TargetHpPercent = snapshot.TargetHpPercent ?? 0;
-            TargetHpText = snapshot.TargetHpPercent.HasValue
+            TargetHpPercent = IsLocalIdentityPending ? 0 : snapshot.TargetHpPercent ?? 0;
+            TargetHpText = !IsLocalIdentityPending && snapshot.TargetHpPercent.HasValue
                 ? $"HP {snapshot.TargetHpPercent.Value:0.#}%"
                 : "HP";
             TargetBarBrush = DamageTargetBarBrush;
         }
         else
         {
-            TargetHpPercent = snapshot.Players.Count > 0 ? 100 : 0;
-            TargetHpText = DisplayMode == MeterDisplayMode.Healing
+            TargetHpPercent = !IsLocalIdentityPending && snapshot.Players.Count > 0 ? 100 : 0;
+            TargetHpText = IsLocalIdentityPending ? "HP" : DisplayMode == MeterDisplayMode.Healing
                 ? $"HPS {FormatCompact(snapshot.TotalDps)}"
                 : $"{T("INCOMING", "ВХОДЯЩИЙ")} {FormatCompact(snapshot.TotalDps)}/{T("s", "с")}";
             TargetBarBrush = DisplayMode == MeterDisplayMode.Healing
                 ? HealingTargetBarBrush
                 : DamageTakenTargetBarBrush;
         }
-        BattleTime = FormatDuration(snapshot.BattleTimeMs);
-        _latestEnrageTimer = snapshot.EnrageTimer;
+        BattleTime = IsLocalIdentityPending ? "00:00" : FormatDuration(snapshot.BattleTimeMs);
+        _latestEnrageTimer = IsLocalIdentityPending ? EnrageTimerView.Hidden : snapshot.EnrageTimer;
         RefreshSummary();
 
         if (!IsDemo)
         {
-            if (NeedsRelog)
+            if (IsLocalIdentityPending)
             {
-                StatusText = T("RELOG REQUIRED", "НУЖЕН РЕЛОГ");
-                StatusBrush = DemoBrush;
-                StatusTooltip = T("Return to character selection and log in again so the meter can detect the login packet", "Выйдите к выбору персонажа и войдите снова — метр должен увидеть пакет входа");
-                CaptureText = T($"Npcap · {snapshot.ReceivedPackets:N0} packets · relog to the character", $"Npcap · {snapshot.ReceivedPackets:N0} пакетов · перезайдите на персонажа");
+                StatusText = T("RELOG REQUIRED", "НУЖЕН ПЕРЕЗАХОД");
+                StatusBrush = ReadyBrush;
+                StatusTooltip = T(
+                    "Relog to your character with the meter running. The meter starts a fresh fight when login identifies you.",
+                    "Перезайдите на персонажа с запущенным метром. После определения персонажа метр начнёт новый бой.");
+                CaptureText = T(
+                    $"Npcap · {snapshot.ReceivedPackets:N0} packets · {snapshot.DroppedPackets:N0} dropped",
+                    $"Npcap · {snapshot.ReceivedPackets:N0} пакетов · {snapshot.DroppedPackets:N0} потерь");
             }
             else
             {
@@ -636,7 +665,7 @@ public sealed class MeterViewModel : BindableBase, IDisposable
             ? []
             : IsDemo
                 ? BuildDemoDebuffs()
-                : _runtime?.GetActiveTargetDebuffs() ?? [];
+                : _runtime?.GetActiveTargetDebuffs(ShowOtherPlayersDebuffs) ?? [];
         SyncDebuffs(debuffs);
 
         IReadOnlyList<MeterPetSnapshot> pets = IsDemo
@@ -708,14 +737,14 @@ public sealed class MeterViewModel : BindableBase, IDisposable
         return new MeterPetSnapshot(id, name, family, familyCode, level, maxLevel, bonus, File.Exists(path) ? path : null);
     }
 
-    private void SyncDebuffs(IReadOnlyList<MeterDebuffSnapshot> snapshots)
+    internal void SyncDebuffs(IReadOnlyList<MeterDebuffSnapshot> snapshots)
     {
         KeyedCollectionSynchronizer.Reconcile(
             TargetDebuffs,
             snapshots,
-            snapshot => snapshot.SkillCode,
-            row => row.SkillCode,
-            snapshot => new DebuffTimerViewModel { SkillCode = snapshot.SkillCode },
+            snapshot => (snapshot.OwnerId, snapshot.SkillCode),
+            row => (row.OwnerId, row.SkillCode),
+            snapshot => new DebuffTimerViewModel { SkillCode = snapshot.SkillCode, OwnerId = snapshot.OwnerId },
             (row, snapshot) => row.Update(snapshot, _skillIconService.GetIconPath(snapshot.SkillCode)));
 
         HasTargetDebuffs = TargetDebuffs.Count > 0;
@@ -724,11 +753,18 @@ public sealed class MeterViewModel : BindableBase, IDisposable
     private IReadOnlyList<MeterDebuffSnapshot> BuildDemoDebuffs()
     {
         long cycle = (long)(DateTime.UtcNow - _demoStarted).TotalMilliseconds;
-        return
-        [
+        var debuffs = new List<MeterDebuffSnapshot>
+        {
             new(11100000, "Ослабление защиты", 18_000 - cycle % 18_000, 18_000, 1),
             new(11200000, "Кровотечение", 10_000 - cycle % 10_000, 10_000, 2)
-        ];
+        };
+        if (ShowOtherPlayersDebuffs)
+        {
+            debuffs.Add(new MeterDebuffSnapshot(
+                11100000, "Ослабление защиты", 12_000 - cycle % 12_000, 12_000, 1,
+                102, "Asterion", true));
+        }
+        return debuffs;
     }
 
     private void SyncEventSchedule(MeterEventScheduleSnapshot snapshot)
@@ -811,12 +847,19 @@ public sealed class MeterViewModel : BindableBase, IDisposable
             return;
         }
 
+        if (IsLocalIdentityPending)
+        {
+            Players.Clear();
+            HasPlayers = false;
+            return;
+        }
+
         List<MeterPlayerSnapshot> allPlayers = _latestSnapshot.Players
             .OrderByDescending(player => player.Dps)
             .ThenBy(player => player.Nickname, StringComparer.CurrentCultureIgnoreCase)
             .ToList();
         List<(MeterPlayerSnapshot Player, int Rank)> ordered;
-        if (ShowPartyMembers || DisplayMode == MeterDisplayMode.DamageTaken)
+        if (IsPartyView || DisplayMode == MeterDisplayMode.DamageTaken)
         {
             if (DisplayMode != MeterDisplayMode.DamageTaken && LocalPlayerRowPolicy.NeedsPlaceholder(
                     allPlayers.Select(player => (player.PlayerId, (string?)player.Nickname)),
@@ -871,6 +914,7 @@ public sealed class MeterViewModel : BindableBase, IDisposable
             ? T("Enemy", "Противник")
             : ClassLabel(player.Job);
         row.IconPath = ClassIcon(player.Job);
+        row.PartyIconPath = PartyClassIcon(player.Job);
         row.AccentBrush = ClassBrush(player.Job);
         row.BarPercent = Math.Clamp(player.Dps / maximum * 100.0, 0, 100);
         row.DpsText = FormatCompact(player.Dps) + "/" + T("s", "с");
@@ -890,6 +934,8 @@ public sealed class MeterViewModel : BindableBase, IDisposable
             snapshot.LocalPlayerId,
             snapshot.LocalPlayerName);
         row.Skills = player.Skills;
+        row.Passives = row.IsLocalPlayer ? _runtime?.GetSelectedLocalPassives() ?? [] : [];
+        row.Specialties = row.IsLocalPlayer ? _runtime?.GetSelectedLocalSpecialties() ?? [] : [];
         row.RateLabel = PerSecondColumnLabel;
         row.AmountLabel = AmountColumnLabel;
         row.EmptySkillsText = DisplayMode switch
@@ -907,9 +953,9 @@ public sealed class MeterViewModel : BindableBase, IDisposable
             return;
         }
 
-        double dps = _latestSnapshot.TotalDps;
-        long damage = _latestSnapshot.TotalDamage;
-        if (!ShowPartyMembers && DisplayMode != MeterDisplayMode.DamageTaken)
+        double dps = IsLocalIdentityPending ? 0 : _latestSnapshot.TotalDps;
+        long damage = IsLocalIdentityPending ? 0 : _latestSnapshot.TotalDamage;
+        if (IsSelfView && DisplayMode != MeterDisplayMode.DamageTaken)
         {
             MeterPlayerSnapshot? localPlayer = _latestSnapshot.Players.FirstOrDefault(player =>
                 LocalPlayerRowPolicy.IsLocalPlayer(
@@ -1087,9 +1133,9 @@ public sealed class MeterViewModel : BindableBase, IDisposable
             double share = dps / totalDps * 100.0;
             IReadOnlyList<MeterSkillSnapshot> skills =
             [
-                new(10101, "Теневой удар", dps * 0.42, (long)(dps * seconds * 0.42), 42, 38, 55.3, 64.0, 8.0, 12.0, dps * seconds * 0.42 / 38, (long)(dps * 2.8)),
-                new(10102, "Клеймо убийцы", dps * 0.34, (long)(dps * seconds * 0.34), 34, 27, 44.4, 51.8, 0, 7.4, dps * seconds * 0.34 / 27, (long)(dps * 2.1)),
-                new(10103, "Ядовитый клинок", dps * 0.24, (long)(dps * seconds * 0.24), 24, 31, 32.3, 38.7, 0, 0, dps * seconds * 0.24 / 31, (long)(dps * 1.4))
+                new(10101, "Теневой удар", dps * 0.42, (long)(dps * seconds * 0.42), 42, 38, 55.3, 64.0, 8.0, 12.0, dps * seconds * 0.42 / 38, (long)(dps * 2.8), (long)(dps * 0.3), 38, 0, (long)(dps * seconds * 0.42), 0, true),
+                new(10102, "Клеймо убийцы", dps * 0.34, (long)(dps * seconds * 0.34), 34, 27, 44.4, 51.8, 0, 7.4, dps * seconds * 0.34 / 27, (long)(dps * 2.1), (long)(dps * 0.2), 27, 0, (long)(dps * seconds * 0.34), 0, true),
+                new(10103, "Ядовитый клинок", dps * 0.24, (long)(dps * seconds * 0.24), 24, 31, 32.3, 38.7, 0, 0, dps * seconds * 0.24 / 31, (long)(dps * 1.4), (long)(dps * 0.1), 31, 0, (long)(dps * seconds * 0.24), 0, true)
             ];
             return new MeterPlayerSnapshot(
                 item.Item1,
@@ -1258,6 +1304,10 @@ public sealed class MeterViewModel : BindableBase, IDisposable
         }
         return Path.Combine(AppContext.BaseDirectory, "data", "textures", "classes", job + ".png");
     }
+
+    private static string? PartyClassIcon(JobClass job) => job == JobClass.Unknown
+        ? null
+        : Path.Combine(AppContext.BaseDirectory, "data", "textures", "party", "classes", job + ".png");
 
     private static Brush ClassBrush(JobClass job) =>
         ClassBrushes.TryGetValue(job, out Brush? brush) ? brush : UnknownClassBrush;

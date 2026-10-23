@@ -37,9 +37,22 @@
     <Window.Resources>
         <SolidColorBrush x:Key="PanelBackground" Color="#FF20262B" />
         <SolidColorBrush x:Key="PanelHeader" Color="#FF23292D" />
+        <SolidColorBrush x:Key="PartyPanelBackground" Color="#A0192228" />
+        <SolidColorBrush x:Key="PartyPanelHeader" Color="#B51B2429" />
         <SolidColorBrush x:Key="DarkStrip" Color="#66000000" />
         <SolidColorBrush x:Key="PanelBorder" Color="#FF646A6D" />
         <SolidColorBrush x:Key="SoftLine" Color="#19FFFFFF" />
+        <Style x:Key="AdaptivePanelHeader" TargetType="Border">
+            <Setter Property="Background" Value="{DynamicResource PanelHeader}" />
+            <Setter Property="BorderBrush" Value="{StaticResource SoftLine}" />
+            <Setter Property="BorderThickness" Value="0,0,0,1" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding UsePartyRowStyle}" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource PartyPanelHeader}" />
+                    <Setter Property="BorderBrush" Value="Transparent" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
         <SolidColorBrush x:Key="MeterFill" Color="#FF27797C" />
         <!-- Exact monster target HP tint from HUD_TargetInfo.P_Prg_HpBar. -->
         <SolidColorBrush x:Key="TargetHpFill" Color="#FFF0314C" />
@@ -144,6 +157,8 @@
                     ToolTip="{Binding Name}">
                 <Grid ClipToBounds="True">
                     <Image Source="{Binding IconPath}" Margin="1" Stretch="UniformToFill" />
+                    <Ellipse Width="5" Height="5" Margin="3" HorizontalAlignment="Left" VerticalAlignment="Top"
+                             Fill="#FF83DAE8" Visibility="{Binding IsOtherPlayer, Converter={StaticResource BoolToVisibility}}" />
                     <Border VerticalAlignment="Bottom" Background="#DC171D22" Height="12">
                         <TextBlock Text="{Binding RemainingText}" HorizontalAlignment="Center"
                                    FontFamily="{StaticResource AionFont}" FontSize="9" FontWeight="Bold" Foreground="#FFF4E8D1" />
@@ -358,7 +373,20 @@
     </Window.Resources>
 
     <Grid>
-    <Border x:Name="RootFrame" Margin="2" Background="{StaticResource PanelBackground}" BorderBrush="{StaticResource PanelBorder}" BorderThickness="1">
+    <Border x:Name="RootFrame" Margin="2">
+        <Border.Style>
+            <Style TargetType="Border">
+                <Setter Property="Background" Value="{DynamicResource PanelBackground}" />
+                <Setter Property="BorderBrush" Value="{StaticResource PanelBorder}" />
+                <Setter Property="BorderThickness" Value="1" />
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding UsePartyRowStyle}" Value="True">
+                        <Setter Property="Background" Value="{DynamicResource PartyPanelBackground}" />
+                        <Setter Property="BorderThickness" Value="0" />
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+        </Border.Style>
         <Grid>
             <!-- Полный режим -->
             <Grid x:Name="DetailedLayout">
@@ -371,7 +399,7 @@
                     <RowDefinition Height="42" />
                 </Grid.RowDefinitions>
 
-                <Border Grid.Row="0" Background="{StaticResource PanelHeader}" BorderBrush="{StaticResource SoftLine}" BorderThickness="0,0,0,1">
+                <Border Grid.Row="0" Style="{StaticResource AdaptivePanelHeader}">
                     <Grid Margin="13,0,8,0" Background="Transparent" MouseLeftButtonDown="DragRegion_MouseLeftButtonDown">
                         <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
@@ -555,7 +583,8 @@
                     </Grid>
                 </Border>
 
-                <Grid Grid.Row="3" Margin="10,0,12,0">
+                <Grid Grid.Row="3" Margin="10,0,12,0"
+                      Visibility="{Binding UsePartyRowStyle, Converter={StaticResource InverseBoolToVisibility}}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="30" /><ColumnDefinition Width="34" /><ColumnDefinition Width="*" />
                         <ColumnDefinition Width="74" /><ColumnDefinition Width="82" /><ColumnDefinition Width="92" /><ColumnDefinition Width="58" />
@@ -567,8 +596,23 @@
                     <TextBlock Grid.Column="6" Style="{StaticResource ColumnLabel}" Text="{services:LocalizedText Share}" HorizontalAlignment="Right" />
                 </Grid>
 
+                <Grid Grid.Row="3" Margin="14,0"
+                      Visibility="{Binding UsePartyRowStyle, Converter={StaticResource BoolToVisibility}}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="{Binding ParticipantsHeader}" Style="{StaticResource ColumnLabel}" />
+                    <TextBlock Grid.Column="1" Text="{Binding PerSecondColumnLabel}" Margin="0,0,15,0"
+                               Style="{StaticResource ColumnLabel}" />
+                    <TextBlock Grid.Column="2" Text="{Binding AmountColumnLabel}"
+                               Style="{StaticResource ColumnLabel}" />
+                </Grid>
+
                 <Grid Grid.Row="4" Margin="9,0,9,0">
-                        <ItemsControl ItemsSource="{Binding Players}">
+                        <ItemsControl ItemsSource="{Binding Players}"
+                                      Visibility="{Binding UsePartyRowStyle, Converter={StaticResource InverseBoolToVisibility}}">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate><controls:SmoothStackPanel /></ItemsPanelTemplate>
                             </ItemsControl.ItemsPanel>
@@ -648,6 +692,18 @@
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
 
+                    <ItemsControl ItemsSource="{Binding Players}"
+                                  Visibility="{Binding UsePartyRowStyle, Converter={StaticResource BoolToVisibility}}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate><controls:SmoothStackPanel /></ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <controls:PartyDamageRow Height="48" Margin="0,0,0,3" Cursor="Hand"
+                                                         MouseLeftButtonDown="PlayerRow_MouseLeftButtonDown" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
                     <StackPanel Visibility="{Binding HasPlayers, Converter={StaticResource InverseBoolToVisibility}}" HorizontalAlignment="Center" VerticalAlignment="Center">
                         <TextBlock Text="{services:LocalizedText NoCombatData}" HorizontalAlignment="Center" FontSize="13" FontWeight="Bold" Foreground="#FF9AA2A7" />
                         <TextBlock Text="{services:LocalizedText NoCombatHint}" Margin="0,6,0,0" HorizontalAlignment="Center" FontSize="10" Foreground="#FF717B81" />
@@ -674,7 +730,7 @@
                     <RowDefinition Height="*" /><RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
 
-                <Border Grid.Row="0" Background="{StaticResource PanelHeader}" BorderBrush="{StaticResource SoftLine}" BorderThickness="0,0,0,1">
+                <Border Grid.Row="0" Style="{StaticResource AdaptivePanelHeader}">
                     <Grid Margin="13,0,7,0" Background="Transparent" MouseLeftButtonDown="DragRegion_MouseLeftButtonDown">
                         <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
@@ -775,7 +831,7 @@
                     </Button>
                 </Grid>
 
-                <Border Grid.Row="2" Background="{StaticResource PanelBackground}" BorderBrush="{StaticResource SoftLine}" BorderThickness="0,1,0,1">
+                <Border Grid.Row="2" Background="{DynamicResource PanelBackground}" BorderBrush="{StaticResource SoftLine}" BorderThickness="0,1,0,1">
                     <Grid Margin="7,4,7,5">
                         <Grid.RowDefinitions><RowDefinition Height="24" /><RowDefinition Height="35" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
 
@@ -866,7 +922,8 @@
                 </Border>
 
                 <Grid Grid.Row="3" Margin="6,0,6,0">
-                        <ItemsControl ItemsSource="{Binding Players}">
+                        <ItemsControl ItemsSource="{Binding Players}"
+                                      Visibility="{Binding UsePartyRowStyle, Converter={StaticResource InverseBoolToVisibility}}">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate><controls:SmoothStackPanel /></ItemsPanelTemplate>
                             </ItemsControl.ItemsPanel>
@@ -942,6 +999,18 @@
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
+                    <ItemsControl ItemsSource="{Binding Players}"
+                                  Visibility="{Binding UsePartyRowStyle, Converter={StaticResource BoolToVisibility}}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate><controls:SmoothStackPanel /></ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <controls:PartyDamageRow Height="38" Margin="0,0,0,2" Cursor="Hand"
+                                                         MouseLeftButtonDown="PlayerRow_MouseLeftButtonDown" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
                     <TextBlock Visibility="{Binding HasPlayers, Converter={StaticResource InverseBoolToVisibility}}" Text="{Binding EmptyStateText}" TextAlignment="Center" TextWrapping="Wrap" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="11" FontWeight="Bold" Foreground="#FFB7A66F" />
                 </Grid>
 

@@ -1,0 +1,1945 @@
+{
+  "_meta": {
+    "source": "AION 2 skill-specialty descriptions, cross-checked against https://aion2.app/ru/db/skills/{skillId} and https://github.com/265ada/aion2-macros/blob/main/data/descriptions.json",
+    "captured": "2026-10-21",
+    "scope": "Five selectable options for supported mastery skills; other skills fall back to option numbers."
+  },
+  "skills": {
+    "11010000": [
+      {
+        "en": "-20% MP consumed",
+        "ru": "Затрата ОМ -20%"
+      },
+      {
+        "en": "+200 Block while using skill",
+        "ru": "Блок +200 во время использования умения"
+      },
+      {
+        "en": "Changes to mobile skill",
+        "ru": "Замена на умение с возможностью перемещения"
+      },
+      {
+        "en": "Deals up to 12% more damage when less targets are hit",
+        "ru": "Чем меньше целей попадания, тем больше увеличение урона (макс. до 12%)"
+      },
+      {
+        "en": "Restores 50 MP on landing a Critical Hit",
+        "ru": "Восстановление 50 ОМ при попадании крит. ударом"
+      }
+    ],
+    "11020000": [
+      {
+        "en": "+20% MP restored",
+        "ru": "Восстановление ОМ +20%"
+      },
+      {
+        "en": "Absorbs 1% HP",
+        "ru": "Поглощение 1% ОЗ"
+      },
+      {
+        "en": "+50% Multi-Hit on hit",
+        "ru": "Шанс мультиудара +50% при попадании"
+      },
+      {
+        "en": "-1s [Ruinous Blow] cooldown on hit",
+        "ru": "Время перезарядки [Резни] -1с при попадании"
+      },
+      {
+        "en": "Adds [Reckless Strike] Chain Skill",
+        "ru": "Добавление 4-ой комбинации [Безрассудный удар]"
+      }
+    ],
+    "11050000": [
+      {
+        "en": "Absorbs 2% HP",
+        "ru": "Поглощение 2% ОЗ"
+      },
+      {
+        "en": "Restores 50 MP on landing a Critical Hit",
+        "ru": "Восстановление 50 ОМ при попадании крит. ударом"
+      },
+      {
+        "en": "Up to +20% damage when more targets hit",
+        "ru": "Чем больше целей попадания, тем больше увеличение урона (макс. до 20%)"
+      },
+      {
+        "en": "Resets cooldown on landing a Critical Hit",
+        "ru": "Завершение перезарядки при попадании крит. ударом"
+      },
+      {
+        "en": "50% chance to pull",
+        "ru": "Шанс 50% притянуть"
+      }
+    ],
+    "11100000": [
+      {
+        "en": "+20% Skill Speed",
+        "ru": "СКР умений +20%"
+      },
+      {
+        "en": "+12.5m Range",
+        "ru": "Дальность атаки +12,5 м"
+      },
+      {
+        "en": "+30% Skill Critical Hit",
+        "ru": "Крит. удар от умения +30%"
+      },
+      {
+        "en": "Extra damage on hit",
+        "ru": "Доп. урон при попадании"
+      },
+      {
+        "en": "Ignores Block and Evasion and lands as Multi-Hit",
+        "ru": "Игнорирование блока и УКЛ, попадание мультиударом"
+      }
+    ],
+    "11170000": [
+      {
+        "en": "Absorbs 0.7% HP",
+        "ru": "Поглощение 0.7% ОЗ"
+      },
+      {
+        "en": "Changes to AoE Skill",
+        "ru": "Смена на массовое умение"
+      },
+      {
+        "en": "Adds [Upward Strike] Chain Skill",
+        "ru": "Добавление 2-ой комбинации [Апперкот]"
+      },
+      {
+        "en": "Critical Hit on hit",
+        "ru": "Гарантир. крит. удар при попадании"
+      },
+      {
+        "en": "Remove cooldown",
+        "ru": "Удаление перезарядки [Нисходящего колющего удара]"
+      }
+    ],
+    "11190000": [
+      {
+        "en": "Prepare for Battle effect on the caster for 3s",
+        "ru": "Эффект «Боевая готовность» на 3с"
+      },
+      {
+        "en": "50% chance to trigger [Ankle Slice] on hit",
+        "ru": "Шанс 50% активировать [Подсечка] при попадании [Ударом в прыжке]"
+      },
+      {
+        "en": "Resets cooldown on defeating an enemy",
+        "ru": "Завершение перезарядки [Удара в прыжке] при уничтожении врага"
+      },
+      {
+        "en": "+20% PvE Damage Tolerance and +10 PvP Damage Tolerance for 3s",
+        "ru": "Стойкость к урону в PvE +20%, стойкость к урону в PvP +10% на 3с"
+      },
+      {
+        "en": "Changes to AoE skill and pulls in enemies",
+        "ru": "Смена на массовое умение и притягивание"
+      }
+    ],
+    "11200000": [
+      {
+        "en": "30% chance to inflict Knockdown for 3s on landing [Ankle Slice]",
+        "ru": "Шанс 30% сбить с ног [Подсечкой] на 3 сек."
+      },
+      {
+        "en": "Adds [Ankle Smash] Chain Skill",
+        "ru": "Добавление 2-ой комбинации [Пробитие лодыжки]"
+      },
+      {
+        "en": "+16m [Ankle Slice] range",
+        "ru": "Дальность атаки [Подсечки] +16 м"
+      },
+      {
+        "en": "Ignores Block and Evasion and lands as Multi-Hit",
+        "ru": "Игнорирование блока и УКЛ, попадание мультиударом"
+      },
+      {
+        "en": "25% chance to reset [Ankle Slice] cooldown on Block",
+        "ru": "Шанс 25% сбросить перезарядку [Подсечки] при успешном блоке"
+      }
+    ],
+    "11280000": [
+      {
+        "en": "Absorbs 5% HP",
+        "ru": "Поглощение 5% ОЗ"
+      },
+      {
+        "en": "Restores 120 MP",
+        "ru": "Восстановление 120 ОМ"
+      },
+      {
+        "en": "Changes to mobile skill",
+        "ru": "Замена на умение с возможностью перемещения"
+      },
+      {
+        "en": "Multi-Hit on hit",
+        "ru": "Гарантир. мультиудар при попадании"
+      },
+      {
+        "en": "-1s all skill cooldowns on hit",
+        "ru": "Перезарядка всех умений -1с при попадании"
+      }
+    ],
+    "11290000": [
+      {
+        "en": "Absorbs 4% HP, absorbs 15% HP of target with Incapacitated Immunity",
+        "ru": "Поглощение 4% ОЗ, поглощение 15% ОЗ у целей с иммунитетом к обездвиживанию"
+      },
+      {
+        "en": "Changes to AoE damage on down strike",
+        "ru": "Смена на урон по области во время нисходящего удара"
+      },
+      {
+        "en": "Adds 2 additional strikes",
+        "ru": "Доп. атака 2 раза"
+      },
+      {
+        "en": "+1s Knockdown duration",
+        "ru": "Длительность Сбивания с ног +1 сек."
+      },
+      {
+        "en": "Ignores Block and Evasion and lands as Multi-Hit",
+        "ru": "Игнорирование блока и УКЛ, попадание мультиударом"
+      }
+    ],
+    "11300000": [
+      {
+        "en": "Multi-Hit on hit",
+        "ru": "Гарантир. мультиудар при попадании"
+      },
+      {
+        "en": "+25% [Aerial Snare] Airborne Chance",
+        "ru": "Шанс Воздушных оков от [Воздушных пут] +25%"
+      },
+      {
+        "en": "+100% damage to targets with Incapacitated Immunity",
+        "ru": "+100% к урону по целям с иммунитетом к обездвиживанию"
+      },
+      {
+        "en": "Adds [Forced Fall] Chain Skill",
+        "ru": "Добавление 2-ой комбинации [Принудительное падение]"
+      },
+      {
+        "en": "-50% [Aerial Snare] cooldown",
+        "ru": "Перезарядка [Воздушных пут] -50%"
+      }
+    ],
+    "11360000": [
+      {
+        "en": "Restores 300 Stamina on hit",
+        "ru": "Восстановление 300 ОД при попадании"
+      },
+      {
+        "en": "+10m Range",
+        "ru": "Дальность атаки +10 м"
+      },
+      {
+        "en": "Changes to Charge Skill and deals AoE damage",
+        "ru": "Умение становится заряжаемым и наносит урон по области"
+      },
+      {
+        "en": "-10s cooldown",
+        "ru": "Перезарядка [Удара с рывком] -10 сек."
+      },
+      {
+        "en": "+25% Knockdown Chance",
+        "ru": "Шанс сбить с ног +25%"
+      }
+    ],
+    "12010000": [
+      {
+        "en": "+20% MP restored",
+        "ru": "Восстановление ОМ +20%"
+      },
+      {
+        "en": "Absorbs 1% HP",
+        "ru": "Поглощение 1% ОЗ"
+      },
+      {
+        "en": "+50% Multi-Hit on hit",
+        "ru": "Шанс мультиудара +50% при попадании"
+      },
+      {
+        "en": "-2s [Warding Strike] cooldown on hit",
+        "ru": "Перезарядка [Кары хранителя] -2с при попадании"
+      },
+      {
+        "en": "Adds [Threatening Blow] Chain Skill",
+        "ru": "Добавление 4-ой комбинации [Ожесточенный удар угрозы]"
+      }
+    ],
+    "12040000": [
+      {
+        "en": "-20% MP consumed",
+        "ru": "Затрата ОМ -20%"
+      },
+      {
+        "en": "[Punishing Strike] absorbs 3% HP",
+        "ru": "Поглощение 3% ОЗ от [Удар возмездия]"
+      },
+      {
+        "en": "Deals up to 12% more damage when less targets are hit",
+        "ru": "Чем меньше целей попадания, тем больше увелич. урона (макс. до 12%)"
+      },
+      {
+        "en": "-1s [Punishment] cooldown on hit",
+        "ru": "Перезарядка [Кары] -1с при попадании [Ударом укора]"
+      },
+      {
+        "en": "[Punishing Strike] deals extra damage on hit",
+        "ru": "[Удар возмездия] срабатывает еще раз"
+      }
+    ],
+    "12090000": [
+      {
+        "en": "Absorbs 10% HP",
+        "ru": "Поглощение 10% ОЗ"
+      },
+      {
+        "en": "Inflicts Damage over Time to target on hit",
+        "ru": "Нанесение постоянного урона цели при попадании"
+      },
+      {
+        "en": "+30% Skill Speed",
+        "ru": "СКР умений +30%"
+      },
+      {
+        "en": "Changes to mobile skill",
+        "ru": "Замена на умение с возможностью перемещения"
+      },
+      {
+        "en": "Ignores Block and Evasion and lands as a Critical Hit",
+        "ru": "Крит. удар, несмотря на блок и уклонение"
+      }
+    ],
+    "12100000": [
+      {
+        "en": "+1s Stun duration",
+        "ru": "Длительность Оглушения +1 сек."
+      },
+      {
+        "en": "Removes MP Cost and restores 200 MP on hit",
+        "ru": "Удаление затраты ОМ, восстановление 200 ОМ при попадании"
+      },
+      {
+        "en": "50% chance to trigger [Debilitating Smash] on hit",
+        "ru": "Шанс 50% активировать [Удар изнеможения] при попадании"
+      },
+      {
+        "en": "-2s cooldown",
+        "ru": "Перезарядка -2 сек."
+      },
+      {
+        "en": "AoE Stun",
+        "ru": "Оглушение по области"
+      }
+    ],
+    "12130000": [
+      {
+        "en": "Moves to the target if target has Incapacitated Immunity",
+        "ru": "Перемещение к цели при наличии у нее иммунитета к обездвиживанию"
+      },
+      {
+        "en": "-20% Status Effect Resist for 5s on hit",
+        "ru": "-20% к сопротивлению негат. эффектам на 5с при попадании"
+      },
+      {
+        "en": "Resets cooldown on defeating an enemy",
+        "ru": "Завершение перезарядки при уничтожении врага"
+      },
+      {
+        "en": "10% Max HP Protective Shield",
+        "ru": "Создание защитной оболочки, равной 10% от макс. ОЗ"
+      },
+      {
+        "en": "50% chance to Stun for 3s",
+        "ru": "50% шанс наложить Оглушение на 3с"
+      }
+    ],
+    "12240000": [
+      {
+        "en": "Absorbs 1% HP",
+        "ru": "Поглощение 1% ОЗ"
+      },
+      {
+        "en": "Deals extra damage on attacking a target afflicted with Impact-type status",
+        "ru": "Доп. урон при атаке цели под воздействием шок. эффектов"
+      },
+      {
+        "en": "Extra damage on hit",
+        "ru": "Доп. урон при попадании"
+      },
+      {
+        "en": "Critical Hit on hit",
+        "ru": "Гарантир. крит. удар при попадании"
+      },
+      {
+        "en": "Remove cooldown",
+        "ru": "Удаление перезарядки [Суда]"
+      }
+    ],
+    "12270000": [
+      {
+        "en": "30% chance to inflict Stun for 3s",
+        "ru": "Шанс 30% оглушить на 3с"
+      },
+      {
+        "en": "+3s Debilitate duration",
+        "ru": "Длительность Изнеможения +3 сек."
+      },
+      {
+        "en": "-60% Incoming Heal during Debilitate",
+        "ru": "Получ. исцеление -60% при истощении"
+      },
+      {
+        "en": "Ignores Block and Evasion and lands as Multi-Hit",
+        "ru": "Игнорирование блока и УКЛ, попадание мультиударом"
+      },
+      {
+        "en": "25% chance to reset cooldown on Block",
+        "ru": "Шанс 25% сбросить время перезарядки при успешном блоке"
+      }
+    ],
+    "12300000": [
+      {
+        "en": "+50% Multi-Hit on hit",
+        "ru": "Шанс мультиудара +50% при попадании"
+      },
+      {
+        "en": "+20% Knockdown Chance",
+        "ru": "Шанс сбить с ног +20%"
+      },
+      {
+        "en": "+100% damage to targets with Incapacitated Immunity",
+        "ru": "+100% к урону по целям с иммунитетом к обездвиживанию"
+      },
+      {
+        "en": "-10s cooldown",
+        "ru": "Перезарядка -10 сек."
+      },
+      {
+        "en": "Changes to AoE Skill",
+        "ru": "Смена на массовое умение"
+      }
+    ],
+    "12340000": [
+      {
+        "en": "Absorbs 5% HP",
+        "ru": "Поглощение 5% ОЗ"
+      },
+      {
+        "en": "Restores 120 MP on hit",
+        "ru": "Восстановление 120 ОМ при попадании"
+      },
+      {
+        "en": "Changes to mobile skill",
+        "ru": "Замена на умение с возможностью перемещения"
+      },
+      {
+        "en": "Multi-Hit on hit",
+        "ru": "Гарантир. мультиудар при попадании"
+      },
+      {
+        "en": "-1s all cooldowns on hit",
+        "ru": "Перезарядка всех умений -1с при попадании"
+      }
+    ],
+    "12350000": [
+      {
+        "en": "-5s cooldown",
+        "ru": "Перезарядка -5 сек."
+      },
+      {
+        "en": "+100 Block during Warding",
+        "ru": "Блок +100 во время Протекции"
+      },
+      {
+        "en": "Heal over Time during Warding",
+        "ru": "Эффект продолжительного восстановления во время Протекции"
+      },
+      {
+        "en": "Adds PvE Damage Tolerance and PvP Damage Tolerance increase effect when more targets hit to Warding",
+        "ru": "Чем больше целей попадания, тем больше увеличение эффекта стойкости к урону в PvE и стойкости к урону PvP от Протекции"
+      },
+      {
+        "en": "+10% PvE Damage Tolerance and +5% PvP Damage Tolerance to party members on skill use",
+        "ru": "Стойкость к урону в PvE участников группы +10%, стойкость к урону в PvP участников группы +5% при использовании умения"
+      }
+    ],
+    "12430000": [
+      {
+        "en": "Restores 300 Stamina on hit",
+        "ru": "Восстанавливает 300 ОД при попадании"
+      },
+      {
+        "en": "+10m Range",
+        "ru": "Дальность атаки +10 м"
+      },
+      {
+        "en": "Changes to Charge Skill and deals AoE damage",
+        "ru": "Умение становится заряжаемым и наносит урон по области"
+      },
+      {
+        "en": "-10s cooldown",
+        "ru": "Перезарядка -10 сек."
+      },
+      {
+        "en": "+25% Stun Chance",
+        "ru": "Шанс Оглушения +25%"
+      }
+    ],
+    "13010000": [
+      {
+        "en": "+20% MP restored",
+        "ru": "Восстановление ОМ +20%"
+      },
+      {
+        "en": "Absorbs 0.7% HP",
+        "ru": "Поглощение 0.7% ОЗ"
+      },
+      {
+        "en": "+50% Multi-Hit on hit",
+        "ru": "Шанс мультиудара +50% при попадании"
+      },
+      {
+        "en": "-1s [Insignia Explosion] cooldown on hit",
+        "ru": "Перезарядка [Взрыва эмблемы] -1с при попадании"
+      },
+      {
+        "en": "Ignores Block and Evasion and lands as a Critical Hit",
+        "ru": "Крит. удар, несмотря на блок и уклонение"
+      }
+    ],
+    "13050000": [
+      {
+        "en": "+2s Blind duration",
+        "ru": "Длительность Слепоты +2 сек."
+      },
+      {
+        "en": "+6m Range",
+        "ru": "Дальность атаки +6 м"
+      },
+      {
+        "en": "Up to +20% damage when more targets hit",
+        "ru": "Чем больше целей попадания, тем больше увеличение урона (макс. до 20%)"
+      },
+      {
+        "en": "+1 consecutive use",
+        "ru": "Непрерывное использование +1 раз"
+      },
+      {
+        "en": "50% chance to rotate and inflict Stun for 3s on hitting a target afflicted with Blind",
+        "ru": "Шанс 50% развернуть и оглушить на 3с при попадании по ослепленной цели"
+      }
+    ],
+    "13060000": [
+      {
+        "en": "Engraves 2 Insignias for 10s on landing as a Back attack",
+        "ru": "Привязка 2 эмблем на 10с при попадании с тыла"
+      },
+      {
+        "en": "Absorbs 3% HP",
+        "ru": "Поглощение 3% ОЗ"
+      },
+      {
+        "en": "Breaks Protective Shields on hit",
+        "ru": "Разрушение защитной оболочки при попадании"
+      },
+      {
+        "en": "50% chance to trigger [Whirlwind Slice] on hit",
+        "ru": "Шанс 50% активировать [Удар торнадо] при попадании"
+      },
+      {
+        "en": "+2 consecutive uses",
+        "ru": "Непрерывное использование +2 р."
+      }
+    ],
+    "13070000": [
+      {
+        "en": "+1s Stun duration",
+        "ru": "Длительность Оглушения +1 сек."
+      },
+      {
+        "en": "+20% caster Critical Damage Boost for 10s on hit",
+        "ru": "Увеличение крит. урона +20% на 5с при попадании"
+      },
+      {
+        "en": "50% chance to inflict Seal for 5s on hit",
+        "ru": "Шанс 50% наложить Запечатывание на 5с при попадании"
+      },
+      {
+        "en": "50% chance to inflict Root for 5s on hit",
+        "ru": "Шанс 50% взять врага в плен на 5с при попадании"
+      },
+      {
+        "en": "Changes to AoE Skill",
+        "ru": "Смена на массовое умение"
+      }
+    ],
+    "13100000": [
+      {
+        "en": "-20% MP consumed",
+        "ru": "Затрата ОМ -20%"
+      },
+      {
+        "en": "+20% Skill Speed",
+        "ru": "СКР умений +20%"
+      },
+      {
+        "en": "Deals up to 12% more damage when less targets are hit",
+        "ru": "Чем меньше целей попадания, тем больше увеличение урона (макс. до 12%)"
+      },
+      {
+        "en": "-1s [Shadowstrike] cooldown on hit",
+        "ru": "Перезарядка [Убийцы из сумрака] -1с при попадании"
+      },
+      {
+        "en": "Pulls nearby targets on using [Savage Smash]",
+        "ru": "Притягивание целей поблизости при использовании [Хлестания хищника]"
+      }
+    ],
+    "13130000": [
+      {
+        "en": "Adds rotate effect",
+        "ru": "Добавление эффекта вращения"
+      },
+      {
+        "en": "+50% Multi-Hit on hit",
+        "ru": "Шанс мультиудара +50% при попадании"
+      },
+      {
+        "en": "Keep 2 stacks of Insignias after [Insignia Explosion]",
+        "ru": "Сохранение привязки 2 эмблем после [Взрыва эмблемы]"
+      },
+      {
+        "en": "+1s Stun duration",
+        "ru": "Длительность Оглушения +1 сек."
+      },
+      {
+        "en": "-3s cooldown",
+        "ru": "Перезарядка -3 сек."
+      }
+    ],
+    "13210000": [
+      {
+        "en": "+50% Multi-Hit on hit",
+        "ru": "Шанс мультиудара +50% при попадании"
+      },
+      {
+        "en": "Changes to AoE damage",
+        "ru": "Смена на урон по области"
+      },
+      {
+        "en": "+16m range",
+        "ru": "Дальность атаки +16 м"
+      },
+      {
+        "en": "+20% Stun Chance",
+        "ru": "Шанс Оглушения +20%"
+      },
+      {
+        "en": "25% chance to reset [Whirlwind Slice] cooldown on Evasion",
+        "ru": "Шанс 25% сбросить время перезарядки [Удара торнадо] при успешном уклонении"
+      }
+    ],
+    "13220000": [
+      {
+        "en": "Absorbs 10% HP",
+        "ru": "Поглощение 10% ОЗ"
+      },
+      {
+        "en": "Engraves 3 Insignias for 10s on hit",
+        "ru": "Привязка 3 эмблем на 10с при попадании"
+      },
+      {
+        "en": "-5s cooldown",
+        "ru": "Перезарядка -5 сек."
+      },
+      {
+        "en": "+1s Knockdown duration",
+        "ru": "Длительность Сбивания с ног +1 сек."
+      },
+      {
+        "en": "Can be used on targets afflicted with Blind",
+        "ru": "Можно использовать на ослепленной цели"
+      }
+    ],
+    "13340000": [
+      {
+        "en": "Absorbs 5% HP",
+        "ru": "Поглощение 5% ОЗ"
+      },
+      {
+        "en": "Restores 120 MP on hit",
+        "ru": "Восстановление 120 ОМ при попадании"
+      },
+      {
+        "en": "Changes to mobile skill",
+        "ru": "Замена на умение с возможностью перемещения"
+      },
+      {
+        "en": "Multi-Hit on hit",
+        "ru": "Гарантир. мультиудар при попадании"
+      },
+      {
+        "en": "-1s all skill cooldowns on hit",
+        "ru": "Перезарядка всех умений -1с при попадании"
+      }
+    ],
+    "13350000": [
+      {
+        "en": "Absorbs 0.7% HP",
+        "ru": "Поглощение 0.7% ОЗ"
+      },
+      {
+        "en": "Engraves 1 Insignia for 10s on hit",
+        "ru": "Привязка 1 эмблемы на 10с при попадании"
+      },
+      {
+        "en": "Up to +20% Critical Hit when less targets hit",
+        "ru": "Чем меньше целей попадания, тем больше увеличение шанса крит. удара (макс. до 20%)"
+      },
+      {
+        "en": "Multi-Hit on hit",
+        "ru": "Гарантир. мультиудар при попадании"
+      },
+      {
+        "en": "Resets [Heart Gore] cooldown on landing a Critical Hit",
+        "ru": "Завершение перезарядки [Пронзания сердца] при попадании крит. ударом"
+      }
+    ],
+    "13360000": [
+      {
+        "en": "Restores 300 Stamina on landing [Infiltrate]",
+        "ru": "Восстановление 300 ОД при попадании [Вторжением]"
+      },
+      {
+        "en": "+10m [Infiltrate] range",
+        "ru": "Дальность атаки [Вторжения] +10 м"
+      },
+      {
+        "en": "Breaks Protective Shields on landing [Infiltrate]",
+        "ru": "Разрушение защитной оболочки при попадании [Вторжением]"
+      },
+      {
+        "en": "Adds [Dark Strike] Chain Skill",
+        "ru": "Добавление 2-ой комбинации [Скрытная атака]"
+      },
+      {
+        "en": "+20% [Infiltrate] Blind Chance",
+        "ru": "Шанс Ослепления от [Вторжения] +20%"
+      }
+    ],
+    "14010000": [
+      {
+        "en": "Removes MP consumed",
+        "ru": "Удаление затраты ОМ"
+      },
+      {
+        "en": "+30% Skill Speed",
+        "ru": "СКР умений +30%"
+      },
+      {
+        "en": "Changes to mobile skill",
+        "ru": "Замена на умение с возможностью перемещения"
+      },
+      {
+        "en": "Ignores Block and Evasion and lands as Multi-Hit",
+        "ru": "Игнорирование блока и УКЛ, попадание мультиударом"
+      },
+      {
+        "en": "[Deadshot] grants extra damage on hit",
+        "ru": "[Прицельный выстрел] Доп. урон при попадании"
+      }
+    ],
+    "14020000": [
+      {
+        "en": "+20% MP restored",
+        "ru": "Восстановление ОМ +20%"
+      },
+      {
+        "en": "Absorbs 0.7% HP",
+        "ru": "Поглощение 0.7% ОЗ"
+      },
+      {
+        "en": "+50% Multi-Hit on hit",
+        "ru": "Шанс мультиудара +50% при попадании"
+      },
+      {
+        "en": "-1s [Deadshot] cooldown on hit",
+        "ru": "Перезарядка [Прицельного выстрела] -1с при попадании"
+      },
+      {
+        "en": "Adds [Tempest Arrow] Chain Skill",
+        "ru": "Добавление 4-ой комбинации [Торнадо стрел]"
+      }
+    ],
+    "14050000": [
+      {
+        "en": "Absorbs 3% HP",
+        "ru": "Поглощение 3% ОЗ"
+      },
+      {
+        "en": "+2s Bleed duration",
+        "ru": "Длительность Потери крови +2 сек."
+      },
+      {
+        "en": "+20% Skill Speed",
+        "ru": "СКР умений +20%"
+      },
+      {
+        "en": "Multi-Hit on hit",
+        "ru": "Гарантир. мультиудар при попадании"
+      },
+      {
+        "en": "Activates [Drill Dart] 1 extra time",
+        "ru": "Доп. срабатывание [Пронзающей стрелы] 1 р."
+      }
+    ],
+    "14070000": [
+      {
+        "en": "+50% Multi-Hit on hit",
+        "ru": "Шанс мультиудара +50% при попадании"
+      },
+      {
+        "en": "+1s Stun duration",
+        "ru": "Длительность Оглушения +1 сек."
+      },
+      {
+        "en": "+20% Skill Speed",
+        "ru": "СКР умений +20%"
+      },
+      {
+        "en": "+20% Stun Chance",
+        "ru": "Шанс Оглушения +20%"
+      },
+      {
+        "en": "25% chance to reset cooldown on hit",
+        "ru": "Шанс 25% сбросить время перезарядки при попадании [Поражающей стрелой]"
+      }
+    ],
+    "14080000": [
+      {
+        "en": "Absorbs 10% HP",
+        "ru": "Поглощение 10% ОЗ"
+      },
+      {
+        "en": "+50% Multi-Hit on hit",
+        "ru": "Шанс мультиудара +50% при попадании"
+      },
+      {
+        "en": "Changes to mobile skill",
+        "ru": "Замена на умение с возможностью перемещения"
+      },
+      {
+        "en": "Up to +20% damage when less targets hit",
+        "ru": "Чем меньше целей попадания, тем больше увеличение урона (макс. до 20%)"
+      },
+      {
+        "en": "25% chance to reset cooldown on hit",
+        "ru": "Шанс 25% сбросить время перезарядки при попадании [Рассекающей стрелы]"
+      }
+    ],
+    "14090000": [
+      {
+        "en": "+5% Perfect Chance for the duration",
+        "ru": "Совершенный удар +5% во время действия умения"
+      },
+      {
+        "en": "30% chance to inflict Knock Back on hit",
+        "ru": "Шанс 30% оттолкнуть при попадании"
+      },
+      {
+        "en": "+5s duration",
+        "ru": "+5 сек. к длительности"
+      },
+      {
+        "en": "+1 consecutive use",
+        "ru": "Непрерывное использование +1 раз"
+      },
+      {
+        "en": "Ignores Block and Evasion and lands as a Critical Hit",
+        "ru": "Крит. удар, несмотря на блок и уклонение"
+      }
+    ],
+    "14110000": [
+      {
+        "en": "+5s duration",
+        "ru": "+5 сек. к длительности"
+      },
+      {
+        "en": "50% chance to inflict Knock Back on hit",
+        "ru": "50% шанс отталкивания при попадании"
+      },
+      {
+        "en": "Changes to mobile skill",
+        "ru": "Замена на умение с возможностью перемещения"
+      },
+      {
+        "en": "Increases Combat Speed, PvE Damage Boost, and PvP Damage Boost when less targets hit",
+        "ru": "Чем меньше целей попадания, тем больше увелич. СКР боя, усиление урона в PvE и PvP"
+      },
+      {
+        "en": "-10s cooldown",
+        "ru": "Перезарядка -10 сек."
+      }
+    ],
+    "14130000": [
+      {
+        "en": "+20% Move Speed reduction",
+        "ru": "Снижение СКР движ. от [Опутывающего выстрела] +20%"
+      },
+      {
+        "en": "+20% Skill Speed",
+        "ru": "СКР умений +20%"
+      },
+      {
+        "en": "Changes to mobile skill",
+        "ru": "Замена на умение с возможностью перемещения"
+      },
+      {
+        "en": "Adds [Shackling Arrow] Chain Skill",
+        "ru": "Добавление 2-ой комбинации [Сковывающая стрела]"
+      },
+      {
+        "en": "+2s Slow and Root duration",
+        "ru": "Длительность Замедления и Плена +2 сек."
+      }
+    ],
+    "14170000": [
+      {
+        "en": "Pulls enemies on explosion",
+        "ru": "Притягивание врагов при взрыве"
+      },
+      {
+        "en": "+1s Stun duration",
+        "ru": "Длительность Оглушения +1 сек."
+      },
+      {
+        "en": "Extra damage after 3s on hit",
+        "ru": "Доп. урон через 3 сек. при попадании"
+      },
+      {
+        "en": "+20% Stun Chance",
+        "ru": "Шанс Оглушения +20%"
+      },
+      {
+        "en": "+1 consecutive use",
+        "ru": "Непрерывное использование +1 раз"
+      }
+    ],
+    "14330000": [
+      {
+        "en": "Absorbs 5% HP",
+        "ru": "Поглощение 5% ОЗ"
+      },
+      {
+        "en": "Restores 120 MP on hit",
+        "ru": "Восстановление 120 ОМ при попадании"
+      },
+      {
+        "en": "Changes to mobile skill",
+        "ru": "Замена на умение с возможностью перемещения"
+      },
+      {
+        "en": "Multi-Hit on hit",
+        "ru": "Гарантир. мультиудар при попадании"
+      },
+      {
+        "en": "-1s all cooldowns on hit",
+        "ru": "Перезарядка всех умений -1с при попадании"
+      }
+    ],
+    "14340000": [
+      {
+        "en": "-20% MP consumed",
+        "ru": "Затрата ОМ -20%"
+      },
+      {
+        "en": "+10% skill Critical Hit",
+        "ru": "Крит. удар от умения +10%"
+      },
+      {
+        "en": "Deals up to 12% more damage when less targets are hit",
+        "ru": "Чем меньше целей попадания, тем больше увеличение урона (макс. до 12%)"
+      },
+      {
+        "en": "5% chance to inflict Knock Back on Critical Hit",
+        "ru": "Отталкивание с шансом 5% при успешном крит. ударе"
+      },
+      {
+        "en": "+20% Skill Speed",
+        "ru": "СКР умений +20%"
+      }
+    ],
+    "15010000": [
+      {
+        "en": "Absorbs 5% HP",
+        "ru": "Поглощение 5% ОЗ"
+      },
+      {
+        "en": "Restores 120 MP",
+        "ru": "Восстановление 120 ОМ"
+      },
+      {
+        "en": "Changes to mobile skill",
+        "ru": "Замена на умение с возможностью перемещения"
+      },
+      {
+        "en": "Multi-Hit on hit",
+        "ru": "Гарантир. мультиудар при попадании"
+      },
+      {
+        "en": "-1s all skill cooldowns on hit",
+        "ru": "Перезарядка всех умений -1с при попадании"
+      }
+    ],
+    "15040000": [
+      {
+        "en": "-50% MP Cost",
+        "ru": "Затрата ОМ -50%"
+      },
+      {
+        "en": "+20% Skill Speed",
+        "ru": "СКР умений +20%"
+      },
+      {
+        "en": "-60% Incoming Heal for 5s on hit",
+        "ru": "-60% получ. исцеление на 5с при попадании"
+      },
+      {
+        "en": "-2s [Hellfire] cooldown per fireball",
+        "ru": "Перезарядка [Адского пламени] -2 сек. за каждый снаряд"
+      },
+      {
+        "en": "+15% damage per fireball, up to +75%",
+        "ru": "Урон +15% за каждый снаряд (макс. 75%)"
+      }
+    ],
+    "15050000": [
+      {
+        "en": "Absorbs 3% HP",
+        "ru": "Поглощение 3% ОЗ"
+      },
+      {
+        "en": "+50% MP restored",
+        "ru": "Восстановление ОМ +50%"
+      },
+      {
+        "en": "Delayed Damage after 3s",
+        "ru": "Отложенный урон через 3с"
+      },
+      {
+        "en": "Multi-Hit on hit",
+        "ru": "Гарантир. мультиудар при попадании"
+      },
+      {
+        "en": "-3s [Wish of Concentration] cooldown on hit",
+        "ru": "Перезарядка [Истока силы] -3 сек. при попадании"
+      }
+    ],
+    "15060000": [
+      {
+        "en": "+30% Skill Speed",
+        "ru": "СКР умений +30%"
+      },
+      {
+        "en": "Fire Damage over Time for 10s on hit",
+        "ru": "Постоянный урон стихии огня на 10с при попадании"
+      },
+      {
+        "en": "Changes to mobile skill",
+        "ru": "Замена на умение с возможностью перемещения"
+      },
+      {
+        "en": "Ignores Block and Evasion and lands as Multi-Hit",
+        "ru": "Игнорирование блока и УКЛ, попадание мультиударом"
+      },
+      {
+        "en": "-15s cooldown",
+        "ru": "Перезарядка -15 сек."
+      }
+    ],
+    "15090000": [
+      {
+        "en": "-20% MP Cost",
+        "ru": "Затрата ОМ -20%"
+      },
+      {
+        "en": "+20% Skill Speed",
+        "ru": "СКР умений +20%"
+      },
+      {
+        "en": "Deals up to 12% more damage when less targets are hit",
+        "ru": "Чем меньше целей попадания, тем больше увелич. урона (макс. до 12%)"
+      },
+      {
+        "en": "-1s [Winter's Shackles] cooldown on hit",
+        "ru": "Перезарядка [Оков зимы] -1 сек. при попадании"
+      },
+      {
+        "en": "5% chance to inflict Frost for 2s on landing [Cold Wave]",
+        "ru": "Шанс 5% заморозить на 2 сек. при попадании [Волной холода]"
+      }
+    ],
+    "15110000": [
+      {
+        "en": "Changes to mobile skill",
+        "ru": "Замена на умение с возможностью перемещения"
+      },
+      {
+        "en": "30% chance to inflict Frost for 3s on landing [Winter's Shackles]",
+        "ru": "Шанс 30% заморозить на 3 сек. при попадании [Оковами зимы]"
+      },
+      {
+        "en": "+20% PvE Damage Boost and +10% PvP Damage Boost for 5s on landing [Winter's Shackles]",
+        "ru": "Увеличение урона в PvE +20%, увеличение урона в PvP +10% на 5с при попадании [Оковами зимы]"
+      },
+      {
+        "en": "Adds [Winter's Illusion] Chain Skill",
+        "ru": "Добавление 2-ой комбинации [Иллюзия зимы]"
+      },
+      {
+        "en": "-15s [Winter's Shackles] cooldown",
+        "ru": "Перезарядка [Оков зимы] -15 сек."
+      }
+    ],
+    "15150000": [
+      {
+        "en": "Restores 200 MP",
+        "ru": "Восстановление 200 ОМ"
+      },
+      {
+        "en": "-5s cooldown",
+        "ru": "Перезарядка -5 сек."
+      },
+      {
+        "en": "Reset [Frost Burst] cooldown on landing Frost",
+        "ru": "Завершение перезарядки [Замораживающего взрыва] при попадании Заморозкой"
+      },
+      {
+        "en": "+25% PC target Frost Chance",
+        "ru": "Точность Заморозки по игрокам +25%"
+      },
+      {
+        "en": "+1s Frost duration",
+        "ru": "Длительность Заморозки +1 сек."
+      }
+    ],
+    "15210000": [
+      {
+        "en": "+20% MP restored",
+        "ru": "Восстановление ОМ +20%"
+      },
+      {
+        "en": "Absorbs 1% HP",
+        "ru": "Поглощение 1% ОЗ"
+      },
+      {
+        "en": "+50% Multi-Hit on hit",
+        "ru": "Шанс мультиудара +50% при попадании"
+      },
+      {
+        "en": "+5% Fire Damage Boost for 10s on landing [Pyroclasm]",
+        "ru": "Наложение Огненной метки на 5 сек. при попадании [Испепелением]"
+      },
+      {
+        "en": "Reset [Blaze] cooldown on landing [Pyroclasm]",
+        "ru": "Завершение перезарядки [Зарева] при попадании [Испепелением]"
+      }
+    ],
+    "15220000": [
+      {
+        "en": "Absorbs 7% HP",
+        "ru": "Поглощение 7% ОЗ"
+      },
+      {
+        "en": "Changes to mobile skill",
+        "ru": "Замена на умение с возможностью перемещения"
+      },
+      {
+        "en": "75% chance to Knock Back 2m",
+        "ru": "Шанс 75% оттолкнуть на 2 м"
+      },
+      {
+        "en": "Ignores Block and Evasion and lands as a Critical Hit",
+        "ru": "Крит. удар, несмотря на блок и уклонение"
+      },
+      {
+        "en": "50% chance to reset cooldown",
+        "ru": "Вероятность 50% сбросить время перезарядки"
+      }
+    ],
+    "15280000": [
+      {
+        "en": "+1s [Bittercold Wind] summon duration",
+        "ru": "Время призыва [Леденящего ветра] +1 сек."
+      },
+      {
+        "en": "Changes to mobile skill",
+        "ru": "Замена на умение с возможностью перемещения"
+      },
+      {
+        "en": "Pull effect",
+        "ru": "Эффект притягивания"
+      },
+      {
+        "en": "Ignores Block and Evasion and lands as a Critical Hit",
+        "ru": "Крит. удар, несмотря на блок и уклонение"
+      },
+      {
+        "en": "-1s [Frost] cooldown on hit",
+        "ru": "-1 с к времени перезарядки [Заморозки] при попадании"
+      }
+    ],
+    "15310000": [
+      {
+        "en": "Reduces MP Cost by 10%",
+        "ru": "Затрата ОМ -10%"
+      },
+      {
+        "en": "+10% additional Attack",
+        "ru": "АТК доп. +10%"
+      },
+      {
+        "en": "+500 Max MP",
+        "ru": "Макс. ОМ +500"
+      },
+      {
+        "en": "+10% Combat Speed",
+        "ru": "СКР боя +10%"
+      },
+      {
+        "en": "-10s all skill cooldowns",
+        "ru": "Перезарядка всех умений -10 сек."
+      }
+    ],
+    "16010000": [
+      {
+        "en": "+20% MP restored",
+        "ru": "Восстановление ОМ +20%"
+      },
+      {
+        "en": "Absorbs 1% HP",
+        "ru": "Поглощение 1% ОЗ"
+      },
+      {
+        "en": "+50% Multi-Hit on hit",
+        "ru": "Шанс мультиудара +50% при попадании"
+      },
+      {
+        "en": "+2% Attack on landing [Earth Tremor] (Up to 5 stacks)",
+        "ru": "АТК +2% при попадании [Дрожи земли] (макс. 5 зарядов)"
+      },
+      {
+        "en": "10% chance to remove 1 buff on landing [Earth Tremor]",
+        "ru": "Шанс 10% снять 1 полож. эффект с цели при попадании [Дрожи земли]"
+      }
+    ],
+    "16040000": [
+      {
+        "en": "-20% MP consumed",
+        "ru": "Затрата ОМ -20%"
+      },
+      {
+        "en": "Deals up to 12% more damage when less targets are hit",
+        "ru": "Чем меньше целей попадания, тем больше увеличение урона (макс. до 12%)"
+      },
+      {
+        "en": "+100 Skill Accuracy",
+        "ru": "Меткость +100"
+      },
+      {
+        "en": "+20% Skill Speed",
+        "ru": "СКР умений +20%"
+      },
+      {
+        "en": "Adds [Ashy Call] Chain Skill",
+        "ru": "Добавление 2-ой комбинации [Зов пепла]"
+      }
+    ],
+    "16070000": [
+      {
+        "en": "+50% Multi-Hit on hit",
+        "ru": "Шанс мультиудара +50% при попадании"
+      },
+      {
+        "en": "Inflicts Root for 5s",
+        "ru": "Сковывание на 5с"
+      },
+      {
+        "en": "Changes to mobile skill",
+        "ru": "Замена на умение с возможностью перемещения"
+      },
+      {
+        "en": "-10s cooldown",
+        "ru": "Перезарядка -10 сек."
+      },
+      {
+        "en": "+2s Fear duration",
+        "ru": "Длительность Ужаса +2 сек."
+      }
+    ],
+    "16100000": [
+      {
+        "en": "-50% MP Cost",
+        "ru": "Затрата ОМ -50%"
+      },
+      {
+        "en": "+20% Fire Spirit Critical Hit damage",
+        "ru": "Крит. урон духа огня +20%"
+      },
+      {
+        "en": "10% chance to activate skill when Fire Spirit lands attack",
+        "ru": "Шанс срабатывания умения +10% при попадании атакой духа огня"
+      },
+      {
+        "en": "5% chance to inflict Knockdown for 3s on landing Fire Spirit attack",
+        "ru": "Шанс 5% сбить с ног на 3с при попадании атакой духа огня"
+      },
+      {
+        "en": "+20% Fire Spirit Stats",
+        "ru": "Характеристики духа огня +20%"
+      }
+    ],
+    "16110000": [
+      {
+        "en": "-50% MP Cost",
+        "ru": "Затрата ОМ -50%"
+      },
+      {
+        "en": "+10% Water Spirit Attack",
+        "ru": "АТК духа воды +10%"
+      },
+      {
+        "en": "10% chance to activate skill when Water Spirit lands attack",
+        "ru": "Шанс срабатывания умения +10% при попадании атакой духа воды"
+      },
+      {
+        "en": "5% chance to inflict Root for 2s on landing Water Spirit attack",
+        "ru": "Шанс 5% плена на 2с при попадании атакой духа воды"
+      },
+      {
+        "en": "+20% Water Spirit Stats",
+        "ru": "Характеристики духа воды +20%"
+      }
+    ],
+    "16120000": [
+      {
+        "en": "-50% MP Cost",
+        "ru": "Затрата ОМ -50%"
+      },
+      {
+        "en": "+20% Wind Spirit Critical Hit",
+        "ru": "Крит. удар духа воздуха +20%"
+      },
+      {
+        "en": "10% chance to activate skill when Wind Spirit lands attack",
+        "ru": "Шанс срабатывания умения +10% при попадании атакой духа воздуха"
+      },
+      {
+        "en": "5% chance to reduce enemy Attack Speed by 30% for 10s on landing Wind Spirit attack",
+        "ru": "Шанс 5% снизить СКР АТК на 30% на 10с при атаке духа воздуха"
+      },
+      {
+        "en": "+20% Wind Spirit Stats",
+        "ru": "Характеристики духа воздуха +20%"
+      }
+    ],
+    "16130000": [
+      {
+        "en": "-50% MP Cost",
+        "ru": "Затрата ОМ -50%"
+      },
+      {
+        "en": "+20% PvE Damage Tolerance and +10 PvP Damage Tolerance to Earth Spirit",
+        "ru": "Стойкость к урону в PvE духа земли +20%, стойкость к урону в PvP духа земли +10%"
+      },
+      {
+        "en": "10% chance to activate skill when Earth Spirit lands attack",
+        "ru": "Шанс срабатывания умения +10% при попадании атакой духа земли"
+      },
+      {
+        "en": "5% chance to restore 5% of Spirit HP when landing Earth Spirit attack",
+        "ru": "Шанс 5% восстановить 5% ОЗ духа при попадании атакой духа земли"
+      },
+      {
+        "en": "+20% Earth Spirit Stats",
+        "ru": "Характеристики духа земли +20%"
+      }
+    ],
+    "16140000": [
+      {
+        "en": "+2s Curse duration",
+        "ru": "Длительность Проклятия +2 сек."
+      },
+      {
+        "en": "+50% Multi-Hit on hit",
+        "ru": "Шанс мультиудара +50% при попадании"
+      },
+      {
+        "en": "Changes to mobile skill",
+        "ru": "Замена на умение с возможностью перемещения"
+      },
+      {
+        "en": "-2s cooldown",
+        "ru": "Перезарядка -2 сек."
+      },
+      {
+        "en": "[Jointstrike: Curse] ignores Block and Evasion and lands as a Critical Hit",
+        "ru": "[Кооперация: Проклятие] Игнорирование блока и УКЛ, попадание крит. ударом"
+      }
+    ],
+    "16300000": [
+      {
+        "en": "Changes to AoE Skill",
+        "ru": "Смена на массовое умение"
+      },
+      {
+        "en": "Extra damage after 3s on hit",
+        "ru": "Доп. урон через 3с при попадании"
+      },
+      {
+        "en": "+10 all Element Boost on hit",
+        "ru": "Усиление всех стихий +10% при попадании"
+      },
+      {
+        "en": "Changes to Charge Skill, dealing up to 200% more damage",
+        "ru": "Смена на заряжаемое умение, увеличение урона макс. до 200%"
+      },
+      {
+        "en": "25% chance to regain Four Elements",
+        "ru": "Шанс 25% повторно получить Четыре элемента"
+      }
+    ],
+    "16330000": [
+      {
+        "en": "+20% Slow effect",
+        "ru": "Эффект Замедления +20%"
+      },
+      {
+        "en": "Extra damage after 3s on hit",
+        "ru": "Доп. урон через 3с при попадании"
+      },
+      {
+        "en": "+50% Multi-Hit chance on hit",
+        "ru": "Шанс мультиудара +50% при попадании"
+      },
+      {
+        "en": "Pull in nearby targets",
+        "ru": "Притягивание врагов к цели"
+      },
+      {
+        "en": "30% chance to inflict Root for 3s on hit",
+        "ru": "Шанс 30% плена на 3с при попадании"
+      }
+    ],
+    "16340000": [
+      {
+        "en": "Absorbs 5% HP",
+        "ru": "Поглощение 5% ОЗ"
+      },
+      {
+        "en": "Restores 120 MP",
+        "ru": "Восстановление 120 ОМ"
+      },
+      {
+        "en": "Changes to mobile skill",
+        "ru": "Замена на умение с возможностью перемещения"
+      },
+      {
+        "en": "Multi-Hit on hit",
+        "ru": "Гарантир. мультиудар при попадании"
+      },
+      {
+        "en": "-1s all skill cooldowns on hit",
+        "ru": "Перезарядка всех умений -1с при попадании"
+      }
+    ],
+    "17010000": [
+      {
+        "en": "+20% MP restored",
+        "ru": "Восстановление ОМ +20%"
+      },
+      {
+        "en": "+20% [Discharge] Chain Skill trigger chance",
+        "ru": "Шанс активировать цепное умение [Электрический разряд] +20%"
+      },
+      {
+        "en": "+50% Multi-Hit on hit",
+        "ru": "Шанс мультиудара +50% при попадании"
+      },
+      {
+        "en": "-7s [Bolt] cooldown on landing [Discharge]",
+        "ru": "Перезарядка [Раската грома] -7с при попадании [Электрическим разрядом]"
+      },
+      {
+        "en": "Ignores Block and Evasion",
+        "ru": "Попадание несмотря на блок и уклонение"
+      }
+    ],
+    "17040000": [
+      {
+        "en": "-20% MP consumed",
+        "ru": "Затрата ОМ -20%"
+      },
+      {
+        "en": "Deals up to 12% more damage when less targets are hit",
+        "ru": "Чем меньше целей попадания, тем больше увеличение урона (макс. до 12%)"
+      },
+      {
+        "en": "-10% enemy Combat Speed for 5s on landing [Divine Punishment]",
+        "ru": "СКР боя -10% на 5с при попадании [Небесного приговора]"
+      },
+      {
+        "en": "10% chance to inflict Root for 2s on landing [Divine Punishment]",
+        "ru": "Шанс 10% взять в плен на 2с при попадании [Небесного приговора]."
+      },
+      {
+        "en": "Activates [Divine Punishment] 1 extra time",
+        "ru": "Доп. срабатывание [Небесного приговора] 1 раз"
+      }
+    ],
+    "17060000": [
+      {
+        "en": "30% chance to inflict Stun for 3s when fully charged",
+        "ru": "Шанс 30% оглушить на 3с при макс. поражении"
+      },
+      {
+        "en": "+300 Skill Accuracy",
+        "ru": "Меткость умений +300"
+      },
+      {
+        "en": "+30% Skill Speed",
+        "ru": "СКР умений +30%"
+      },
+      {
+        "en": "Up to +20% damage when less targets hit",
+        "ru": "Чем меньше целей попадания, тем больше увеличение урона (макс. до 20%)"
+      },
+      {
+        "en": "Critical Hit on hit",
+        "ru": "Гарантир. крит. удар при попадании"
+      }
+    ],
+    "17070000": [
+      {
+        "en": "Slows target for 5s",
+        "ru": "Замедление цели на 5с"
+      },
+      {
+        "en": "+3s Damage over Time",
+        "ru": "Постоянный урон +3 сек."
+      },
+      {
+        "en": "Has a 20% chance to inflict Knockdown on the target for 3s",
+        "ru": "Шанс 20% сбить цель с ног на 3с"
+      },
+      {
+        "en": "+10% PvE Damage Tolerance reduction and +5% PvP Damage Tolerance reduction",
+        "ru": "Стойкость к урону в PvE доп. -10%, стойкость к урону в PvP доп. -5%"
+      },
+      {
+        "en": "Ignores Block and Evasion and reduces Damage over Time interval by 50%",
+        "ru": "Игнорирует блок и УКЛ и сокращает интервал постоянного урона на 50%"
+      }
+    ],
+    "17080000": [
+      {
+        "en": "Removes MP Consumed and restores 150 MP",
+        "ru": "Удаление затраты ОМ, восстановление 150 ОМ"
+      },
+      {
+        "en": "-15% target Defense for duration of Damage over Time",
+        "ru": "ЗЩТ цели -15% под действием постоянного урона"
+      },
+      {
+        "en": "Has a 20% chance to inflict Stun on the target for 3s",
+        "ru": "Шанс 20% оглушить цель на 3с"
+      },
+      {
+        "en": "+10% PvE Damage Boost reduction and +5% PvP Damage Boost reduction",
+        "ru": "Увеличение урона в PvE доп. -10%, увеличение урона в PvP доп. -5%"
+      },
+      {
+        "en": "Ignores Block and Evasion and reduces Damage over Time interval by 50%",
+        "ru": "Игнорирует блок и УКЛ и сокращает интервал постоянного урона на 50%"
+      }
+    ],
+    "17090000": [
+      {
+        "en": "+5% Defense while healing",
+        "ru": "ЗЩТ +5% во время восстановления"
+      },
+      {
+        "en": "+20% amount healed when HP is 50% or less",
+        "ru": "Восстановление ОЗ +20% при ОЗ 50% или ниже"
+      },
+      {
+        "en": "+5% Incoming Heal during healing",
+        "ru": "Получ. исцеление +5% во время восстановления"
+      },
+      {
+        "en": "+5% Move Speed during healing",
+        "ru": "СКР движ. +5% во время восстановления"
+      },
+      {
+        "en": "+5% PvE Damage Tolerance and +2.5% PvP Damage Tolerance during healing",
+        "ru": "Стойкость к урону в PvE +5%, стойкость к урону в PvP +2.5% во время восстановления"
+      }
+    ],
+    "17100000": [
+      {
+        "en": "+2 consecutive uses",
+        "ru": "+2 применения подряд"
+      },
+      {
+        "en": "+20% amount healed when HP is 50% or less",
+        "ru": "Восстановление ОЗ +20% при ОЗ 50% или ниже"
+      },
+      {
+        "en": "50% chance to remove 1 debuff",
+        "ru": "Шанс 50% снять 1 эффект ослабления"
+      },
+      {
+        "en": "+2% HP restored",
+        "ru": "Доп. восстановление 2% ОЗ"
+      },
+      {
+        "en": "-2s cooldown",
+        "ru": "Перезарядка -2 сек."
+      }
+    ],
+    "17120000": [
+      {
+        "en": "Removes up to 2 debuffs",
+        "ru": "Снимает до 2 эффектов ослабления"
+      },
+      {
+        "en": "+1 consecutive use",
+        "ru": "СКР умений +20%"
+      },
+      {
+        "en": "-3s cooldown",
+        "ru": "-3 сек. к перезарядке"
+      },
+      {
+        "en": "+10% Incoming Heal for 10s",
+        "ru": "+10% к получ. исцелению на 10с"
+      },
+      {
+        "en": "+5% HP restored",
+        "ru": "Доп. восст. 5% ОЗ"
+      }
+    ],
+    "17150000": [
+      {
+        "en": "-40% Move Speed for 3s to up to 4 enemies within 4m of the Aura",
+        "ru": "-40% к СКР движ. на 3с макс. 4 врагам в радиусе 4 м от Ауры"
+      },
+      {
+        "en": "Changes to AoE Skill",
+        "ru": "Смена на массовое умение"
+      },
+      {
+        "en": "+50% [Divine Aura] attacking speed",
+        "ru": "СКР выстрелов [Священной ауры] +50%"
+      },
+      {
+        "en": "+3s [Divine Aura] duration",
+        "ru": "Длительность [Священной ауры] +3 сек."
+      },
+      {
+        "en": "-10s cooldown",
+        "ru": "Перезарядка -10 сек."
+      }
+    ],
+    "17350000": [
+      {
+        "en": "Restores 100 MP on hit",
+        "ru": "Восстановление 100 ОМ при попадании"
+      },
+      {
+        "en": "Up to +12% damage when less targets hit",
+        "ru": "До +12% к урону при меньшем количестве пораженных целей"
+      },
+      {
+        "en": "20% chance to inflict Root for 3s",
+        "ru": "Активирует Плен в теч. 3с с шансом 20%"
+      },
+      {
+        "en": "Resets cooldown on landing a Critical Hit with [Condemnation]",
+        "ru": "При попадании крит. удара умения [Кара] время перезарядки умения сбрасывается"
+      },
+      {
+        "en": "Multi-Hit on hit",
+        "ru": "Гарантир. мультиудар при попадании"
+      }
+    ],
+    "17370000": [
+      {
+        "en": "Absorbs 5% HP",
+        "ru": "Поглощение 5% ОЗ"
+      },
+      {
+        "en": "Restores 120 MP",
+        "ru": "Восстановление 120 ОМ"
+      },
+      {
+        "en": "Changes to mobile skill",
+        "ru": "Замена на умение с возможностью перемещения"
+      },
+      {
+        "en": "Multi-Hit on hit",
+        "ru": "Гарантир. мультиудар при попадании"
+      },
+      {
+        "en": "-1s all skill cooldowns on hit",
+        "ru": "Перезарядка всех умений -1с при попадании"
+      }
+    ],
+    "18010000": [
+      {
+        "en": "+20% MP restored",
+        "ru": "Восстановление ОМ +20%"
+      },
+      {
+        "en": "Absorbs 0.7% HP",
+        "ru": "Поглощение 0.7% ОЗ"
+      },
+      {
+        "en": "+50% Multi-Hit on hit",
+        "ru": "Шанс мультиудара +50% при попадании"
+      },
+      {
+        "en": "-1s [Spinning Strike] cooldown on hit",
+        "ru": "Перезарядка [Удара с вращением] -1с при попадании"
+      },
+      {
+        "en": "Adds [Storm Chain] Chain Skill",
+        "ru": "Добавление 4-ой комбинации [Ураганное дробление]"
+      }
+    ],
+    "18040000": [
+      {
+        "en": "-20% MP consumed",
+        "ru": "Затрата ОМ -20%"
+      },
+      {
+        "en": "+200 Block while using skill",
+        "ru": "Блок +200 во время использования умения"
+      },
+      {
+        "en": "Deals up to 12% more damage when less targets are hit",
+        "ru": "Чем меньше целей попадания, тем больше увеличение урона (макс. до 12%)"
+      },
+      {
+        "en": "-200 enemy Accuracy for 3s on landing Bursting Blow",
+        "ru": "Меткость -200 на 3с при попадании [Взрывным ударом]"
+      },
+      {
+        "en": "Ignores Block and Evasion and lands as Multi-Hit",
+        "ru": "Игнорирование блока и УКЛ, попадание мультиударом"
+      }
+    ],
+    "18060000": [
+      {
+        "en": "Changes to AoE damage",
+        "ru": "Смена на урон по области"
+      },
+      {
+        "en": "+1s [Impactful Crush] Stun duration",
+        "ru": "Длительность Оглушения от [Дробящего удара] +1 сек."
+      },
+      {
+        "en": "Changes to mobile skill",
+        "ru": "Замена на умение с возможностью перемещения"
+      },
+      {
+        "en": "+30% Skill Speed",
+        "ru": "СКР умений +30%"
+      },
+      {
+        "en": "+20% [Impactful Crush] Stun Chance",
+        "ru": "Шанс Оглушения от [Дробящего удара] +20%"
+      }
+    ],
+    "18080000": [
+      {
+        "en": "Multi-Hit on hit",
+        "ru": "Гарантир. мультиудар при попадании"
+      },
+      {
+        "en": "+6m Range",
+        "ru": "Дальность атаки +6 м"
+      },
+      {
+        "en": "+1s Knockdown duration",
+        "ru": "Длительность Сбивания с ног +1 сек."
+      },
+      {
+        "en": "-15% target's PvE Damage Boost and -7.5% PvP Damage Boost for 10s",
+        "ru": "Увеличение урона в PvE цели -15%, Увеличение урона в PvP -7.5% на 10с"
+      },
+      {
+        "en": "-5s cooldown",
+        "ru": "Перезарядка -5 сек."
+      }
+    ],
+    "18090000": [
+      {
+        "en": "-20% target's Impact-type Resist for 5s",
+        "ru": "Сниж. способности цели к сопротивлению шок. эффектам на 20% в течение 5с"
+      },
+      {
+        "en": "Changes to Charge Skill, dealing up to 200% more damage",
+        "ru": "Превращается в заряжаемое умение, до +200% урона"
+      },
+      {
+        "en": "50% chance to trigger [Heat Wave Blow] on hit",
+        "ru": "Шанс 50% активировать [Тепловой удар] при попадании [Скачок]"
+      },
+      {
+        "en": "Resets cooldown on defeating an enemy",
+        "ru": "Завершение перезарядки при уничтожении врага"
+      },
+      {
+        "en": "Ignores Block and Evasion and lands as Multi-Hit",
+        "ru": "Игнорирование блока и УКЛ, попадание мультиударом"
+      }
+    ],
+    "18100000": [
+      {
+        "en": "Absorbs 0.7% HP",
+        "ru": "Поглощение 0.7% ОЗ"
+      },
+      {
+        "en": "Deals extra damage on attacking a target afflicted with Impact-type status",
+        "ru": "Доп. урон при атаке цели под воздействием шок. эффектов"
+      },
+      {
+        "en": "Critical Hit on hit",
+        "ru": "Гарантир. крит. удар при попадании"
+      },
+      {
+        "en": "Adds [Piercing Strike] Chain Skill",
+        "ru": "Добавление 2-ой комбинации [Дробящее пробитие]"
+      },
+      {
+        "en": "Removes [Dark Crush] cooldown",
+        "ru": "Удаление времени перезарядки [Удара скалы]"
+      }
+    ],
+    "18120000": [
+      {
+        "en": "+1 consecutive use and Heal over Time can stack up to 2 times",
+        "ru": "Непрерывное использование +1 р., макс. 2 заряда продолжительного восстановления"
+      },
+      {
+        "en": "Removes up to 2 debuffs",
+        "ru": "Отмена эффектов ослабления (макс. 2 шт.)"
+      },
+      {
+        "en": "+4s healing duration",
+        "ru": "Длительность восстановления +4 сек."
+      },
+      {
+        "en": "+5% HP restored",
+        "ru": "Доп. восстановление 5% ОЗ"
+      },
+      {
+        "en": "-3s cooldown",
+        "ru": "Перезарядка -3 сек."
+      }
+    ],
+    "18150000": [
+      {
+        "en": "40% chance to inflict Stun for 3s",
+        "ru": "Шанс 40% оглушить на 3с"
+      },
+      {
+        "en": "+20% Seal Chance",
+        "ru": "Шанс попадания Запечатыванием +20%"
+      },
+      {
+        "en": "Up to +20% damage when more targets hit",
+        "ru": "Чем больше целей попадания, тем больше увеличение урона (макс. до 20%)"
+      },
+      {
+        "en": "Ignores Block and Evasion and lands as Multi-Hit",
+        "ru": "Игнорирование блока и УКЛ, попадание мультиударом"
+      },
+      {
+        "en": "25% chance to reset [Heat Wave Blow] cooldown on Block",
+        "ru": "Шанс 25% сбросить время перезарядки [Удара тепловой волны] при успешном блоке"
+      }
+    ],
+    "18210000": [
+      {
+        "en": "Restores 300 Stamina on hit",
+        "ru": "Восстановление 300 ОД при попадании"
+      },
+      {
+        "en": "+10m [Tremor Crush] range",
+        "ru": "Дальность атаки [Сотрясения] +10 м"
+      },
+      {
+        "en": "+50% Multi-Hit on hit",
+        "ru": "Шанс мультиудара +50% при попадании"
+      },
+      {
+        "en": "Adds [Surging Strike] Chain Skill",
+        "ru": "Добавление 2-ой комбинации [Дробящий всплеск]"
+      },
+      {
+        "en": "+25% [Tremor Crush] Stun Chance",
+        "ru": "Шанс Оглушения от [Сотрясения] +25%"
+      }
+    ],
+    "18290000": [
+      {
+        "en": "-5s cooldown",
+        "ru": "Перезарядка -5 сек."
+      },
+      {
+        "en": "+10% Heal Boost (up to 20%)",
+        "ru": "Увеличение исцеления +30% (макс. 20%)"
+      },
+      {
+        "en": "Up to +20% damage when less targets hit",
+        "ru": "Чем меньше целей попадания, тем больше увеличение урона (макс. до 20%)"
+      },
+      {
+        "en": "40% chance to inflict Seal for 3s",
+        "ru": "Шанс 40% наложить Запечатывание на 3с"
+      },
+      {
+        "en": "Ignores Block and Evasion and lands as a Critical Hit",
+        "ru": "Крит. удар, несмотря на блок и уклонение"
+      }
+    ],
+    "18300000": [
+      {
+        "en": "Absorbs 5% HP",
+        "ru": "Поглощение 5% ОЗ"
+      },
+      {
+        "en": "Restores 120 MP",
+        "ru": "Восстановление 120 ОМ"
+      },
+      {
+        "en": "Changes to mobile skill",
+        "ru": "Замена на умение с возможностью перемещения"
+      },
+      {
+        "en": "Multi-Hit on hit",
+        "ru": "Гарантир. мультиудар при попадании"
+      },
+      {
+        "en": "-1s all skill cooldowns on hit",
+        "ru": "Перезарядка всех умений -1с при попадании"
+      }
+    ]
+  }
+}

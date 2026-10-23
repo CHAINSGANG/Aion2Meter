@@ -1000,7 +1000,11 @@ public sealed class DpsCalculator : IDpsCalculator
 			if (entityNpcId > 0)
 			{
 				string mobDungeon = _mobRepository.GetMobDungeon(entityNpcId);
-				if (mobDungeon != null && !_mobRepository.IsInstanceDungeon(mobDungeon))
+				// Boss mode must count named world bosses too. The section filter
+				// should only discard ordinary open-world mobs.
+				string? knownRole = _mobRepository.GetMobRole(entityNpcId);
+				if (mobDungeon != null && !_mobRepository.IsInstanceDungeon(mobDungeon) &&
+				    knownRole != "boss" && knownRole != "miniboss")
 				{
 					continue;
 				}

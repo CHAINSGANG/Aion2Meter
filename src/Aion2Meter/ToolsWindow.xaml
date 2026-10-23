@@ -145,6 +145,15 @@
                             <StackPanel><TextBlock Style="{StaticResource CardTitle}" Text="{services:LocalizedText OpacityTitle}" /><TextBlock Style="{StaticResource CardBody}" Text="{services:LocalizedText OpacityHint}" /></StackPanel>
                         </Button>
                     </WrapPanel>
+                    <Border Style="{StaticResource AuditRow}" Margin="0,5,9,5">
+                        <StackPanel>
+                            <CheckBox x:Name="PartyRowStyleCheckBox" IsChecked="{Binding UsePartyRowStyle, Mode=TwoWay}"
+                                      Content="{services:LocalizedText PartyRowStyle}"
+                                      FontSize="12" FontWeight="Bold" Foreground="#FFF1F2F2" />
+                            <TextBlock Text="{services:LocalizedText PartyRowStyleHint}"
+                                       Margin="23,5,0,0" FontSize="9" Foreground="#FF9DA7AC" TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Border>
                     <Grid Margin="0,0,9,4">
                         <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="18" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
                         <StackPanel>
@@ -181,6 +190,15 @@
                     </WrapPanel>
 
                     <TextBlock Style="{StaticResource SectionTitle}" Text="{services:LocalizedText Combat}" />
+                    <Border Style="{StaticResource AuditRow}" Margin="0,0,9,5">
+                        <StackPanel>
+                            <CheckBox x:Name="OtherPlayersDebuffsCheckBox" IsChecked="{Binding ShowOtherPlayersDebuffs, Mode=TwoWay}"
+                                      Content="{services:LocalizedText ShowOtherPlayersDebuffs}"
+                                      FontSize="12" FontWeight="Bold" Foreground="#FFF1F2F2" />
+                            <TextBlock Text="{services:LocalizedText ShowOtherPlayersDebuffsHint}"
+                                       Margin="23,5,0,0" FontSize="9" Foreground="#FF9DA7AC" TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Border>
                     <WrapPanel>
                         <Button Style="{StaticResource ToolCard}" Click="OpenTimers_Click">
                             <StackPanel><TextBlock Style="{StaticResource CardTitle}" Text="{services:LocalizedText EventTimers}" /><TextBlock Style="{StaticResource CardBody}" Text="{services:LocalizedText EventTimersHint}" /></StackPanel>
@@ -210,10 +228,24 @@
                         </StackPanel>
                     </Border>
 
-                    <TextBlock Style="{StaticResource SectionTitle}" Text="{services:LocalizedText Updates}" />
+                    <TextBlock x:Name="UpdatesSection" Style="{StaticResource SectionTitle}" Text="{services:LocalizedText Updates}" />
+                    <Border Style="{StaticResource AuditRow}" Margin="0,0,9,8">
+                        <StackPanel>
+                            <CheckBox x:Name="AutoCheckUpdatesCheckBox"
+                                      Checked="AutoCheckUpdates_Changed" Unchecked="AutoCheckUpdates_Changed"
+                                      Content="{services:LocalizedText AutoCheckUpdates}"
+                                      FontSize="12" FontWeight="Bold" Foreground="#FFF1F2F2" />
+                            <TextBlock Text="{services:LocalizedText AutoCheckUpdatesHint}"
+                                       Margin="23,5,0,0" FontSize="9" Foreground="#FF9DA7AC" TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Border>
                     <WrapPanel>
-                        <Button Style="{StaticResource ToolCard}" Click="CheckUpdates_Click">
+                        <Button x:Name="CheckUpdatesButton" Style="{StaticResource ToolCard}" Click="CheckUpdates_Click">
                             <StackPanel><TextBlock Style="{StaticResource CardTitle}" Text="{services:LocalizedText CheckUpdates}" /><TextBlock Style="{StaticResource CardBody}" Text="{services:LocalizedText CheckUpdatesHint}" /></StackPanel>
+                        </Button>
+                        <Button x:Name="InstallUpdateButton" Style="{StaticResource ToolCard}"
+                                Visibility="Collapsed" Click="InstallUpdate_Click">
+                            <StackPanel><TextBlock Style="{StaticResource CardTitle}" Text="{services:LocalizedText InstallUpdate}" /><TextBlock Style="{StaticResource CardBody}" Text="{services:LocalizedText InstallUpdateHint}" /></StackPanel>
                         </Button>
                     </WrapPanel>
 

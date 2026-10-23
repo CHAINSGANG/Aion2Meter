@@ -190,6 +190,7 @@ public sealed class DpsPacketParser : IDpsPacketParser
 	private long _lastLatencyEmitTicks;
 
 	private string? _lockedDeviceName;
+	private long _lastLockedStreamPacketMs;
 
 	private string? _currentPayloadDeviceName;
 
@@ -466,12 +467,15 @@ public sealed class DpsPacketParser : IDpsPacketParser
 
 	private void LockGameStream()
 	{
+		_lastLockedStreamPacketMs = Environment.TickCount64;
 		if (_lockedDeviceName == null && _currentPayloadDeviceName != null)
 		{
 			_lockedDeviceName = _currentPayloadDeviceName;
 			_logger.LogInformation("\ud83d\udd12 Game stream locked to device: {Device}", _lockedDeviceName);
 		}
 	}
+
+	public string? LockedDeviceName => _lockedDeviceName;
 
 	public DpsPacketParser(ILogger<DpsPacketParser> logger, IDataRepository dataRepository, ISkillRepository? skillRepository = null, IPacketCaptureService? packetCaptureService = null, ProtocolHealthMonitor? protocolHealth = null)
 	{
@@ -546,9 +550,22 @@ public sealed class DpsPacketParser : IDpsPacketParser
 
 	public void ProcessPayload(CapturedPayload payload)
 	{
-		if (payload?.Data == null || payload.Data.Length == 0 || (_lockedDeviceName != null && payload.DeviceName != null && payload.DeviceName != _lockedDeviceName))
+		if (payload?.Data == null || payload.Data.Length == 0)
 		{
 			return;
+		}
+		if (_lockedDeviceName != null && payload.DeviceName != null && payload.DeviceName != _lockedDeviceName)
+		{
+			// The game can move to a different adapter after a reconnect (notably
+			// with a VPN/TUN client). A stale lock must not permanently discard the
+			// new stream, even when the previous player ID was recovered from a log.
+			long idleMs = Environment.TickCount64 - _lastLockedStreamPacketMs;
+			if (idleMs < 30_000)
+			{
+				return;
+			}
+			_logger.LogWarning("Game stream on {OldDevice} has had no recognized packet for {IdleMs} ms; probing {NewDevice}", _lockedDeviceName, idleMs, payload.DeviceName);
+			_lockedDeviceName = null;
 		}
 		List<TunnelFrameUnwrapper.GameSegment> segments = null;
 		long nowMs = 0L;
@@ -1469,6 +1486,11 @@ public sealed class DpsPacketParser : IDpsPacketParser
 			return false;
 		}
 		num += num3;
+		if (num2 <= 0 || num2 > 1000000)
+		{
+			_diagStructFail++;
+			return true;
+		}
 		_currentTarget = num2;
 		if (num >= packet.Length)
 		{
@@ -1595,6 +1617,11 @@ public sealed class DpsPacketParser : IDpsPacketParser
 			return false;
 		}
 		num += num15;
+		if (num14 <= 0 || num14 > 1000000)
+		{
+			_diagStructFail++;
+			return true;
+		}
 		if (num14 < 100 && !_dataRepository.IsConfirmedPlayer(num14))
 		{
 			_logger.LogTrace("\ud83d\udeab Null-actor filtered: Actor={Actor} (< {Floor}), Target={Target}, Switch={Switch}", num14, 100, num2, num4);
@@ -1974,6 +2001,11 @@ public sealed class DpsPacketParser : IDpsPacketParser
 			return false;
 		}
 		num += num5;
+		if (num4 <= 0 || num4 > 1000000)
+		{
+			_diagDotParseFail++;
+			return true;
+		}
 		if (num >= packet.Length)
 		{
 			_diagDotParseFail++;
@@ -1991,6 +2023,11 @@ public sealed class DpsPacketParser : IDpsPacketParser
 		{
 			_diagDotParseFail++;
 			return false;
+		}
+		if (num6 <= 0 || num6 > 1000000)
+		{
+			_diagDotParseFail++;
+			return true;
 		}
 		if (num6 == num4)
 		{

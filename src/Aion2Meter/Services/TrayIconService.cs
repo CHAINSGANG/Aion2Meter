@@ -13,10 +13,13 @@ internal sealed class TrayIconService : IDisposable
     private readonly ToolStripMenuItem _hideItem;
     private readonly ToolStripMenuItem _updateItem;
     private readonly ToolStripMenuItem _exitItem;
+    private readonly Action<string?> _openUpdate;
     private string? _releaseUrl;
 
-    public TrayIconService(Action show, Action hide, Action checkUpdates, Action exit)
+    public TrayIconService(Action show, Action hide, Action checkUpdates,
+        Action<string?> openUpdate, Action exit)
     {
+        _openUpdate = openUpdate;
         _showItem = new ToolStripMenuItem { Text = UiLanguageService.Text("Show") };
         _hideItem = new ToolStripMenuItem { Text = UiLanguageService.Text("Hide") };
         _updateItem = new ToolStripMenuItem { Text = UiLanguageService.Text("CheckUpdates") };
@@ -39,15 +42,16 @@ internal sealed class TrayIconService : IDisposable
             Visible = true
         };
         _icon.DoubleClick += (_, _) => show();
-        _icon.BalloonTipClicked += (_, _) => UpdateCheckService.OpenRelease(_releaseUrl);
+        _icon.BalloonTipClicked += (_, _) => _openUpdate(_releaseUrl);
         UiLanguageService.LanguageChanged += LanguageChanged;
     }
 
-    public void ShowUpdate(Version version, string? releaseUrl)
+    public void ShowUpdate(Version version, string? releaseUrl, bool hasInstaller)
     {
         _releaseUrl = releaseUrl;
         _icon.BalloonTipTitle = UiLanguageService.Text("UpdateTitle");
-        _icon.BalloonTipText = UiLanguageService.Text("UpdateAvailable", version);
+        _icon.BalloonTipText = UiLanguageService.Text(
+            hasInstaller ? "UpdateAvailable" : "UpdateAvailableManual", version);
         _icon.BalloonTipIcon = ToolTipIcon.Info;
         _icon.ShowBalloonTip(8000);
     }

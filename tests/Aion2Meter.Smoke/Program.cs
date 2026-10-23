@@ -1,14 +1,20 @@
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Reflection;
+using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using AionFlex.Application.Data;
+using AionFlex.Application.DpsCalculation;
+using AionFlex.Application.Mobs;
+using AionFlex.Application.Skills;
 using AionFlex.Core.Combat;
 using AionFlex.Core.Models;
 using AionFlex.Infrastructure.PacketCapture;
+using AionFlex.Infrastructure.PacketParsing.Dps;
 using Aion2Meter;
 using Aion2Meter.Controls;
 using Aion2Meter.Services;
@@ -59,11 +65,154 @@ var unknownClassRow = new PlayerRowViewModel { PlayerId = 1 };
 Check(!unknownClassRow.HasClassIcon, "an unidentified class does not display a substitute person icon");
 unknownClassRow.IconPath = "Cleric.png";
 Check(unknownClassRow.HasClassIcon, "a discovered class replaces the neutral icon");
+Check(!unknownClassRow.HasPartyIcon, "an unidentified class has no party-style icon");
+unknownClassRow.PartyIconPath = "Cleric.png";
+Check(unknownClassRow.HasPartyIcon, "party-style rows use a dedicated class icon");
+string? skillIconPath = new SkillIconService().GetIconPath(1);
+Check(skillIconPath is not null && File.Exists(skillIconPath),
+    "a mapped game skill resolves to an existing skill texture");
+var sampleSkill = new MeterSkillSnapshot(1, "Sample skill", 100, 1_000, 50, 5,
+    25, 33, 0, 0, 200, 450, 40, 4, 1, 800, 200, true);
+var sampleSkillRow = new SkillRowViewModel(sampleSkill, skillIconPath);
+Check(sampleSkillRow.IconPath == skillIconPath && sampleSkillRow.HitsText == "4" && sampleSkillRow.DotHitsText == "1" &&
+      sampleSkillRow.MinimumText == "40" && sampleSkillRow.BreakdownTooltip.Contains("200"),
+    "skill breakdown shows its icon, real minimum, and direct/DoT split");
+var dotOnlyRow = new SkillRowViewModel(sampleSkill with
+{
+    DirectHits = 0, DotHits = 5, HasHitQualityData = false
+}, skillIconPath);
+Check(dotOnlyRow.CritText == "—" && dotOnlyRow.BackText == "—" &&
+      dotOnlyRow.DoubleText == "—" && dotOnlyRow.PerfectText == "—",
+    "unmeasured hit-quality rates are not displayed as zero percent");
+var loadout = new SkillLoadoutSnapshot(
+    [new SkillRosterEntry(11720000, 3)],
+    [
+        new SkillEquippedEntry(11710000, 5, [1]),
+        new SkillEquippedEntry(11710000, 4, [1]),
+        new SkillEquippedEntry(11010000, 2, [2])
+    ]);
+IReadOnlyList<SkillEquippedEntry> mergedEquipped = SkillLoadoutAccumulator.MergeEquipped(
+    loadout.Equipped,
+    [new SkillEquippedEntry(11010000, 4, [1, 3])]);
+Check(mergedEquipped.Count == 2 && mergedEquipped.Single(entry => entry.BaseCode == 11010000).Specs.SequenceEqual([1, 3]) &&
+      mergedEquipped.Any(entry => entry.BaseCode == 11710000),
+    "a partial skill update replaces its selected options without erasing other loadout skills");
+string testDataDirectory = Path.Combine(AppContext.BaseDirectory, "data");
+var skillRepository = new SkillRepository(
+    NullLogger<SkillRepository>.Instance,
+    skillsFilePath: Path.Combine(testDataDirectory, "skills.json"),
+    npcSkillsFilePath: Path.Combine(testDataDirectory, "npc_skills.json"),
+    theostonesFilePath: Path.Combine(testDataDirectory, "theostones.json"),
+    skillEffectTypesFilePath: Path.Combine(testDataDirectory, "skill_effect_types.json"),
+    summonSkillsFilePath: Path.Combine(testDataDirectory, "summon_skills.json"));
+skillRepository.InitializeAsync().GetAwaiter().GetResult();
+var mobRepository = new MobRepository(
+    NullLogger<MobRepository>.Instance,
+    mobsFilePath: Path.Combine(testDataDirectory, "mobs.json"),
+    npcSummonsFilePath: Path.Combine(testDataDirectory, "npc_summons.json"));
+mobRepository.ReloadAsync().GetAwaiter().GetResult();
+Check(mobRepository.GetMobDungeon(2345107) == "world" && mobRepository.IsBoss(2345107),
+    "Grandios is a named world boss, not an ordinary world mob");
+var bossDamageRepository = new DataRepository(NullLogger<DataRepository>.Instance);
+bossDamageRepository.SetLocalPlayerName("Lunari");
+bossDamageRepository.SetNickname(1540, "Lunari", isConfirmedPlayer: true, isAuthoritativeSource: true);
+bossDamageRepository.SetEntityNpcId(50759, 2345107);
+bossDamageRepository.SetMobName(50759, "Grandios");
+long bossHitTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+bossDamageRepository.AppendDamageEvent(new DamageEvent
+{
+    Timestamp = bossHitTime, ActorId = 1540, TargetId = 50759, Damage = 2500, SkillCode = 14380007
+});
+bossDamageRepository.AppendDamageEvent(new DamageEvent
+{
+    Timestamp = bossHitTime + 1000, ActorId = 1540, TargetId = 50759, Damage = 3200, SkillCode = 14380007
+});
+var worldBossCalculator = new DpsCalculator(
+    NullLogger<DpsCalculator>.Instance, bossDamageRepository, skillRepository, mobRepository);
+worldBossCalculator.SetBossOnlyMode(true);
+Check(worldBossCalculator.CalculateDps().GetPlayersByDps().Any(player =>
+        player.PlayerId == 1540 && player.TotalDamage >= 5700),
+    "boss-only mode counts Lunari's damage to the named world boss Grandios");
+IReadOnlyList<MeterPassiveSkillSnapshot> selectedPassives = PassiveLoadoutSkills.FromLoadout(
+    loadout,
+    skillRepository.GetSkillMetadata,
+    skillRepository.GetSkillName);
+Check(selectedPassives.Count == 2 && selectedPassives[0].SkillCode == 11710000 &&
+      selectedPassives[0].Level == 5 && selectedPassives[0].IsEquipped &&
+      selectedPassives[1].SkillCode == 11720000 && !selectedPassives[1].IsEquipped &&
+      selectedPassives[0].Name == "Survival Stance",
+    "the loadout distinguishes selected passives from merely learned passives");
+Check(new SkillIconService().GetIconPath(11710000) is { } passiveIcon && File.Exists(passiveIcon),
+    "an equipped passive resolves to its own game icon");
+IReadOnlyList<MeterSkillSpecialtySnapshot> selectedSpecialties = SkillSpecialtySelection.FromLoadout(
+    loadout,
+    skillRepository.GetSkillMetadata,
+    skillRepository.GetSkillName);
+Check(selectedSpecialties.Count == 1 && selectedSpecialties[0].SkillCode == 11010000 &&
+      selectedSpecialties[0].SelectedOptions.SequenceEqual([2]),
+    "mastery specialties are selected from equipped options without mixing in passive skills");
+string specialtyDescription = new SkillSpecialtyCatalog().GetDescription(11010000, 2);
+Check(specialtyDescription.Contains("Block") || specialtyDescription.Contains("Блок"),
+    "selected specialty resolves to a localized effect description");
+Check(new SkillSpecialtyCatalog().GetOptionIconPath(11010000, 2) is { } specialtyIcon &&
+      File.Exists(specialtyIcon),
+    "selected specialty resolves to the matching game icon");
+string unknownSpecialty = new SkillSpecialtyCatalog().GetDescription(19010000, 3);
+Check(unknownSpecialty.Contains("Option") || unknownSpecialty.Contains("Вариант"),
+    "an unmapped specialty is identified by option number instead of a fabricated effect");
+Check(new SkillSpecialtyCatalog().GetOptionIconPath(19010000, 3) is { } brawlerSpecialtyIcon &&
+      File.Exists(brawlerSpecialtyIcon),
+    "a newly introduced class still receives its matching specialty icon");
+var localBuildRow = new PlayerRowViewModel
+{
+    IsLocalPlayer = true,
+    Passives = selectedPassives,
+    Specialties = selectedSpecialties
+};
+var localBuildView = new PlayerBreakdownViewModel(localBuildRow);
+Check(localBuildView.HasPassives && localBuildView.Passives[0].IconPath is not null &&
+      localBuildView.Passives[0].StatusText != localBuildView.Passives[1].StatusText,
+    "the local player's breakdown exposes passive icons and distinct selection states");
+localBuildView.UpdatePassives([]);
+Check(!localBuildView.HasPassives, "an open breakdown can refresh when the local loadout changes");
+Check(localBuildView.HasSpecialties && localBuildView.Specialties[0].SelectedOptions.Count == 1 &&
+      localBuildView.Specialties[0].Slots.Count == 3,
+    "the local player's breakdown exposes selected effects and three specialty slots");
+localBuildView.UpdateSpecialties([]);
+Check(!localBuildView.HasSpecialties, "an open breakdown can refresh selected specialties");
 Check(JobClassExtensions.FromSkillCode(17410041) == JobClass.Cleric,
     "a non-damage skill can identify the class of an otherwise idle player");
 Check(!MeterRuntime.HasLivingBossHealth(null) && !MeterRuntime.HasLivingBossHealth(0) &&
       MeterRuntime.HasLivingBossHealth(1),
     "enrage cannot continue once boss HP is zero or no longer available");
+var targetEffects = new List<ActiveDebuffWindow>
+{
+    new(900, 1, 101, 1, 11100000, 1_000, 20_000, 19_000),
+    new(900, 2, 102, 2, 11100000, 1_000, 19_000, 18_000),
+    new(900, 3, 103, 3, 11100000, 1_000, 18_000, 17_000),
+    new(900, 4, 104, 2, 11200000, 1_000, 17_000, 16_000),
+    new(900, 5, 105, 2, 11100000, 9_000, 10_000, 500)
+};
+IReadOnlyList<MeterDebuffSnapshot> ProjectTargetEffects(bool showOthers) => TargetDebuffSelection.Project(
+    targetEffects, 1, showOthers, 10_000,
+    _ => null,
+    owner => owner == 2,
+    skill => new SkillMetadata { Type = "Active", Categories = skill == 11100000 ? ["Debuff"] : ["Buff"] },
+    _ => "Defense down",
+    owner => owner == 2 ? "Ally" : null);
+IReadOnlyList<MeterDebuffSnapshot> ownEffects = ProjectTargetEffects(false);
+IReadOnlyList<MeterDebuffSnapshot> partyEffects = ProjectTargetEffects(true);
+Check(ownEffects.Count == 1 && ownEffects[0].OwnerId == 1,
+    "target debuffs show only local casts while the new option is off");
+Check(partyEffects.Count == 2 && partyEffects.Any(effect => effect.OwnerId == 2 && effect.IsOtherPlayer) &&
+      partyEffects.Any(effect => effect.OwnerId == 1 && !effect.IsOtherPlayer),
+    "the option adds known players' casts and keeps duplicate skills distinct by owner");
+Check(partyEffects.All(effect => effect.OwnerId != 3),
+    "unknown NPC or unconfirmed casters are not presented as other players");
+var foreignDebuffRow = new DebuffTimerViewModel { SkillCode = 11100000, OwnerId = 2 };
+foreignDebuffRow.Update(partyEffects.Single(effect => effect.OwnerId == 2), null);
+Check(foreignDebuffRow.IsOtherPlayer && foreignDebuffRow.Name.Contains("Ally"),
+    "a foreign debuff is marked and names its caster in the tooltip");
 var defeatedHealth = MeterRuntime.ResolveTargetHealth(null, defeated: true, defeatedMaxHp: 15_504_000);
 Check(defeatedHealth.CurrentHp == 0 && defeatedHealth.MaxHp == 15_504_000 && defeatedHealth.Percent == 0,
     "removed defeated target retains HP 0% instead of becoming unknown HP");
@@ -111,6 +260,51 @@ Check(!UpdateCheckService.IsTrustedReleaseUrl("file:///C:/Windows/System32/calc.
       !UpdateCheckService.IsTrustedReleaseUrl("https://example.com/CHAINSGANG/Aion2Meter/releases/tag/v0.2.8") &&
       !UpdateCheckService.IsTrustedReleaseUrl("https://github.com.evil.test/CHAINSGANG/Aion2Meter/releases/tag/v0.2.8"),
     "update notification rejects non-release and non-HTTPS launch targets");
+const string installerName = "Aion2Meter-Setup-v0.3.0.exe";
+const string assetRoot = "https://github.com/CHAINSGANG/Aion2Meter/releases/download/v0.3.0/";
+using (JsonDocument release = JsonDocument.Parse("""
+    {"assets":[
+      {"name":"Aion2Meter-Setup-v0.3.0.exe","size":12345,"browser_download_url":"https://github.com/CHAINSGANG/Aion2Meter/releases/download/v0.3.0/Aion2Meter-Setup-v0.3.0.exe"},
+      {"name":"Aion2Meter-Setup-v0.3.0.exe.sha256","size":95,"browser_download_url":"https://github.com/CHAINSGANG/Aion2Meter/releases/download/v0.3.0/Aion2Meter-Setup-v0.3.0.exe.sha256"}
+    ]}
+    """))
+{
+    UpdatePackage? package = UpdateCheckService.TryReadPackage(release.RootElement, "v0.3.0", new Version(0, 3, 0));
+    Check(package?.InstallerName == installerName && package.InstallerSize == 12345,
+        "updater selects matching installer and checksum assets");
+    Check(UpdateCheckService.TryReadPackage(release.RootElement, "v0.3.1", new Version(0, 3, 1)) is null,
+        "updater rejects assets from a different version");
+}
+Check(UpdateCheckService.IsTrustedAssetUrl(assetRoot + installerName, "v0.3.0", installerName) &&
+      !UpdateCheckService.IsTrustedAssetUrl("https://github.com.evil.test/" + installerName, "v0.3.0", installerName) &&
+      !UpdateCheckService.IsTrustedAssetUrl(assetRoot + installerName + "?redirect=evil", "v0.3.0", installerName),
+    "updater accepts only this repository's exact HTTPS asset URL");
+string checksum = new string('a', 64);
+Check(UpdateInstallService.TryParseChecksum($"{checksum}  {installerName}\n", installerName, out string? parsedHash) &&
+      parsedHash == checksum &&
+      !UpdateInstallService.TryParseChecksum($"{checksum}  other.exe", installerName, out _) &&
+      !UpdateInstallService.TryParseChecksum($"{checksum[..63]}  {installerName}", installerName, out _),
+    "updater verifies the SHA-256 manifest format and installer filename");
+string installerTestDirectory = Path.Combine(Path.GetTempPath(), $"Aion2Meter.Updater.Smoke.{Guid.NewGuid():N}");
+Directory.CreateDirectory(installerTestDirectory);
+try
+{
+    string installedExe = Path.Combine(installerTestDirectory, "Aion2Meter.exe");
+    string setupExe = Path.Combine(installerTestDirectory, installerName);
+    File.WriteAllBytes(installedExe, [0]);
+    File.WriteAllBytes(setupExe, [0]);
+    var startInfo = UpdateInstallService.CreateInstallerStartInfo(setupExe, installerTestDirectory);
+    Check(startInfo.UseShellExecute && startInfo.Verb == "runas" &&
+          startInfo.ArgumentList.Count == 1 &&
+          startInfo.ArgumentList[0] == $"/DIR={installerTestDirectory}",
+        "installer targets the current meter directory and requests Windows elevation");
+}
+finally
+{
+    File.Delete(Path.Combine(installerTestDirectory, "Aion2Meter.exe"));
+    File.Delete(Path.Combine(installerTestDirectory, installerName));
+    Directory.Delete(installerTestDirectory);
+}
 Check(NpcapServiceLifecycle.ParseServiceState("STATE              : 3  STOP_PENDING") == 3 &&
       NpcapServiceLifecycle.ParseServiceState("STATE              : 4  RUNNING") == 4,
     "Npcap lifecycle detects pending shutdown and an already-running driver");
@@ -125,6 +319,13 @@ var uiThread = new Thread(() =>
     try
     {
         using var viewModel = new MeterViewModel();
+        viewModel.SyncDebuffs(partyEffects);
+        Check(viewModel.TargetDebuffs.Count == 2 &&
+              viewModel.TargetDebuffs.Select(row => row.OwnerId).Distinct().Count() == 2,
+            "same-skill debuffs from two players remain separate overlay icons");
+        viewModel.SyncDebuffs(ownEffects);
+        Check(viewModel.TargetDebuffs.Count == 1 && viewModel.TargetDebuffs[0].OwnerId == 1,
+            "turning off the option removes only foreign debuff icons");
         Check(viewModel.TargetBarBrush is LinearGradientBrush hpGradient &&
               hpGradient.GradientStops[0].Color.R > hpGradient.GradientStops[0].Color.B &&
               hpGradient.GradientStops[^1].Color.B > hpGradient.GradientStops[0].Color.B,
@@ -240,8 +441,128 @@ var uiThread = new Thread(() =>
             "enrage highlight is green within the limit and red when the estimate misses it");
         var app = new App();
         app.InitializeComponent();
+        var toolsWindow = new ToolsWindow(viewModel);
+        var toolsSurface = (FrameworkElement)toolsWindow.Content;
+        toolsSurface.Measure(new Size(720, 570));
+        toolsSurface.Arrange(new Rect(0, 0, 720, 570));
+        toolsSurface.UpdateLayout();
+        var otherDebuffsCheckbox = (System.Windows.Controls.CheckBox)toolsWindow.FindName("OtherPlayersDebuffsCheckBox")!;
+        otherDebuffsCheckbox.IsChecked = true;
+        Check(viewModel.ShowOtherPlayersDebuffs,
+            "the tools checkbox enables other players' target debuffs");
+        otherDebuffsCheckbox.IsChecked = false;
+        Check(!viewModel.ShowOtherPlayersDebuffs,
+            "the tools checkbox returns to own-only target debuffs");
+        var partyRowStyleCheckbox = (System.Windows.Controls.CheckBox)toolsWindow.FindName("PartyRowStyleCheckBox")!;
+        partyRowStyleCheckbox.IsChecked = true;
+        Check(viewModel.UsePartyRowStyle, "the tools checkbox enables party-style damage rows");
+        partyRowStyleCheckbox.IsChecked = false;
+        Check(!viewModel.UsePartyRowStyle, "the tools checkbox restores standard damage rows");
+        string? skillPreviewPath = Environment.GetEnvironmentVariable("AION2METER_RENDER_SKILL_PREVIEW");
+        string? passivePreviewPath = Environment.GetEnvironmentVariable("AION2METER_RENDER_PASSIVES_PREVIEW");
+        if (!string.IsNullOrWhiteSpace(skillPreviewPath) || !string.IsNullOrWhiteSpace(passivePreviewPath))
+        {
+            var previewPlayer = new PlayerRowViewModel
+            {
+                Nickname = "Sample player",
+                ClassName = "Gladiator",
+                IsLocalPlayer = true,
+                DpsText = "88.2k/s",
+                DamageText = "4.23m",
+                ShareText = "42.1%",
+                Hits = 129,
+                CritRate = 38.6,
+                Passives = [
+                    new MeterPassiveSkillSnapshot(11710000, "Survival Stance", 5, true),
+                    new MeterPassiveSkillSnapshot(11720000, "Protection Armor", 4, false),
+                    new MeterPassiveSkillSnapshot(11730000, "Blood Absorption", 5, true),
+                    new MeterPassiveSkillSnapshot(11740000, "Identify Weakness", 3, false)
+                ],
+                Skills = [
+                    sampleSkill with { SkillCode = 1, Name = "Explosive Strike", Share = 41.2 },
+                    sampleSkill with { SkillCode = 301, Name = "Flame Burst", Share = 27.4 },
+                    sampleSkill with { SkillCode = 1001, Name = "Arcane Wave", Share = 18.3 },
+                    sampleSkill with { SkillCode = 1002, Name = "Burning Mark", Share = 13.1 }
+                ]
+            };
+            var breakdownWindow = new PlayerBreakdownWindow(previewPlayer);
+            IReadOnlyList<MeterPassiveSkillSnapshot> previewPassives = previewPlayer.Passives;
+            previewPlayer.Passives = [];
+            Check(!((PlayerBreakdownViewModel)breakdownWindow.DataContext).HasPassives,
+                "an already-open breakdown clears passives when the local loadout changes");
+            previewPlayer.Passives = previewPassives;
+            Check(((PlayerBreakdownViewModel)breakdownWindow.DataContext).HasPassives,
+                "an already-open breakdown receives newly observed passives");
+            var breakdownSurface = (FrameworkElement)breakdownWindow.Content;
+            breakdownSurface.Measure(new Size(1020, 560));
+            breakdownSurface.Arrange(new Rect(0, 0, 1020, 560));
+            breakdownSurface.UpdateLayout();
+            if (!string.IsNullOrWhiteSpace(skillPreviewPath))
+            {
+                var skillBitmap = new RenderTargetBitmap(1020, 560, 96, 96, PixelFormats.Pbgra32);
+                skillBitmap.Render(breakdownSurface);
+                var skillEncoder = new PngBitmapEncoder();
+                skillEncoder.Frames.Add(BitmapFrame.Create(skillBitmap));
+                using FileStream skillOutput = File.Create(skillPreviewPath);
+                skillEncoder.Save(skillOutput);
+            }
+            if (!string.IsNullOrWhiteSpace(passivePreviewPath))
+            {
+                var passivesTab = (System.Windows.Controls.RadioButton)breakdownWindow.FindName("PassivesTab")!;
+                passivesTab.IsChecked = true;
+                var passivesPanel = (FrameworkElement)breakdownWindow.FindName("PassivesPanel")!;
+                Check(passivesPanel.Visibility == Visibility.Visible,
+                    "the passive tab opens its own selected-skill pane");
+                breakdownSurface.UpdateLayout();
+                var passiveBitmap = new RenderTargetBitmap(1020, 560, 96, 96, PixelFormats.Pbgra32);
+                passiveBitmap.Render(breakdownSurface);
+                var passiveEncoder = new PngBitmapEncoder();
+                passiveEncoder.Frames.Add(BitmapFrame.Create(passiveBitmap));
+                using FileStream passiveOutput = File.Create(passivePreviewPath);
+                passiveEncoder.Save(passiveOutput);
+            }
+            breakdownWindow.Close();
+        }
         var window = new MainWindow { Width = 560, Height = 218 };
+        MethodInfo applyWindowFillOpacity = typeof(MainWindow).GetMethod(
+            "ApplyWindowFillOpacity", BindingFlags.Instance | BindingFlags.NonPublic)!;
+        ((Brush)window.Resources["PanelBackground"]).Freeze();
+        applyWindowFillOpacity.Invoke(window, [window]);
+        applyWindowFillOpacity.Invoke(window, [window]);
+        Check(window.Resources["PanelBackground"] is Brush panelBrush &&
+              Math.Abs(panelBrush.Opacity - window.WindowOpacityPercent / 100) < 0.001 &&
+              window.Resources["PartyPanelBackground"] is Brush partyBrush &&
+              Math.Abs(partyBrush.Opacity - window.WindowOpacityPercent / 100) < 0.001,
+            "startup opacity updates sealed WPF style brushes on repeated calls");
         var meter = (MeterViewModel)window.DataContext;
+        meter.ShowSelfCommand.Execute(null);
+        if (Environment.GetEnvironmentVariable("AION2METER_RENDER_DEBUFF_PREVIEW") is { Length: > 0 } debuffPreviewPath)
+        {
+            meter.SyncDebuffs(partyEffects);
+            var debuffIcons = new StackPanel
+            {
+                Width = 40,
+                Orientation = Orientation.Vertical
+            };
+            foreach (DebuffTimerViewModel row in meter.TargetDebuffs)
+            {
+                debuffIcons.Children.Add(new ContentPresenter
+                {
+                    Content = row,
+                    ContentTemplate = (DataTemplate)window.FindResource("DebuffIconTemplate")
+                });
+            }
+            debuffIcons.Measure(new Size(40, 80));
+            debuffIcons.Arrange(new Rect(0, 0, 40, 80));
+            debuffIcons.UpdateLayout();
+            var debuffBitmap = new RenderTargetBitmap(40, 80, 96, 96, PixelFormats.Pbgra32);
+            debuffBitmap.Render(debuffIcons);
+            var debuffEncoder = new PngBitmapEncoder();
+            debuffEncoder.Frames.Add(BitmapFrame.Create(debuffBitmap));
+            using FileStream debuffOutput = File.Create(debuffPreviewPath);
+            debuffEncoder.Save(debuffOutput);
+            meter.SyncDebuffs([]);
+        }
         for (int i = 1; i <= 6; i++)
             meter.Players.Add(new PlayerRowViewModel { PlayerId = i });
         window.UpdateMeterHeight();
@@ -255,6 +576,40 @@ var uiThread = new Thread(() =>
             90_000, 0, 0, [], false, 100, 0, null, null, JobClass.Unknown,
             new EnrageTimerView(true, false, "Enrage 03:05", EnrageTimerTone.OnTrack));
         meter.ApplySnapshot(bossPreview);
+        Check(meter.IsLocalIdentityPending && meter.IsSelfView &&
+              (meter.StatusText.Contains("RELOG", StringComparison.OrdinalIgnoreCase) ||
+               meter.StatusText.Contains("ПЕРЕЗАХОД", StringComparison.OrdinalIgnoreCase)) &&
+              (meter.EmptyStateText.Contains("RELOG", StringComparison.OrdinalIgnoreCase) ||
+               meter.EmptyStateText.Contains("ПЕРЕЗАЙДИТЕ", StringComparison.OrdinalIgnoreCase)) &&
+              meter.TargetHpPercent == 0 && !meter.EnrageVisible,
+            "missing identity requests a fresh character login and hides unbound target data");
+        meter.ApplySnapshot(bossPreview with
+        {
+            TotalDps = 3000,
+            TotalDamage = 30_000,
+            Players =
+            [
+                new MeterPlayerSnapshot(123, "Lunari", JobClass.Sorcerer, 1200, 12_000, 40, 0, 10, 0, []),
+                new MeterPlayerSnapshot(456, "Ally", JobClass.Gladiator, 1800, 18_000, 60, 0, 12, 0, [])
+            ]
+        });
+        Check(meter.IsLocalIdentityPending && meter.Players.Count == 0 &&
+              !meter.HasPlayers && meter.TotalDpsText == "0" && meter.BattleTime == "00:00" &&
+              meter.TargetName != "Kromede's Desire",
+            "unbound combat participants, totals, and target stay hidden until relog");
+        meter.ApplySnapshot(bossPreview with
+        {
+            LocalPlayerId = 123,
+            LocalPlayerName = "Lunari",
+            Players =
+            [
+                new MeterPlayerSnapshot(123, "Lunari", JobClass.Sorcerer, 1200, 12_000, 40, 0, 10, 0, []),
+                new MeterPlayerSnapshot(456, "Ally", JobClass.Gladiator, 1800, 18_000, 60, 0, 12, 0, [])
+            ]
+        });
+        Check(!meter.IsLocalIdentityPending && meter.IsSelfView &&
+              meter.Players.Count == 1 && meter.Players[0].IsLocalPlayer,
+            "authoritative local identity restores the saved self-only view automatically");
         Check(meter.TargetBarBrush is LinearGradientBrush bossHpBrush &&
               bossHpBrush.GradientStops[0].Color.R > bossHpBrush.GradientStops[0].Color.G,
             "boss HP remains red; poison status is not a frame color");
@@ -342,6 +697,55 @@ var uiThread = new Thread(() =>
             meter.Players.Clear();
             window.UpdateMeterHeight();
         }
+        if (Environment.GetEnvironmentVariable("AION2METER_RENDER_PARTY_PREVIEW") is { Length: > 0 } partyPreviewPath)
+        {
+            meter.UsePartyRowStyle = true;
+            meter.ShowPartyCommand.Execute(null);
+            meter.ApplySnapshot(bossPreview with
+            {
+                LocalPlayerId = 123,
+                LocalPlayerName = "Lunari",
+                TotalDps = 349_000,
+                TotalDamage = 4_200_000,
+                Players =
+                [
+                    new MeterPlayerSnapshot(123, "Lunari", JobClass.Templar, 100_000, 1_400_000, 33.3, 0, 100, 0, []),
+                    new MeterPlayerSnapshot(456, "Piska", JobClass.Gladiator, 85_000, 1_200_000, 28.6, 0, 80, 0, []),
+                    new MeterPlayerSnapshot(789, "purppl", JobClass.Ranger, 70_000, 1_000_000, 23.8, 0, 70, 0, []),
+                    new MeterPlayerSnapshot(987, "Heal", JobClass.Sorcerer, 55_000, 400_000, 9.5, 0, 50, 0, []),
+                    new MeterPlayerSnapshot(654, "skurwincyn", JobClass.Cleric, 39_000, 200_000, 4.8, 0, 40, 0, [])
+                ]
+            });
+            Check(meter.Players.Count == 5 &&
+                  meter.Players.All(player => player.PartyIconPath is { } path && File.Exists(path)),
+                "party-style rows show all participants with their class icons");
+            var surface = (FrameworkElement)window.Content;
+            surface.Measure(new Size(560, 374));
+            surface.Arrange(new Rect(0, 0, 560, 374));
+            surface.UpdateLayout();
+            var bitmap = new RenderTargetBitmap(560, 374, 96, 96, PixelFormats.Pbgra32);
+            bitmap.Render(surface);
+            var encoder = new PngBitmapEncoder();
+            encoder.Frames.Add(BitmapFrame.Create(bitmap));
+            using (FileStream output = File.Create(partyPreviewPath)) encoder.Save(output);
+
+            ((FrameworkElement)window.FindName("CompactLayout")).Visibility = Visibility.Collapsed;
+            ((FrameworkElement)window.FindName("DetailedLayout")).Visibility = Visibility.Visible;
+            surface.Measure(new Size(600, 476));
+            surface.Arrange(new Rect(0, 0, 600, 476));
+            surface.UpdateLayout();
+            var detailedBitmap = new RenderTargetBitmap(600, 476, 96, 96, PixelFormats.Pbgra32);
+            detailedBitmap.Render(surface);
+            var detailedEncoder = new PngBitmapEncoder();
+            detailedEncoder.Frames.Add(BitmapFrame.Create(detailedBitmap));
+            using (FileStream output = File.Create(Path.ChangeExtension(partyPreviewPath, ".detailed.png")))
+                detailedEncoder.Save(output);
+            meter.Players.Clear();
+            meter.UsePartyRowStyle = false;
+            meter.ShowSelfCommand.Execute(null);
+            ((FrameworkElement)window.FindName("DetailedLayout")).Visibility = Visibility.Collapsed;
+            ((FrameworkElement)window.FindName("CompactLayout")).Visibility = Visibility.Visible;
+        }
         if (Environment.GetEnvironmentVariable("AION2METER_RENDER_LAYOUT_PREVIEW") is { Length: > 0 } layoutPreviewPath)
         {
             meter.ApplyNotification(
@@ -394,6 +798,23 @@ using (var restarted = new SingleInstanceGate(mutexName))
     Check(restarted.IsPrimary, "instance gate is released on exit");
 
 var repository = new DataRepository(NullLogger<DataRepository>.Instance);
+var deviceLockParser = new DpsPacketParser(NullLogger<DpsPacketParser>.Instance, repository);
+MethodInfo parseDamage = typeof(DpsPacketParser).GetMethod("TryParseDamagePacket", BindingFlags.Instance | BindingFlags.NonPublic)!;
+FieldInfo currentTargetField = typeof(DpsPacketParser).GetField("_currentTarget", BindingFlags.Instance | BindingFlags.NonPublic)!;
+Check((bool)parseDamage.Invoke(deviceLockParser, [new byte[] { 8, 4, 56, 0xC1, 0x84, 0x3D }])! &&
+      (int)currentTargetField.GetValue(deviceLockParser)! == 0,
+    "an impossible combat target ID cannot replace the current target");
+FieldInfo lockedDeviceField = typeof(DpsPacketParser).GetField("_lockedDeviceName", BindingFlags.Instance | BindingFlags.NonPublic)!;
+FieldInfo lockTickField = typeof(DpsPacketParser).GetField("_lastLockedStreamPacketMs", BindingFlags.Instance | BindingFlags.NonPublic)!;
+lockedDeviceField.SetValue(deviceLockParser, "old-adapter");
+lockTickField.SetValue(deviceLockParser, Environment.TickCount64);
+deviceLockParser.ProcessPayload(new CapturedPayload(13328, 50123, [0], "new-adapter"));
+Check(deviceLockParser.LockedDeviceName == "old-adapter",
+    "a recent game-stream lock ignores another adapter");
+lockTickField.SetValue(deviceLockParser, Environment.TickCount64 - 31_000);
+deviceLockParser.ProcessPayload(new CapturedPayload(13328, 50123, [0], "new-adapter"));
+Check(deviceLockParser.LockedDeviceName is null,
+    "an idle game-stream lock permits capture after an adapter switch");
 var schedule = new EventScheduleService(
     repository,
     Path.Combine(AppContext.BaseDirectory, "data", "event_schedules.json"));
@@ -451,13 +872,18 @@ try
         CompactHeight = 333,
         HasCustomCompactSize = true,
         ShowPartyMembers = true,
-        KeepNotificationsWhenHidden = true
+        ShowOtherPlayersDebuffs = true,
+        UsePartyRowStyle = true,
+        KeepNotificationsWhenHidden = true,
+        CheckUpdatesOnStartup = false
     }), "settings file can be written");
     MeterSettings restored = store.Load();
     Check(restored.Language == "ru" && restored.CompactWidth == 444 && restored.CompactHeight == 333,
         $"window preferences survive restart (actual {restored.Language}, {restored.CompactWidth}, {restored.CompactHeight})");
-    Check(restored.ShowPartyMembers && restored.KeepNotificationsWhenHidden,
+    Check(restored.ShowPartyMembers && restored.KeepNotificationsWhenHidden && restored.ShowOtherPlayersDebuffs &&
+          restored.UsePartyRowStyle,
         "toggle preferences survive restart");
+    Check(!restored.CheckUpdatesOnStartup, "disabled startup update checks survive restart");
     Check(store.Save(new MeterSettings { Language = "en", CompactWidth = 500 }),
         "a second settings save succeeds atomically");
     Check(File.Exists(settingsPath + ".bak"), "a previous valid settings file is retained as backup");
@@ -474,8 +900,13 @@ try
         "a missing primary settings file also recovers the valid backup");
     File.WriteAllText(settingsPath, """{"Version":5,"CompactWidth":444,"CompactHeight":438,"HasCustomCompactSize":true}""");
     MeterSettings migrated = store.Load();
-    Check(migrated.Version == 6 && migrated.CompactWidth == 444 && migrated.CompactHeight == 218,
+    Check(migrated.Version == 7 && migrated.CompactWidth == 444 && migrated.CompactHeight == 218 &&
+          migrated.CheckUpdatesOnStartup,
         "old auto-expanded height is migrated back to the one-row baseline");
+    File.Delete(settingsPath);
+    File.Delete(settingsPath + ".bak");
+    Check(store.Load().CheckUpdatesOnStartup,
+        "first installation enables startup update checks by default");
 }
 finally
 {
@@ -501,16 +932,20 @@ try
     }
 
     string contents = File.ReadAllText(diagnosticPath!);
+    string[] continuationFiles = Directory.GetFiles(diagnosticsDirectory, "hp-debug-*-part02.log");
+    string continuation = continuationFiles.Length == 1 ? File.ReadAllText(continuationFiles[0]) : string.Empty;
     Check(!contents.Contains("ordinary capture status", StringComparison.Ordinal) &&
           contents.Contains("capture queue dropped 2 packets", StringComparison.Ordinal),
         "capture warnings reach diagnostics without verbose per-packet logs");
-    Check(contents.Contains("file size limit reached", StringComparison.Ordinal) &&
-          !contents.Contains("SECOND_AFTER_LIMIT", StringComparison.Ordinal),
-        "diagnostic journal stops growing after its size limit");
+    Check(contents.Contains("continuing in", StringComparison.Ordinal) &&
+          continuation.Contains("after limit", StringComparison.Ordinal) &&
+          continuation.Contains("SECOND_AFTER_LIMIT", StringComparison.Ordinal),
+        "diagnostic journal continues in a bounded new file after its size limit");
 }
 finally
 {
-    if (diagnosticPath is not null && File.Exists(diagnosticPath)) File.Delete(diagnosticPath);
+    if (Directory.Exists(diagnosticsDirectory))
+        foreach (string file in Directory.GetFiles(diagnosticsDirectory)) File.Delete(file);
     if (Directory.Exists(diagnosticsDirectory)) Directory.Delete(diagnosticsDirectory);
 }
 
